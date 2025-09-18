@@ -27,7 +27,7 @@ final medicalRecordRepositoryProvider =
 typedef MedicalRecordRepositoryRef =
     AutoDisposeProviderRef<MedicalRecordRepository>;
 String _$medicalRecordNotifierHash() =>
-    r'3ee49459d5410659b8df84c8faa247f4a8c39964';
+    r'8de03cdd5863386277aee40730fad8ec5cb41e20';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -194,7 +194,7 @@ class _MedicalRecordNotifierProviderElement
 }
 
 String _$generalInfoOptionsNotifierHash() =>
-    r'18033d0dc5c3af2a76f65c47ffd2ee0d86893178';
+    r'1b997fc24784fdf02fecc8350667b5e09c697d10';
 
 abstract class _$GeneralInfoOptionsNotifier
     extends BuildlessAutoDisposeAsyncNotifier<List<GeneralInfo>> {

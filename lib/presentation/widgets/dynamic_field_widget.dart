@@ -138,7 +138,7 @@ class _DynamicFieldWidgetState extends ConsumerState<DynamicFieldWidget> {
   Widget _buildGeneralInfoDropdown(GeneralInfo currentValue) {
     final modelName = currentValue.modelName;
     final optionsAsync = ref.watch(
-      generalInfoOptionsNotifierProvider(modelName),
+      generalInfoOptionsNotifierProvider(modelName ?? ''),
     );
 
     return optionsAsync.when(

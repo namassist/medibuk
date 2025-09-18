@@ -124,8 +124,8 @@ class _MedicalRecordPageState extends ConsumerState<MedicalRecordPage> {
           const SizedBox(height: 24),
           _buildMainInformation(record, isEditable),
           const SizedBox(height: 16),
-          if (record.obstetric.isNotEmpty) ...[
-            ...record.obstetric.asMap().entries.map((entry) {
+          if (record.obstetric?.isNotEmpty ?? false) ...[
+            ...record.obstetric!.asMap().entries.map((entry) {
               final index = entry.key;
               final obstetricData = entry.value;
               return FormSectionWidget(
@@ -137,8 +137,8 @@ class _MedicalRecordPageState extends ConsumerState<MedicalRecordPage> {
               );
             }),
           ],
-          if (record.gynecology.isNotEmpty) ...[
-            ...record.gynecology.asMap().entries.map((entry) {
+          if (record.gynecology?.isNotEmpty ?? false) ...[
+            ...record.gynecology!.asMap().entries.map((entry) {
               final index = entry.key;
               final gynecologyData = entry.value;
               return FormSectionWidget(
@@ -150,8 +150,8 @@ class _MedicalRecordPageState extends ConsumerState<MedicalRecordPage> {
               );
             }),
           ],
-          if (record.prescriptions.isNotEmpty) ...[
-            ...record.prescriptions.asMap().entries.map((entry) {
+          if (record.prescriptions?.isNotEmpty ?? false) ...[
+            ...record.prescriptions!.asMap().entries.map((entry) {
               final index = entry.key;
               final prescriptionData = entry.value;
               return FormSectionWidget(
