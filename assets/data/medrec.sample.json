@@ -1,0 +1,341 @@
+{
+  "id": 1268301,
+  "uid": "c8bee716-12f0-4c31-a787-51c66064df6c",
+  "AD_Client_ID": {
+    "propertyLabel": "Client",
+    "id": 1000000,
+    "identifier": "KSS Group",
+    "model-name": "ad_client"
+  },
+  "AD_Org_ID": {
+    "propertyLabel": "Organization",
+    "id": 1000001,
+    "identifier": "PT KEHAMILAN SEHAT SEJAHTERA",
+    "model-name": "ad_org"
+  },
+  "DocumentNo": "1196368",
+  "C_SalesRegion_ID": {
+    "propertyLabel": "Clinic",
+    "id": 1000012,
+    "identifier": "Kehamilan Sehat Palem Semi",
+    "model-name": "c_salesregion"
+  },
+  "DateTrx": "2025-09-16",
+  "OrderType_ID": {
+    "propertyLabel": "Order Type",
+    "id": 1000004,
+    "identifier": "Kandungan",
+    "model-name": "ordertype"
+  },
+  "M_Specialist_ID": {
+    "propertyLabel": "Specialist",
+    "id": 1000000,
+    "identifier": "KANDUNGAN PALEM SEMI",
+    "model-name": "m_specialist"
+  },
+  "C_Encounter_ID": {
+    "propertyLabel": "C_Encounter_ID",
+    "id": 1305573,
+    "identifier": "1305573",
+    "model-name": "c_encounter"
+  },
+  "C_BPartner_ID": {
+    "propertyLabel": "Business Partner ",
+    "id": 1100196,
+    "identifier": "henry test2 ",
+    "model-name": "c_bpartner"
+  },
+  "DocStatus": {
+    "propertyLabel": "Document Status",
+    "id": "DR",
+    "identifier": "Drafted",
+    "model-name": "ad_ref_list"
+  },
+  "GestationalAgeWeek": 5,
+  "GestationalAgeDay": 5,
+  "Processed": false,
+  "medical-record-umum": [],
+  "medical-record-anak": [],
+  "obstetric": [
+    {
+      "id": 1246807,
+      "uid": "d434604d-00f3-4b2e-b359-ebc3f41ce451",
+      "AD_Client_ID": {
+        "propertyLabel": "Client",
+        "id": 1000000,
+        "identifier": "KSS Group",
+        "model-name": "ad_client"
+      },
+      "AD_Org_ID": {
+        "propertyLabel": "Organization",
+        "id": 1000001,
+        "identifier": "PT KEHAMILAN SEHAT SEJAHTERA",
+        "model-name": "ad_org"
+      },
+      "C_MedicalRecord_ID": {
+        "propertyLabel": "Medical Record",
+        "id": 1268301,
+        "identifier": "henry test2 ",
+        "model-name": "c_medicalrecord"
+      },
+      "C_SalesRegion_ID": {
+        "propertyLabel": "Clinic",
+        "id": 1000012,
+        "identifier": "Kehamilan Sehat Palem Semi",
+        "model-name": "c_salesregion"
+      },
+      "Doctor_ID": {
+        "propertyLabel": "Doctor",
+        "id": 1000024,
+        "identifier": "dr. Hasni Kemala Sari, Sp.OG",
+        "model-name": "c_bpartner"
+      },
+      "Assistant_ID": {
+        "propertyLabel": "Assistant",
+        "id": 1004635,
+        "identifier": "1003569-Hayyunna",
+        "model-name": "c_bpartner"
+      },
+      "LineNo": 10,
+      "Birthday": "2025-04-01",
+      "Age": "0 Tahun 5 Bulan",
+      "GPA": "G5P60A10",
+      "VisitDate": "2025-09-16",
+      "NextVisitDate": "2025-10-16",
+      "ChiefComplaint": "asjgbabguabgubaugbaug",
+      "BodyTemperature": 20,
+      "Miscarriage": 10,
+      "PregnancyNo": 5,
+      "FirstDayOfMenstrualPeriod": "2025-09-16",
+      "Riwayat_alergi": "aigaibgiabgbabgibag",
+      "HPL": "2025-09-18",
+      "EstimatedDateOfConception": "2026-06-23",
+      "LaborSC": 20,
+      "LaborSpontanNormal": 20,
+      "LaborSpontanVacuum": 20,
+      "BodyHeight": 175,
+      "BMI": 21.24,
+      "BodyWeight": 65,
+      "SystolicPressure": 20,
+      "DiastolicPressure": 20,
+      "LILA": 20,
+      "ICD_10": {
+        "propertyLabel": "ICD 10",
+        "id": "1010472,1010473",
+        "identifier": "A00.9-Cholera, unspecified, A01.0-Typhoid fever"
+      },
+      "Note": "asgnaigniabgibabig",
+      "InternalNote": "aisghiahgiahgihaighiag",
+      "IsShowMore": true,
+      "NutritionNotes": "agsihaighaihgiahgihaghishguivh auig",
+      "Presentation": {
+        "propertyLabel": "Presentation",
+        "id": "CEP",
+        "identifier": "Kepala",
+        "model-name": "ad_ref_list"
+      },
+      "PlacentaGrade": 10,
+      "PlacentaPosition": {
+        "propertyLabel": "Placenta Position",
+        "id": "CPO",
+        "identifier": "Corpus Posterior",
+        "model-name": "ad_ref_list"
+      },
+      "Weight": 10,
+      "GS": 10,
+      "YS": 10,
+      "DJJ": 10,
+      "FL": 10,
+      "CRL": 10,
+      "BPD": 10,
+      "HC": 10,
+      "AC": 10,
+      "Gender": {
+        "propertyLabel": "Gender",
+        "id": "PR",
+        "identifier": "Perempuan",
+        "model-name": "ad_ref_list"
+      },
+      "SDP": 10,
+      "AFI": 10,
+      "Cairan_Ketuban": {
+        "propertyLabel": "Cairan Ketuban",
+        "id": "Keruh",
+        "identifier": "Keruh",
+        "model-name": "ad_ref_list"
+      }
+    }
+  ],
+  "gynecology": [
+    {
+      "id": 1183065,
+      "uid": "23b27471-bc83-4c07-99a1-bcb0b863a6f4",
+      "AD_Client_ID": {
+        "propertyLabel": "Client",
+        "id": 1000000,
+        "identifier": "KSS Group",
+        "model-name": "ad_client"
+      },
+      "AD_Org_ID": {
+        "propertyLabel": "Organization",
+        "id": 1000001,
+        "identifier": "PT KEHAMILAN SEHAT SEJAHTERA",
+        "model-name": "ad_org"
+      },
+      "C_SalesRegion_ID": {
+        "propertyLabel": "Clinic",
+        "id": 1000012,
+        "identifier": "Kehamilan Sehat Palem Semi",
+        "model-name": "c_salesregion"
+      },
+      "C_MedicalRecord_ID": {
+        "propertyLabel": "Medical Record",
+        "id": 1268301,
+        "identifier": "henry test2 ",
+        "model-name": "c_medicalrecord"
+      },
+      "Doctor_ID": {
+        "propertyLabel": "Doctor",
+        "id": 1000024,
+        "identifier": "dr. Hasni Kemala Sari, Sp.OG",
+        "model-name": "c_bpartner"
+      },
+      "Assistant_ID": {
+        "propertyLabel": "Assistant",
+        "id": 1004635,
+        "identifier": "1003569-Hayyunna",
+        "model-name": "c_bpartner"
+      },
+      "VisitDate": "2025-09-16",
+      "NextVisitDate": "2025-10-16",
+      "ChiefComplaint": "agagagagagagagdshfdjsdjssghahahah",
+      "BirthControlMethod": {
+        "propertyLabel": "Birth Control Method",
+        "id": "INJ",
+        "identifier": "Injection",
+        "model-name": "ad_ref_list"
+      },
+      "BodyWeight": 65,
+      "SystolicPressure": 10,
+      "BodyHeight": 175,
+      "BMI": 21.24,
+      "DiastolicPressure": 10,
+      "Birthday": "2025-04-01",
+      "FirstDayOfMenstrualPeriod": "2025-09-16",
+      "ICD_10": {
+        "propertyLabel": "ICD_10",
+        "id": "1010471,1010472,1010473",
+        "identifier": "A00.1-Cholera due to Vibrio cholerae 01, biovar eltor, A00.9-Cholera, unspecified, A01.0-Typhoid fever"
+      },
+      "InternalNote": "ahahahhahah",
+      "Note": "asgahahahahahah",
+      "IsShowMore": true,
+      "NutritionNotes": "asgahahahahah",
+      "UterusNote": "asjnankabgia",
+      "UterusLength": 10,
+      "UterusWidth": 10,
+      "UterusThickness": 10,
+      "UterusPosition": {
+        "propertyLabel": "Uterus Position",
+        "id": "AF",
+        "identifier": "AF",
+        "model-name": "ad_ref_list"
+      },
+      "EndometriumThickness": 10,
+      "RightOvaryFollicleCount": 10,
+      "RightOvaryNote": "ajfgiahgihaighiahgihahiag",
+      "RightOvaryLength": 10,
+      "RightOvaryThickness": 10,
+      "RightOvaryWidth": 10,
+      "LeftOvaryFollicleCount": 10,
+      "LeftOvaryNote": "ahgfiagihaihgag",
+      "LeftOvaryLength": 10,
+      "LeftOvaryThickness": 10,
+      "LeftOvaryWidth": 10
+    }
+  ],
+  "services": [],
+  "prescriptions": [
+    {
+      "id": 1011041,
+      "uid": "483418dd-a963-4138-9ee2-713c7dc15a8b",
+      "AD_Client_ID": {
+        "propertyLabel": "Client",
+        "id": 1000000,
+        "identifier": "KSS Group",
+        "model-name": "ad_client"
+      },
+      "AD_Org_ID": {
+        "propertyLabel": "Organization",
+        "id": 1000001,
+        "identifier": "PT KEHAMILAN SEHAT SEJAHTERA",
+        "model-name": "ad_org"
+      },
+      "LineNo": 0,
+      "C_MedicalRecord_ID": {
+        "propertyLabel": "Medical Record",
+        "id": 1268301,
+        "identifier": "henry test2 ",
+        "model-name": "c_medicalrecord"
+      },
+      "M_Product_ID": {
+        "propertyLabel": "Product",
+        "id": 1000824,
+        "identifier": "ALCOHOL 70%",
+        "model-name": "m_product"
+      },
+      "Qty": 1,
+      "isMedicationCompund": {
+        "propertyLabel": "Is Medication Compund",
+        "id": "N",
+        "identifier": "No",
+        "model-name": "ad_ref_list"
+      },
+      "QtyOnHand": 1,
+      "IsActive": true
+    },
+    {
+      "id": 1011042,
+      "uid": "515b810f-4d61-4464-bc05-888441605e05",
+      "AD_Client_ID": {
+        "propertyLabel": "Client",
+        "id": 1000000,
+        "identifier": "KSS Group",
+        "model-name": "ad_client"
+      },
+      "AD_Org_ID": {
+        "propertyLabel": "Organization",
+        "id": 1000001,
+        "identifier": "PT KEHAMILAN SEHAT SEJAHTERA",
+        "model-name": "ad_org"
+      },
+      "Description": "gggg",
+      "LineNo": 0,
+      "C_MedicalRecord_ID": {
+        "propertyLabel": "Medical Record",
+        "id": 1268301,
+        "identifier": "henry test2 ",
+        "model-name": "c_medicalrecord"
+      },
+      "M_Product_ID": {
+        "propertyLabel": "Product",
+        "id": 1000323,
+        "identifier": "CAL95",
+        "model-name": "m_product"
+      },
+      "Qty": 1,
+      "isMedicationCompund": {
+        "propertyLabel": "Is Medication Compund",
+        "id": "N",
+        "identifier": "No",
+        "model-name": "ad_ref_list"
+      },
+      "QtyOnHand": 165,
+      "IsActive": true
+    }
+  ],
+  "icd-codes": [],
+  "dental": [],
+  "laktasi": [],
+  "andrologi": []
+}
