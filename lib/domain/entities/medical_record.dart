@@ -443,3 +443,47 @@ class PrescriptionRecord {
 
   Map<String, dynamic> toJson() => _$PrescriptionRecordToJson(this);
 }
+
+extension MedicalRecordCopyWith on MedicalRecord {
+  MedicalRecord copyWith({
+    int? id,
+    String? uid,
+    String? documentNo,
+    String? dateTrx,
+    GeneralInfo? docStatus,
+    int? gestationalAgeWeek,
+    int? gestationalAgeDay,
+    GeneralInfo? adClientId,
+    GeneralInfo? adOrgId,
+    GeneralInfo? cSalesRegionId,
+    GeneralInfo? orderTypeId,
+    GeneralInfo? mSpecialistId,
+    GeneralInfo? cBPartnerId,
+    GeneralInfo? cEncounterId,
+    bool? processed,
+    List<ObstetricRecord>? obstetric,
+    List<GynecologyRecord>? gynecology,
+    List<PrescriptionRecord>? prescriptions,
+  }) {
+    return MedicalRecord(
+      id: id ?? this.id,
+      uid: uid ?? this.uid,
+      documentNo: documentNo ?? this.documentNo,
+      dateTrx: dateTrx ?? this.dateTrx,
+      docStatus: docStatus ?? this.docStatus,
+      gestationalAgeWeek: gestationalAgeWeek ?? this.gestationalAgeWeek,
+      gestationalAgeDay: gestationalAgeDay ?? this.gestationalAgeDay,
+      adClientId: adClientId ?? this.adClientId,
+      adOrgId: adOrgId ?? this.adOrgId,
+      cSalesRegionId: cSalesRegionId ?? this.cSalesRegionId,
+      orderTypeId: orderTypeId ?? this.orderTypeId,
+      mSpecialistId: mSpecialistId ?? this.mSpecialistId,
+      cBPartnerId: cBPartnerId ?? this.cBPartnerId,
+      cEncounterId: cEncounterId ?? this.cEncounterId,
+      processed: processed ?? this.processed,
+      obstetric: obstetric ?? this.obstetric,
+      gynecology: gynecology ?? this.gynecology,
+      prescriptions: prescriptions ?? this.prescriptions,
+    );
+  }
+}

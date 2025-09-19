@@ -1,320 +1,182 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:medibuk/presentation/widgets/actions_button_widget.dart';
 import '../../domain/entities/medical_record.dart';
 import '../providers/medical_record_providers.dart';
 import '../widgets/form_section_widget.dart';
+import '../widgets/medical_record_header.dart';
 
-class MedicalRecordPage extends ConsumerStatefulWidget {
+// 🎯 OPTIMIZATION 6: Convert to StatelessWidget with focused providers
+class OptimizedMedicalRecordPage extends ConsumerWidget {
   final String medicalRecordId;
 
-  const MedicalRecordPage({super.key, required this.medicalRecordId});
+  const OptimizedMedicalRecordPage({super.key, required this.medicalRecordId});
 
   @override
-  ConsumerState<MedicalRecordPage> createState() => _MedicalRecordPageState();
-}
-
-class _MedicalRecordPageState extends ConsumerState<MedicalRecordPage> {
-  late MedicalRecord? _currentRecord;
-  bool _isModified = false;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    // 🎯 OPTIMIZATION 7: Use select to watch only what we need
     final medicalRecordAsync = ref.watch(
-      medicalRecordNotifierProvider(widget.medicalRecordId),
+      optimizedMedicalRecordNotifierProvider(medicalRecordId),
     );
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: AppBar(
-        title: Text('Medical Record - ${widget.medicalRecordId}'),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        actions: [
-          medicalRecordAsync.when(
-            data: (record) =>
-                record != null ? _buildActionButtons(record) : const SizedBox(),
-            loading: () => const SizedBox(),
-            error: (_, __) => const SizedBox(),
-          ),
-        ],
-      ),
+      appBar: _buildAppBar(context, ref, medicalRecordAsync),
       body: medicalRecordAsync.when(
-        data: (record) =>
-            record != null ? _buildContent(record) : _buildEmptyState(),
+        data: (record) => record != null
+            ? _OptimizedContent(
+                record: record,
+                medicalRecordId: medicalRecordId,
+              )
+            : const _EmptyState(),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => _buildErrorState(error.toString()),
+        error: (error, _) => _ErrorState(
+          error: error.toString(),
+          onRetry: () => ref.refresh(
+            optimizedMedicalRecordNotifierProvider(medicalRecordId),
+          ),
+        ),
       ),
     );
   }
 
-  Widget _buildActionButtons(MedicalRecord record) {
-    final isCompleted = record.docStatus.id == 'CO';
-    final canEdit = !isCompleted;
+  PreferredSizeWidget _buildAppBar(
+    BuildContext context,
+    WidgetRef ref,
+    AsyncValue<MedicalRecord?> recordAsync,
+  ) {
+    return AppBar(
+      title: Text('Medical Record - $medicalRecordId'),
+      backgroundColor: Colors.white,
+      foregroundColor: Colors.black,
+      elevation: 0,
+      actions: [
+        // 🎯 OPTIMIZATION 8: Separate action buttons widget
+        recordAsync.whenOrNull(
+              data: (record) => record != null
+                  ? ActionButtonsWidget(
+                      record: record,
+                      medicalRecordId: medicalRecordId,
+                    )
+                  : null,
+            ) ??
+            const SizedBox.shrink(),
+      ],
+    );
+  }
+}
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          decoration: BoxDecoration(
-            color: isCompleted ? Colors.green[50] : Colors.orange[50],
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isCompleted ? Colors.green[200]! : Colors.orange[200]!,
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                isCompleted ? Icons.check_circle : Icons.edit,
-                size: 16,
-                color: isCompleted ? Colors.green[600] : Colors.orange[600],
+// 🎯 OPTIMIZATION 9: Separate content widget to prevent full page rebuilds
+class _OptimizedContent extends ConsumerWidget {
+  final MedicalRecord record;
+  final String medicalRecordId;
+
+  const _OptimizedContent({
+    required this.record,
+    required this.medicalRecordId,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isEditable = record.docStatus.id != 'CO';
+
+    return CustomScrollView(
+      // 🎯 OPTIMIZATION 10: Use CustomScrollView for better performance
+      slivers: [
+        SliverPadding(
+          padding: const EdgeInsets.all(16),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate([
+              // 🎯 OPTIMIZATION 11: Separate header widget
+              MedicalRecordHeader(record: record),
+              const SizedBox(height: 24),
+
+              // 🎯 OPTIMIZATION 12: Use processed data provider
+              Consumer(
+                builder: (context, ref, _) {
+                  final mainData = ref.watch(processedMainDataProvider(record));
+                  return OptimizedFormSectionWidget(
+                    key: const ValueKey('main_information'),
+                    title: 'Information',
+                    data: mainData,
+                    isEditable: isEditable,
+                    sectionType: 'main',
+                    sectionIndex: 0,
+                    medicalRecordId: medicalRecordId,
+                  );
+                },
               ),
-              const SizedBox(width: 4),
-              Text(
-                record.docStatus.identifier,
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: isCompleted ? Colors.green[700] : Colors.orange[700],
-                ),
-              ),
-            ],
+            ]),
           ),
         ),
-        const SizedBox(width: 8),
-        if (canEdit && _isModified) ...[
-          TextButton.icon(
-            onPressed: _saveChanges,
-            icon: const Icon(Icons.save, size: 18),
-            label: const Text('Save'),
-            style: TextButton.styleFrom(
-              backgroundColor: Colors.blue[50],
-              foregroundColor: Colors.blue[700],
-            ),
+
+        // 🎯 OPTIMIZATION 13: Virtualized list for sections
+        if (record.obstetric?.isNotEmpty ?? false)
+          _buildVirtualizedSections('obstetric', record.obstetric!, isEditable),
+
+        if (record.gynecology?.isNotEmpty ?? false)
+          _buildVirtualizedSections(
+            'gynecology',
+            record.gynecology!,
+            isEditable,
           ),
-          const SizedBox(width: 8),
-        ],
-        if (canEdit)
-          ElevatedButton.icon(
-            onPressed: _markAsComplete,
-            icon: const Icon(Icons.check, size: 18),
-            label: const Text('Complete'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green[600],
-              foregroundColor: Colors.white,
-            ),
+
+        if (record.prescriptions?.isNotEmpty ?? false)
+          _buildVirtualizedSections(
+            'prescriptions',
+            record.prescriptions!,
+            isEditable,
           ),
+
+        const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
       ],
     );
   }
 
-  Widget _buildContent(MedicalRecord record) {
-    _currentRecord = record;
-    final isEditable = record.docStatus.id != 'CO';
+  Widget _buildVirtualizedSections<T>(
+    String sectionType,
+    List<T> items,
+    bool isEditable,
+  ) {
+    return SliverList(
+      delegate: SliverChildBuilderDelegate((context, index) {
+        final item = items[index];
+        Map<String, dynamic> data;
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildHeader(record),
-          const SizedBox(height: 24),
-          _buildMainInformation(record, isEditable),
-          const SizedBox(height: 16),
-          if (record.obstetric?.isNotEmpty ?? false) ...[
-            ...record.obstetric!.asMap().entries.map((entry) {
-              final index = entry.key;
-              final obstetricData = entry.value;
-              return FormSectionWidget(
-                title: 'Obstetric ${index + 1}',
-                data: obstetricData.toJson(),
-                isEditable: isEditable,
-                onDataChanged: (data) =>
-                    _onSectionDataChanged('obstetric', index, data),
-              );
-            }),
-          ],
-          if (record.gynecology?.isNotEmpty ?? false) ...[
-            ...record.gynecology!.asMap().entries.map((entry) {
-              final index = entry.key;
-              final gynecologyData = entry.value;
-              return FormSectionWidget(
-                title: 'Gynecology ${index + 1}',
-                data: gynecologyData.toJson(),
-                isEditable: isEditable,
-                onDataChanged: (data) =>
-                    _onSectionDataChanged('gynecology', index, data),
-              );
-            }),
-          ],
-          if (record.prescriptions?.isNotEmpty ?? false) ...[
-            ...record.prescriptions!.asMap().entries.map((entry) {
-              final index = entry.key;
-              final prescriptionData = entry.value;
-              return FormSectionWidget(
-                title: 'Prescription ${index + 1}',
-                data: prescriptionData.toJson(),
-                isEditable: isEditable,
-                onDataChanged: (data) =>
-                    _onSectionDataChanged('prescriptions', index, data),
-              );
-            }),
-          ],
-          const SizedBox(height: 80),
-        ],
-      ),
+        // 🎯 OPTIMIZATION 14: Minimize toJson calls
+        if (item is ObstetricRecord) {
+          data = item.toJson();
+        } else if (item is GynecologyRecord) {
+          data = item.toJson();
+        } else if (item is PrescriptionRecord) {
+          data = item.toJson();
+        } else {
+          data = {};
+        }
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          child: OptimizedFormSectionWidget(
+            key: ValueKey('${sectionType}_$index'),
+            title: '${sectionType.capitalize()} ${index + 1}',
+            data: data,
+            isEditable: isEditable,
+            sectionType: sectionType,
+            sectionIndex: index,
+            medicalRecordId: medicalRecordId,
+          ),
+        );
+      }, childCount: items.length),
     );
   }
+}
 
-  Widget _buildHeader(MedicalRecord record) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [Colors.blue[600]!, Colors.blue[400]!],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.medical_information,
-                  color: Colors.white,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Document No: ${record.documentNo}',
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Patient: ${record.cBPartnerId?.identifier ?? 'N/A'}',
-                      style: const TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              _buildInfoChip(
-                icon: Icons.calendar_today,
-                label: 'Date',
-                value: record.dateTrx,
-              ),
-              const SizedBox(width: 12),
-              if (record.gestationalAgeWeek != null)
-                _buildInfoChip(
-                  icon: Icons.schedule,
-                  label: 'Gestational Age',
-                  value:
-                      '${record.gestationalAgeWeek}w ${record.gestationalAgeDay ?? 0}d',
-                ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
+// 🎯 OPTIMIZATION 15: Const widgets for static content
+class _EmptyState extends StatelessWidget {
+  const _EmptyState();
 
-  Widget _buildInfoChip({
-    required IconData icon,
-    required String label,
-    required String value,
-  }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: Colors.white, size: 16),
-          const SizedBox(width: 6),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(color: Colors.white70, fontSize: 10),
-              ),
-              Text(
-                value,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildMainInformation(MedicalRecord record, bool isEditable) {
-    final mainData = <String, dynamic>{
-      'DocumentNo': record.documentNo,
-      'DateTrx': record.dateTrx,
-      'GestationalAgeWeek': record.gestationalAgeWeek,
-      'GestationalAgeDay': record.gestationalAgeDay,
-      'AD_Client_ID': record.adClientId,
-      'AD_Org_ID': record.adOrgId,
-      'C_SalesRegion_ID': record.cSalesRegionId,
-      'OrderType_ID': record.orderTypeId,
-      'M_Specialist_ID': record.mSpecialistId,
-      'C_BPartner_ID': record.cBPartnerId,
-    };
-
-    return FormSectionWidget(
-      title: 'Information',
-      data: mainData,
-      isEditable: isEditable,
-      onDataChanged: (data) => _onMainDataChanged(data),
-      initiallyExpanded: true,
-    );
-  }
-
-  Widget _buildEmptyState() {
+  @override
+  Widget build(BuildContext context) {
     return const Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -333,8 +195,16 @@ class _MedicalRecordPageState extends ConsumerState<MedicalRecordPage> {
       ),
     );
   }
+}
 
-  Widget _buildErrorState(String error) {
+class _ErrorState extends StatelessWidget {
+  final String error;
+  final VoidCallback onRetry;
+
+  const _ErrorState({required this.error, required this.onRetry});
+
+  @override
+  Widget build(BuildContext context) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -357,9 +227,7 @@ class _MedicalRecordPageState extends ConsumerState<MedicalRecordPage> {
           ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
-            onPressed: () => ref.refresh(
-              medicalRecordNotifierProvider(widget.medicalRecordId),
-            ),
+            onPressed: onRetry,
             icon: const Icon(Icons.refresh),
             label: const Text('Retry'),
           ),
@@ -367,133 +235,11 @@ class _MedicalRecordPageState extends ConsumerState<MedicalRecordPage> {
       ),
     );
   }
+}
 
-  void _onMainDataChanged(Map<String, dynamic> data) {
-    setState(() => _isModified = true);
-    // Update main record data logic here
-    // You can implement the actual update logic based on your needs
-    print('Main data changed: $data');
-  }
-
-  void _onSectionDataChanged(
-    String sectionType,
-    int index,
-    Map<String, dynamic> data,
-  ) {
-    setState(() => _isModified = true);
-    // Update section data logic here
-    // You can implement the actual update logic based on your needs
-    print('Section $sectionType[$index] changed: $data');
-  }
-
-  void _saveChanges() async {
-    if (_currentRecord == null) return;
-
-    try {
-      await ref
-          .read(medicalRecordNotifierProvider(widget.medicalRecordId).notifier)
-          .updateRecord(_currentRecord!);
-
-      setState(() => _isModified = false);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Changes saved successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to save changes: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    }
-  }
-
-  void _markAsComplete() async {
-    if (_currentRecord == null) return;
-
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Mark as Complete'),
-        content: const Text(
-          'Are you sure you want to mark this record as complete? This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
-            child: const Text('Complete'),
-          ),
-        ],
-      ),
-    );
-
-    if (confirmed == true) {
-      // Create updated record with completed status
-      final updatedRecord = MedicalRecord(
-        id: _currentRecord!.id,
-        uid: _currentRecord!.uid,
-        documentNo: _currentRecord!.documentNo,
-        dateTrx: _currentRecord!.dateTrx,
-        docStatus: const GeneralInfo(
-          propertyLabel: 'Document Status',
-          id: 'CO',
-          identifier: 'Completed',
-          modelName: 'ad_ref_list',
-        ),
-        gestationalAgeWeek: _currentRecord!.gestationalAgeWeek,
-        gestationalAgeDay: _currentRecord!.gestationalAgeDay,
-        adClientId: _currentRecord!.adClientId,
-        adOrgId: _currentRecord!.adOrgId,
-        cSalesRegionId: _currentRecord!.cSalesRegionId,
-        orderTypeId: _currentRecord!.orderTypeId,
-        mSpecialistId: _currentRecord!.mSpecialistId,
-        cBPartnerId: _currentRecord!.cBPartnerId,
-        processed: true,
-        obstetric: _currentRecord!.obstetric,
-        gynecology: _currentRecord!.gynecology,
-        prescriptions: _currentRecord!.prescriptions,
-      );
-
-      try {
-        await ref
-            .read(
-              medicalRecordNotifierProvider(widget.medicalRecordId).notifier,
-            )
-            .updateRecord(updatedRecord);
-
-        setState(() => _isModified = false);
-
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Medical record marked as complete'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to complete record: $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
-    }
+extension StringCapitalization on String {
+  String capitalize() {
+    if (isEmpty) return this;
+    return '${this[0].toUpperCase()}${substring(1)}';
   }
 }

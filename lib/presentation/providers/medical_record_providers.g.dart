@@ -7,12 +7,12 @@ part of 'medical_record_providers.dart';
 // **************************************************************************
 
 String _$medicalRecordRepositoryHash() =>
-    r'e6977a65f3d2fdc151f80cd4374c3b3afeb5d13b';
+    r'76fa24cb95badb8cff6cf6b73faf9b2e53e3bb9b';
 
 /// See also [medicalRecordRepository].
 @ProviderFor(medicalRecordRepository)
 final medicalRecordRepositoryProvider =
-    AutoDisposeProvider<MedicalRecordRepository>.internal(
+    Provider<MedicalRecordRepository>.internal(
       medicalRecordRepository,
       name: r'medicalRecordRepositoryProvider',
       debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
@@ -24,10 +24,8 @@ final medicalRecordRepositoryProvider =
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-typedef MedicalRecordRepositoryRef =
-    AutoDisposeProviderRef<MedicalRecordRepository>;
-String _$medicalRecordNotifierHash() =>
-    r'8de03cdd5863386277aee40730fad8ec5cb41e20';
+typedef MedicalRecordRepositoryRef = ProviderRef<MedicalRecordRepository>;
+String _$processedMainDataHash() => r'48b22a85b798b71718c2ed9d6ef27240ea439b08';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -50,30 +48,154 @@ class _SystemHash {
   }
 }
 
-abstract class _$MedicalRecordNotifier
+/// See also [processedMainData].
+@ProviderFor(processedMainData)
+const processedMainDataProvider = ProcessedMainDataFamily();
+
+/// See also [processedMainData].
+class ProcessedMainDataFamily extends Family<Map<String, dynamic>> {
+  /// See also [processedMainData].
+  const ProcessedMainDataFamily();
+
+  /// See also [processedMainData].
+  ProcessedMainDataProvider call(MedicalRecord record) {
+    return ProcessedMainDataProvider(record);
+  }
+
+  @override
+  ProcessedMainDataProvider getProviderOverride(
+    covariant ProcessedMainDataProvider provider,
+  ) {
+    return call(provider.record);
+  }
+
+  static const Iterable<ProviderOrFamily>? _dependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
+
+  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
+
+  @override
+  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
+      _allTransitiveDependencies;
+
+  @override
+  String? get name => r'processedMainDataProvider';
+}
+
+/// See also [processedMainData].
+class ProcessedMainDataProvider
+    extends AutoDisposeProvider<Map<String, dynamic>> {
+  /// See also [processedMainData].
+  ProcessedMainDataProvider(MedicalRecord record)
+    : this._internal(
+        (ref) => processedMainData(ref as ProcessedMainDataRef, record),
+        from: processedMainDataProvider,
+        name: r'processedMainDataProvider',
+        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+            ? null
+            : _$processedMainDataHash,
+        dependencies: ProcessedMainDataFamily._dependencies,
+        allTransitiveDependencies:
+            ProcessedMainDataFamily._allTransitiveDependencies,
+        record: record,
+      );
+
+  ProcessedMainDataProvider._internal(
+    super._createNotifier, {
+    required super.name,
+    required super.dependencies,
+    required super.allTransitiveDependencies,
+    required super.debugGetCreateSourceHash,
+    required super.from,
+    required this.record,
+  }) : super.internal();
+
+  final MedicalRecord record;
+
+  @override
+  Override overrideWith(
+    Map<String, dynamic> Function(ProcessedMainDataRef provider) create,
+  ) {
+    return ProviderOverride(
+      origin: this,
+      override: ProcessedMainDataProvider._internal(
+        (ref) => create(ref as ProcessedMainDataRef),
+        from: from,
+        name: null,
+        dependencies: null,
+        allTransitiveDependencies: null,
+        debugGetCreateSourceHash: null,
+        record: record,
+      ),
+    );
+  }
+
+  @override
+  AutoDisposeProviderElement<Map<String, dynamic>> createElement() {
+    return _ProcessedMainDataProviderElement(this);
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return other is ProcessedMainDataProvider && other.record == record;
+  }
+
+  @override
+  int get hashCode {
+    var hash = _SystemHash.combine(0, runtimeType.hashCode);
+    hash = _SystemHash.combine(hash, record.hashCode);
+
+    return _SystemHash.finish(hash);
+  }
+}
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+mixin ProcessedMainDataRef on AutoDisposeProviderRef<Map<String, dynamic>> {
+  /// The parameter `record` of this provider.
+  MedicalRecord get record;
+}
+
+class _ProcessedMainDataProviderElement
+    extends AutoDisposeProviderElement<Map<String, dynamic>>
+    with ProcessedMainDataRef {
+  _ProcessedMainDataProviderElement(super.provider);
+
+  @override
+  MedicalRecord get record => (origin as ProcessedMainDataProvider).record;
+}
+
+String _$optimizedMedicalRecordNotifierHash() =>
+    r'ad544577e4b506d41ec1d15243b62817e6bad1f5';
+
+abstract class _$OptimizedMedicalRecordNotifier
     extends BuildlessAutoDisposeAsyncNotifier<MedicalRecord?> {
   late final String medicalRecordId;
 
   FutureOr<MedicalRecord?> build(String medicalRecordId);
 }
 
-/// See also [MedicalRecordNotifier].
-@ProviderFor(MedicalRecordNotifier)
-const medicalRecordNotifierProvider = MedicalRecordNotifierFamily();
+/// See also [OptimizedMedicalRecordNotifier].
+@ProviderFor(OptimizedMedicalRecordNotifier)
+const optimizedMedicalRecordNotifierProvider =
+    OptimizedMedicalRecordNotifierFamily();
 
-/// See also [MedicalRecordNotifier].
-class MedicalRecordNotifierFamily extends Family<AsyncValue<MedicalRecord?>> {
-  /// See also [MedicalRecordNotifier].
-  const MedicalRecordNotifierFamily();
+/// See also [OptimizedMedicalRecordNotifier].
+class OptimizedMedicalRecordNotifierFamily
+    extends Family<AsyncValue<MedicalRecord?>> {
+  /// See also [OptimizedMedicalRecordNotifier].
+  const OptimizedMedicalRecordNotifierFamily();
 
-  /// See also [MedicalRecordNotifier].
-  MedicalRecordNotifierProvider call(String medicalRecordId) {
-    return MedicalRecordNotifierProvider(medicalRecordId);
+  /// See also [OptimizedMedicalRecordNotifier].
+  OptimizedMedicalRecordNotifierProvider call(String medicalRecordId) {
+    return OptimizedMedicalRecordNotifierProvider(medicalRecordId);
   }
 
   @override
-  MedicalRecordNotifierProvider getProviderOverride(
-    covariant MedicalRecordNotifierProvider provider,
+  OptimizedMedicalRecordNotifierProvider getProviderOverride(
+    covariant OptimizedMedicalRecordNotifierProvider provider,
   ) {
     return call(provider.medicalRecordId);
   }
@@ -90,32 +212,33 @@ class MedicalRecordNotifierFamily extends Family<AsyncValue<MedicalRecord?>> {
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'medicalRecordNotifierProvider';
+  String? get name => r'optimizedMedicalRecordNotifierProvider';
 }
 
-/// See also [MedicalRecordNotifier].
-class MedicalRecordNotifierProvider
+/// See also [OptimizedMedicalRecordNotifier].
+class OptimizedMedicalRecordNotifierProvider
     extends
         AutoDisposeAsyncNotifierProviderImpl<
-          MedicalRecordNotifier,
+          OptimizedMedicalRecordNotifier,
           MedicalRecord?
         > {
-  /// See also [MedicalRecordNotifier].
-  MedicalRecordNotifierProvider(String medicalRecordId)
+  /// See also [OptimizedMedicalRecordNotifier].
+  OptimizedMedicalRecordNotifierProvider(String medicalRecordId)
     : this._internal(
-        () => MedicalRecordNotifier()..medicalRecordId = medicalRecordId,
-        from: medicalRecordNotifierProvider,
-        name: r'medicalRecordNotifierProvider',
+        () =>
+            OptimizedMedicalRecordNotifier()..medicalRecordId = medicalRecordId,
+        from: optimizedMedicalRecordNotifierProvider,
+        name: r'optimizedMedicalRecordNotifierProvider',
         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
             ? null
-            : _$medicalRecordNotifierHash,
-        dependencies: MedicalRecordNotifierFamily._dependencies,
+            : _$optimizedMedicalRecordNotifierHash,
+        dependencies: OptimizedMedicalRecordNotifierFamily._dependencies,
         allTransitiveDependencies:
-            MedicalRecordNotifierFamily._allTransitiveDependencies,
+            OptimizedMedicalRecordNotifierFamily._allTransitiveDependencies,
         medicalRecordId: medicalRecordId,
       );
 
-  MedicalRecordNotifierProvider._internal(
+  OptimizedMedicalRecordNotifierProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -129,16 +252,16 @@ class MedicalRecordNotifierProvider
 
   @override
   FutureOr<MedicalRecord?> runNotifierBuild(
-    covariant MedicalRecordNotifier notifier,
+    covariant OptimizedMedicalRecordNotifier notifier,
   ) {
     return notifier.build(medicalRecordId);
   }
 
   @override
-  Override overrideWith(MedicalRecordNotifier Function() create) {
+  Override overrideWith(OptimizedMedicalRecordNotifier Function() create) {
     return ProviderOverride(
       origin: this,
-      override: MedicalRecordNotifierProvider._internal(
+      override: OptimizedMedicalRecordNotifierProvider._internal(
         () => create()..medicalRecordId = medicalRecordId,
         from: from,
         name: null,
@@ -151,14 +274,17 @@ class MedicalRecordNotifierProvider
   }
 
   @override
-  AutoDisposeAsyncNotifierProviderElement<MedicalRecordNotifier, MedicalRecord?>
+  AutoDisposeAsyncNotifierProviderElement<
+    OptimizedMedicalRecordNotifier,
+    MedicalRecord?
+  >
   createElement() {
-    return _MedicalRecordNotifierProviderElement(this);
+    return _OptimizedMedicalRecordNotifierProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is MedicalRecordNotifierProvider &&
+    return other is OptimizedMedicalRecordNotifierProvider &&
         other.medicalRecordId == medicalRecordId;
   }
 
@@ -173,54 +299,54 @@ class MedicalRecordNotifierProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin MedicalRecordNotifierRef
+mixin OptimizedMedicalRecordNotifierRef
     on AutoDisposeAsyncNotifierProviderRef<MedicalRecord?> {
   /// The parameter `medicalRecordId` of this provider.
   String get medicalRecordId;
 }
 
-class _MedicalRecordNotifierProviderElement
+class _OptimizedMedicalRecordNotifierProviderElement
     extends
         AutoDisposeAsyncNotifierProviderElement<
-          MedicalRecordNotifier,
+          OptimizedMedicalRecordNotifier,
           MedicalRecord?
         >
-    with MedicalRecordNotifierRef {
-  _MedicalRecordNotifierProviderElement(super.provider);
+    with OptimizedMedicalRecordNotifierRef {
+  _OptimizedMedicalRecordNotifierProviderElement(super.provider);
 
   @override
   String get medicalRecordId =>
-      (origin as MedicalRecordNotifierProvider).medicalRecordId;
+      (origin as OptimizedMedicalRecordNotifierProvider).medicalRecordId;
 }
 
-String _$generalInfoOptionsNotifierHash() =>
-    r'1b997fc24784fdf02fecc8350667b5e09c697d10';
+String _$cachedGeneralInfoOptionsHash() =>
+    r'209b8847f48d3e4397a9d9869244edf30b3d3770';
 
-abstract class _$GeneralInfoOptionsNotifier
-    extends BuildlessAutoDisposeAsyncNotifier<List<GeneralInfo>> {
+abstract class _$CachedGeneralInfoOptions
+    extends BuildlessAsyncNotifier<List<GeneralInfo>> {
   late final String modelName;
 
   FutureOr<List<GeneralInfo>> build(String modelName);
 }
 
-/// See also [GeneralInfoOptionsNotifier].
-@ProviderFor(GeneralInfoOptionsNotifier)
-const generalInfoOptionsNotifierProvider = GeneralInfoOptionsNotifierFamily();
+/// See also [CachedGeneralInfoOptions].
+@ProviderFor(CachedGeneralInfoOptions)
+const cachedGeneralInfoOptionsProvider = CachedGeneralInfoOptionsFamily();
 
-/// See also [GeneralInfoOptionsNotifier].
-class GeneralInfoOptionsNotifierFamily
+/// See also [CachedGeneralInfoOptions].
+class CachedGeneralInfoOptionsFamily
     extends Family<AsyncValue<List<GeneralInfo>>> {
-  /// See also [GeneralInfoOptionsNotifier].
-  const GeneralInfoOptionsNotifierFamily();
+  /// See also [CachedGeneralInfoOptions].
+  const CachedGeneralInfoOptionsFamily();
 
-  /// See also [GeneralInfoOptionsNotifier].
-  GeneralInfoOptionsNotifierProvider call(String modelName) {
-    return GeneralInfoOptionsNotifierProvider(modelName);
+  /// See also [CachedGeneralInfoOptions].
+  CachedGeneralInfoOptionsProvider call(String modelName) {
+    return CachedGeneralInfoOptionsProvider(modelName);
   }
 
   @override
-  GeneralInfoOptionsNotifierProvider getProviderOverride(
-    covariant GeneralInfoOptionsNotifierProvider provider,
+  CachedGeneralInfoOptionsProvider getProviderOverride(
+    covariant CachedGeneralInfoOptionsProvider provider,
   ) {
     return call(provider.modelName);
   }
@@ -237,32 +363,29 @@ class GeneralInfoOptionsNotifierFamily
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'generalInfoOptionsNotifierProvider';
+  String? get name => r'cachedGeneralInfoOptionsProvider';
 }
 
-/// See also [GeneralInfoOptionsNotifier].
-class GeneralInfoOptionsNotifierProvider
+/// See also [CachedGeneralInfoOptions].
+class CachedGeneralInfoOptionsProvider
     extends
-        AutoDisposeAsyncNotifierProviderImpl<
-          GeneralInfoOptionsNotifier,
-          List<GeneralInfo>
-        > {
-  /// See also [GeneralInfoOptionsNotifier].
-  GeneralInfoOptionsNotifierProvider(String modelName)
+        AsyncNotifierProviderImpl<CachedGeneralInfoOptions, List<GeneralInfo>> {
+  /// See also [CachedGeneralInfoOptions].
+  CachedGeneralInfoOptionsProvider(String modelName)
     : this._internal(
-        () => GeneralInfoOptionsNotifier()..modelName = modelName,
-        from: generalInfoOptionsNotifierProvider,
-        name: r'generalInfoOptionsNotifierProvider',
+        () => CachedGeneralInfoOptions()..modelName = modelName,
+        from: cachedGeneralInfoOptionsProvider,
+        name: r'cachedGeneralInfoOptionsProvider',
         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
             ? null
-            : _$generalInfoOptionsNotifierHash,
-        dependencies: GeneralInfoOptionsNotifierFamily._dependencies,
+            : _$cachedGeneralInfoOptionsHash,
+        dependencies: CachedGeneralInfoOptionsFamily._dependencies,
         allTransitiveDependencies:
-            GeneralInfoOptionsNotifierFamily._allTransitiveDependencies,
+            CachedGeneralInfoOptionsFamily._allTransitiveDependencies,
         modelName: modelName,
       );
 
-  GeneralInfoOptionsNotifierProvider._internal(
+  CachedGeneralInfoOptionsProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -276,16 +399,16 @@ class GeneralInfoOptionsNotifierProvider
 
   @override
   FutureOr<List<GeneralInfo>> runNotifierBuild(
-    covariant GeneralInfoOptionsNotifier notifier,
+    covariant CachedGeneralInfoOptions notifier,
   ) {
     return notifier.build(modelName);
   }
 
   @override
-  Override overrideWith(GeneralInfoOptionsNotifier Function() create) {
+  Override overrideWith(CachedGeneralInfoOptions Function() create) {
     return ProviderOverride(
       origin: this,
-      override: GeneralInfoOptionsNotifierProvider._internal(
+      override: CachedGeneralInfoOptionsProvider._internal(
         () => create()..modelName = modelName,
         from: from,
         name: null,
@@ -298,17 +421,14 @@ class GeneralInfoOptionsNotifierProvider
   }
 
   @override
-  AutoDisposeAsyncNotifierProviderElement<
-    GeneralInfoOptionsNotifier,
-    List<GeneralInfo>
-  >
+  AsyncNotifierProviderElement<CachedGeneralInfoOptions, List<GeneralInfo>>
   createElement() {
-    return _GeneralInfoOptionsNotifierProviderElement(this);
+    return _CachedGeneralInfoOptionsProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is GeneralInfoOptionsNotifierProvider &&
+    return other is CachedGeneralInfoOptionsProvider &&
         other.modelName == modelName;
   }
 
@@ -323,25 +443,42 @@ class GeneralInfoOptionsNotifierProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin GeneralInfoOptionsNotifierRef
-    on AutoDisposeAsyncNotifierProviderRef<List<GeneralInfo>> {
+mixin CachedGeneralInfoOptionsRef
+    on AsyncNotifierProviderRef<List<GeneralInfo>> {
   /// The parameter `modelName` of this provider.
   String get modelName;
 }
 
-class _GeneralInfoOptionsNotifierProviderElement
+class _CachedGeneralInfoOptionsProviderElement
     extends
-        AutoDisposeAsyncNotifierProviderElement<
-          GeneralInfoOptionsNotifier,
+        AsyncNotifierProviderElement<
+          CachedGeneralInfoOptions,
           List<GeneralInfo>
         >
-    with GeneralInfoOptionsNotifierRef {
-  _GeneralInfoOptionsNotifierProviderElement(super.provider);
+    with CachedGeneralInfoOptionsRef {
+  _CachedGeneralInfoOptionsProviderElement(super.provider);
 
   @override
   String get modelName =>
-      (origin as GeneralInfoOptionsNotifierProvider).modelName;
+      (origin as CachedGeneralInfoOptionsProvider).modelName;
 }
 
+String _$formModificationNotifierHash() =>
+    r'1005e8db5eb992ce9690c2063d02c32fa2b46539';
+
+/// See also [FormModificationNotifier].
+@ProviderFor(FormModificationNotifier)
+final formModificationNotifierProvider =
+    AutoDisposeNotifierProvider<FormModificationNotifier, bool>.internal(
+      FormModificationNotifier.new,
+      name: r'formModificationNotifierProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$formModificationNotifierHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$FormModificationNotifier = AutoDisposeNotifier<bool>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Medical Record System',
       theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-      home: const MedicalRecordPage(medicalRecordId: '1268301'),
+      home: const OptimizedMedicalRecordPage(medicalRecordId: '1268301'),
     );
   }
 }

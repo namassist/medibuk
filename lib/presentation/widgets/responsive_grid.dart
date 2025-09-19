@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:medibuk/presentation/widgets/dynamic_field_widget.dart';
+import '../../domain/entities/format_definition.dart';
 
-class ResponsiveGrid extends StatelessWidget {
+// 🎯 OPTIMIZATION 26: Optimized grid with better layout calculations
+class OptimizedResponsiveGrid extends StatelessWidget {
   final List<Widget> children;
   final double maxWidth;
   final int maxWideCount;
 
-  const ResponsiveGrid({
+  const OptimizedResponsiveGrid({
     super.key,
     required this.children,
     required this.maxWidth,
@@ -14,50 +17,65 @@ class ResponsiveGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (children.isEmpty) return const SizedBox.shrink();
+
     final isMobile = maxWidth < 600;
     final effectiveMaxWideCount = isMobile ? 1 : maxWideCount;
 
-    return Wrap(children: _buildResponsiveChildren(effectiveMaxWideCount));
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return _buildOptimizedLayout(constraints, effectiveMaxWideCount);
+      },
+    );
   }
 
-  List<Widget> _buildResponsiveChildren(int effectiveMaxWideCount) {
-    final responsiveChildren = <Widget>[];
+  Widget _buildOptimizedLayout(BoxConstraints constraints, int maxCount) {
+    final rows = <Widget>[];
+    final currentRow = <Widget>[];
+    int currentRowWidth = 0;
 
     for (final child in children) {
-      if (child is ResponsiveGridItem) {
-        final effectiveWideCount = effectiveMaxWideCount == 1
-            ? 1
-            : child.wideCount;
-        final width = (maxWidth / effectiveMaxWideCount) * effectiveWideCount;
-
-        responsiveChildren.add(SizedBox(width: width, child: child.child));
-
-        if (child.newLine && effectiveMaxWideCount > 1) {
-          responsiveChildren.add(const SizedBox(width: double.infinity));
-        }
-      } else {
-        responsiveChildren.add(child);
+      if (child is! OptimizedDynamicFieldWidget) {
+        currentRow.add(child);
+        continue;
       }
+
+      final config =
+          FieldConfiguration.configurations[child.fieldName] ??
+          const FormatDefinition();
+
+      final wideCount = maxCount == 1 ? 1 : config.wideCount;
+
+      // Check if we need a new row
+      if (config.newLine || currentRowWidth + wideCount > maxCount) {
+        if (currentRow.isNotEmpty) {
+          rows.add(_buildRow(currentRow, constraints.maxWidth, maxCount));
+          currentRow.clear();
+          currentRowWidth = 0;
+        }
+      }
+
+      currentRow.add(
+        SizedBox(
+          width: (constraints.maxWidth / maxCount) * wideCount,
+          child: child,
+        ),
+      );
+      currentRowWidth += wideCount;
     }
 
-    return responsiveChildren;
+    // Add remaining row
+    if (currentRow.isNotEmpty) {
+      rows.add(_buildRow(currentRow, constraints.maxWidth, maxCount));
+    }
+
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: rows);
   }
-}
 
-class ResponsiveGridItem extends StatelessWidget {
-  final Widget child;
-  final int wideCount;
-  final bool newLine;
-
-  const ResponsiveGridItem({
-    super.key,
-    required this.child,
-    required this.wideCount,
-    this.newLine = false,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return child;
+  Widget _buildRow(List<Widget> rowChildren, double maxWidth, int maxCount) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: rowChildren,
+    );
   }
 }
