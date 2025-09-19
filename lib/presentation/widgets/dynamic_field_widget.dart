@@ -2,11 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:intl/intl.dart';
-import 'package:medibuk/presentation/providers/medical_record_providers.dart';
+import '../providers/medical_record_providers.dart';
 import '../../domain/entities/medical_record.dart';
 import '../../domain/entities/format_definition.dart';
 
-// 🎯 OPTIMIZATION 20: Pure widget with minimal state
 class OptimizedDynamicFieldWidget extends ConsumerStatefulWidget {
   final String fieldName;
   final dynamic value;
@@ -39,9 +38,9 @@ class _OptimizedDynamicFieldWidgetState
   void initState() {
     super.initState();
     _controller = TextEditingController(text: _getDisplayValue(widget.value));
-    _config =
-        FieldConfiguration.configurations[widget.fieldName] ??
-        const FormatDefinition();
+
+    // 🎯 FIX: Use safe config getter
+    _config = FieldConfiguration.getConfig(widget.fieldName);
   }
 
   @override
@@ -50,7 +49,6 @@ class _OptimizedDynamicFieldWidgetState
     super.dispose();
   }
 
-  // 🎯 OPTIMIZATION 21: Cached display value computation
   String _getDisplayValue(dynamic value) {
     if (value == null) return '';
     if (value is GeneralInfo) return value.identifier;
@@ -97,7 +95,7 @@ class _OptimizedDynamicFieldWidgetState
         ],
         Expanded(
           child: Text(
-            widget.fieldName,
+            _formatFieldName(widget.fieldName),
             style: TextStyle(
               fontWeight: FontWeight.w500,
               color: Colors.grey[700],
@@ -109,6 +107,19 @@ class _OptimizedDynamicFieldWidgetState
           Text('*', style: TextStyle(color: Colors.red[600])),
       ],
     );
+  }
+
+  // 🎯 FIX: Format field names for better readability
+  String _formatFieldName(String fieldName) {
+    return fieldName
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map(
+          (word) => word.isEmpty
+              ? ''
+              : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}',
+        )
+        .join(' ');
   }
 
   Widget _buildFieldWidget() {
@@ -151,7 +162,6 @@ class _OptimizedDynamicFieldWidgetState
     );
   }
 
-  // 🎯 OPTIMIZATION 22: Use cached dropdown options
   Widget _buildOptimizedGeneralInfoDropdown(GeneralInfo currentValue) {
     final modelName = currentValue.modelName ?? '';
 

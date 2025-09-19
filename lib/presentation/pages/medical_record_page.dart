@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medibuk/presentation/widgets/actions_button_widget.dart';
-import '../../domain/entities/medical_record.dart';
-import '../providers/medical_record_providers.dart';
-import '../widgets/form_section_widget.dart';
-import '../widgets/medical_record_header.dart';
+import 'package:medibuk/domain/entities/medical_record.dart';
+import 'package:medibuk/presentation/providers/medical_record_providers.dart';
+import 'package:medibuk/presentation/widgets/form_section_widget.dart';
+import 'package:medibuk/presentation/widgets/medical_record_header.dart';
 
 // 🎯 OPTIMIZATION 6: Convert to StatelessWidget with focused providers
 class OptimizedMedicalRecordPage extends ConsumerWidget {
@@ -118,13 +118,6 @@ class _OptimizedContent extends ConsumerWidget {
           _buildVirtualizedSections(
             'gynecology',
             record.gynecology!,
-            isEditable,
-          ),
-
-        if (record.prescriptions?.isNotEmpty ?? false)
-          _buildVirtualizedSections(
-            'prescriptions',
-            record.prescriptions!,
             isEditable,
           ),
 

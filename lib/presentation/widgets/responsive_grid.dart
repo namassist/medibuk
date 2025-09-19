@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:medibuk/presentation/widgets/dynamic_field_widget.dart';
-import '../../domain/entities/format_definition.dart';
 
-// 🎯 OPTIMIZATION 26: Optimized grid with better layout calculations
 class OptimizedResponsiveGrid extends StatelessWidget {
   final List<Widget> children;
   final double maxWidth;
@@ -22,60 +19,33 @@ class OptimizedResponsiveGrid extends StatelessWidget {
     final isMobile = maxWidth < 600;
     final effectiveMaxWideCount = isMobile ? 1 : maxWideCount;
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        return _buildOptimizedLayout(constraints, effectiveMaxWideCount);
-      },
-    );
+    return _buildFixedLayout(effectiveMaxWideCount);
   }
 
-  Widget _buildOptimizedLayout(BoxConstraints constraints, int maxCount) {
-    final rows = <Widget>[];
-    final currentRow = <Widget>[];
-    int currentRowWidth = 0;
+  // 🎯 FIX: Simplified and correct layout logic
+  Widget _buildFixedLayout(int maxCount) {
+    final widgets = <Widget>[];
 
-    for (final child in children) {
-      if (child is! OptimizedDynamicFieldWidget) {
-        currentRow.add(child);
-        continue;
-      }
+    for (int i = 0; i < children.length; i++) {
+      final child = children[i];
 
-      final config =
-          FieldConfiguration.configurations[child.fieldName] ??
-          const FormatDefinition();
+      // Calculate width based on mobile vs desktop
+      final itemWidth = maxCount == 1
+          ? maxWidth
+          : (maxWidth / maxCount) * 2; // Default 2 wideCount
 
-      final wideCount = maxCount == 1 ? 1 : config.wideCount;
-
-      // Check if we need a new row
-      if (config.newLine || currentRowWidth + wideCount > maxCount) {
-        if (currentRow.isNotEmpty) {
-          rows.add(_buildRow(currentRow, constraints.maxWidth, maxCount));
-          currentRow.clear();
-          currentRowWidth = 0;
-        }
-      }
-
-      currentRow.add(
+      widgets.add(
         SizedBox(
-          width: (constraints.maxWidth / maxCount) * wideCount,
-          child: child,
+          width: itemWidth,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: child,
+          ),
         ),
       );
-      currentRowWidth += wideCount;
     }
 
-    // Add remaining row
-    if (currentRow.isNotEmpty) {
-      rows.add(_buildRow(currentRow, constraints.maxWidth, maxCount));
-    }
-
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: rows);
-  }
-
-  Widget _buildRow(List<Widget> rowChildren, double maxWidth, int maxCount) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: rowChildren,
-    );
+    // 🎯 FIX: Use simple Wrap instead of complex row logic
+    return Wrap(children: widgets, runSpacing: 8, spacing: 8);
   }
 }

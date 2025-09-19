@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:medibuk/presentation/providers/medical_record_providers.dart';
-import 'package:medibuk/presentation/widgets/dynamic_field_widget.dart';
-import 'package:medibuk/presentation/widgets/responsive_grid.dart';
+import '../providers/medical_record_providers.dart';
+import 'dynamic_field_widget.dart';
+import 'responsive_grid.dart';
 
-// 🎯 OPTIMIZATION 16: StatelessWidget with focused state management
 class OptimizedFormSectionWidget extends ConsumerStatefulWidget {
   final String title;
   final Map<String, dynamic> data;
@@ -33,7 +32,6 @@ class OptimizedFormSectionWidget extends ConsumerStatefulWidget {
 class _OptimizedFormSectionWidgetState
     extends ConsumerState<OptimizedFormSectionWidget>
     with AutomaticKeepAliveClientMixin {
-  // 🎯 OPTIMIZATION 17: Keep widget alive to prevent recreation
   @override
   bool get wantKeepAlive => true;
 
@@ -44,7 +42,12 @@ class _OptimizedFormSectionWidgetState
   void initState() {
     super.initState();
     _isExpanded = widget.initiallyExpanded;
-    _localData = Map.from(widget.data);
+    _localData = Map<String, dynamic>.from(widget.data);
+
+    // 🎯 FIX: Debug print to see actual data
+    print('=== ${widget.title} ===');
+    print('Data keys: ${_localData.keys.toList()}');
+    print('Data length: ${_localData.length}');
   }
 
   void _onFieldChanged(String fieldName, dynamic value) {
@@ -52,18 +55,16 @@ class _OptimizedFormSectionWidgetState
       _localData[fieldName] = value;
     });
 
-    // 🎯 OPTIMIZATION 18: Notify form modification without rebuilding parent
     ref.read(formModificationNotifierProvider.notifier).setModified(true);
-
-    // TODO: Implement actual data update logic
-    print('${widget.sectionType}[${widget.sectionIndex}] $fieldName: $value');
+    print('Field changed: $fieldName = $value');
   }
 
   @override
   Widget build(BuildContext context) {
-    super.build(context); // Required for AutomaticKeepAliveClientMixin
+    super.build(context);
 
     return Container(
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -102,7 +103,7 @@ class _OptimizedFormSectionWidgetState
             const SizedBox(width: 8),
             Expanded(
               child: Text(
-                widget.title,
+                '${widget.title} (${_localData.length} fields)',
                 style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
@@ -126,11 +127,30 @@ class _OptimizedFormSectionWidgetState
     );
   }
 
-  // 🎯 OPTIMIZATION 19: Memoized form fields generation
+  // 🎯 FIX: Properly build unique fields
   List<Widget> _buildFormFields() {
     final fields = <Widget>[];
+    final processedKeys = <String>{}; // Track processed keys
 
+    // 🎯 FIX: Filter out internal fields and duplicates
+    final filteredData = <String, dynamic>{};
     for (final entry in _localData.entries) {
+      final key = entry.key;
+      final value = entry.value;
+
+      // Skip internal fields
+      if (_isInternalField(key)) continue;
+
+      // Skip if already processed
+      if (processedKeys.contains(key)) continue;
+
+      filteredData[key] = value;
+      processedKeys.add(key);
+    }
+
+    print('Filtered data for ${widget.title}: ${filteredData.keys.toList()}');
+
+    for (final entry in filteredData.entries) {
       final fieldName = entry.key;
       final value = entry.value;
 
@@ -148,5 +168,19 @@ class _OptimizedFormSectionWidgetState
     }
 
     return fields;
+  }
+
+  // 🎯 FIX: Filter out internal/system fields
+  bool _isInternalField(String fieldName) {
+    final internalFields = {
+      'id',
+      'uid',
+      'C_MedicalRecord_ID',
+      'LineNo',
+      'AD_Client_ID',
+      'AD_Org_ID',
+      'C_SalesRegion_ID',
+    };
+    return internalFields.contains(fieldName);
   }
 }
