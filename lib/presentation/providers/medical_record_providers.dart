@@ -1,11 +1,9 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../data/repositories/medical_record_repository.dart';
 import '../../domain/entities/medical_record.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 part 'medical_record_providers.g.dart';
 
-// 🎯 OPTIMIZATION 1: Repository as singleton to avoid recreation
 @Riverpod(keepAlive: true)
 MedicalRecordRepository medicalRecordRepository(
   MedicalRecordRepositoryRef ref,
@@ -13,9 +11,8 @@ MedicalRecordRepository medicalRecordRepository(
   return MedicalRecordRepositoryImpl();
 }
 
-// 🎯 OPTIMIZATION 2: Focused state management with better error handling
 @riverpod
-class OptimizedMedicalRecordNotifier extends _$OptimizedMedicalRecordNotifier {
+class MedicalRecordNotifier extends _$MedicalRecordNotifier {
   @override
   Future<MedicalRecord?> build(String medicalRecordId) async {
     final repository = ref.read(medicalRecordRepositoryProvider);
@@ -24,7 +21,6 @@ class OptimizedMedicalRecordNotifier extends _$OptimizedMedicalRecordNotifier {
       return await repository.getMedicalRecord(medicalRecordId);
     } catch (e) {
       // Log error but don't rethrow to prevent UI breaking
-      print('Error loading medical record: $e');
       return null;
     }
   }
@@ -47,7 +43,6 @@ class OptimizedMedicalRecordNotifier extends _$OptimizedMedicalRecordNotifier {
   }
 }
 
-// 🎯 OPTIMIZATION 3: Cached dropdown options with keepAlive
 @Riverpod(keepAlive: true)
 class CachedGeneralInfoOptions extends _$CachedGeneralInfoOptions {
   final Map<String, List<GeneralInfo>> _cache = {};
@@ -76,7 +71,6 @@ class CachedGeneralInfoOptions extends _$CachedGeneralInfoOptions {
   }
 }
 
-// 🎯 OPTIMIZATION 4: Form modification state provider
 @riverpod
 class FormModificationNotifier extends _$FormModificationNotifier {
   @override
@@ -91,7 +85,6 @@ class FormModificationNotifier extends _$FormModificationNotifier {
   }
 }
 
-// 🎯 OPTIMIZATION 5: Processed data cache to avoid repeated JSON serialization
 @riverpod
 Map<String, dynamic> processedMainData(
   ProcessedMainDataRef ref,

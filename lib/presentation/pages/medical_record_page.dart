@@ -1,101 +1,69 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:medibuk/presentation/widgets/actions_button_widget.dart';
 import 'package:medibuk/domain/entities/medical_record.dart';
 import 'package:medibuk/presentation/providers/medical_record_providers.dart';
-import 'package:medibuk/presentation/widgets/form_section_widget.dart';
-import 'package:medibuk/presentation/widgets/medical_record_header.dart';
+import 'package:medibuk/presentation/providers/form_data_provider.dart';
+import 'package:medibuk/presentation/widgets/form_section.dart';
+import 'package:medibuk/presentation/widgets/layouts/app_toolbar.dart';
 
-// 🎯 OPTIMIZATION 6: Convert to StatelessWidget with focused providers
-class OptimizedMedicalRecordPage extends ConsumerWidget {
+class MedicalRecordScreen extends ConsumerWidget {
   final String medicalRecordId;
 
-  const OptimizedMedicalRecordPage({super.key, required this.medicalRecordId});
+  const MedicalRecordScreen({super.key, required this.medicalRecordId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // 🎯 OPTIMIZATION 7: Use select to watch only what we need
     final medicalRecordAsync = ref.watch(
-      optimizedMedicalRecordNotifierProvider(medicalRecordId),
+      MedicalRecordNotifierProvider(medicalRecordId),
     );
 
     return Scaffold(
       backgroundColor: Colors.grey[50],
-      appBar: _buildAppBar(context, ref, medicalRecordAsync),
       body: medicalRecordAsync.when(
         data: (record) => record != null
-            ? _OptimizedContent(
-                record: record,
-                medicalRecordId: medicalRecordId,
-              )
+            ? _Content(record: record, medicalRecordId: medicalRecordId)
             : const _EmptyState(),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (error, _) => _ErrorState(
           error: error.toString(),
-          onRetry: () => ref.refresh(
-            optimizedMedicalRecordNotifierProvider(medicalRecordId),
-          ),
+          onRetry: () =>
+              ref.refresh(MedicalRecordNotifierProvider(medicalRecordId)),
         ),
       ),
     );
   }
-
-  PreferredSizeWidget _buildAppBar(
-    BuildContext context,
-    WidgetRef ref,
-    AsyncValue<MedicalRecord?> recordAsync,
-  ) {
-    return AppBar(
-      title: Text('Medical Record - $medicalRecordId'),
-      backgroundColor: Colors.white,
-      foregroundColor: Colors.black,
-      elevation: 0,
-      actions: [
-        // 🎯 OPTIMIZATION 8: Separate action buttons widget
-        recordAsync.whenOrNull(
-              data: (record) => record != null
-                  ? ActionButtonsWidget(
-                      record: record,
-                      medicalRecordId: medicalRecordId,
-                    )
-                  : null,
-            ) ??
-            const SizedBox.shrink(),
-      ],
-    );
-  }
 }
 
-// 🎯 OPTIMIZATION 9: Separate content widget to prevent full page rebuilds
-class _OptimizedContent extends ConsumerWidget {
+class _Content extends ConsumerWidget {
   final MedicalRecord record;
   final String medicalRecordId;
 
-  const _OptimizedContent({
-    required this.record,
-    required this.medicalRecordId,
-  });
+  const _Content({required this.record, required this.medicalRecordId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isEditable = record.docStatus.id != 'CO';
 
     return CustomScrollView(
-      // 🎯 OPTIMIZATION 10: Use CustomScrollView for better performance
       slivers: [
+        SliverPersistentHeader(
+          pinned: true,
+          delegate: _PinnedHeaderDelegate(
+            minExtentHeight: 210,
+            maxExtentHeight: 210,
+            child: AppToolbar(record: record, medicalRecordId: medicalRecordId),
+          ),
+        ),
         SliverPadding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
           sliver: SliverList(
             delegate: SliverChildListDelegate([
-              // 🎯 OPTIMIZATION 11: Separate header widget
-              MedicalRecordHeader(record: record),
-              const SizedBox(height: 24),
-
-              // 🎯 OPTIMIZATION 12: Use processed data provider
               Consumer(
                 builder: (context, ref, _) {
                   final mainData = ref.watch(processedMainDataProvider(record));
-                  return OptimizedFormSectionWidget(
+                  return FormSection(
                     key: const ValueKey('main_information'),
                     title: 'Information',
                     data: mainData,
@@ -103,6 +71,8 @@ class _OptimizedContent extends ConsumerWidget {
                     sectionType: 'main',
                     sectionIndex: 0,
                     medicalRecordId: medicalRecordId,
+                    collapsible: true,
+                    initiallyExpanded: true,
                   );
                 },
               ),
@@ -110,16 +80,54 @@ class _OptimizedContent extends ConsumerWidget {
           ),
         ),
 
-        // 🎯 OPTIMIZATION 13: Virtualized list for sections
-        if (record.obstetric?.isNotEmpty ?? false)
-          _buildVirtualizedSections('obstetric', record.obstetric!, isEditable),
-
         if (record.gynecology?.isNotEmpty ?? false)
           _buildVirtualizedSections(
             'gynecology',
             record.gynecology!,
             isEditable,
+            ref,
           ),
+
+        if (record.obstetric?.isNotEmpty ?? false) ...[
+          _buildVirtualizedSections(
+            'obstetric',
+            record.obstetric!,
+            isEditable,
+            ref,
+          ),
+
+          if (isEditable)
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _addObstetric(ref),
+                    icon: const Icon(Icons.copy_all),
+                    label: const Text('Add Obstetric'),
+                  ),
+                ),
+              ),
+            ),
+        ] else if (isEditable) ...[
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: OutlinedButton.icon(
+                  onPressed: () => _addObstetric(ref),
+                  icon: const Icon(Icons.copy_all),
+                  label: const Text('Add Obstetric'),
+                ),
+              ),
+            ),
+          ),
+        ],
 
         const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
       ],
@@ -130,13 +138,13 @@ class _OptimizedContent extends ConsumerWidget {
     String sectionType,
     List<T> items,
     bool isEditable,
+    WidgetRef ref,
   ) {
     return SliverList(
       delegate: SliverChildBuilderDelegate((context, index) {
         final item = items[index];
         Map<String, dynamic> data;
 
-        // 🎯 OPTIMIZATION 14: Minimize toJson calls
         if (item is ObstetricRecord) {
           data = item.toJson();
         } else if (item is GynecologyRecord) {
@@ -149,22 +157,64 @@ class _OptimizedContent extends ConsumerWidget {
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: OptimizedFormSectionWidget(
+          child: FormSection(
             key: ValueKey('${sectionType}_$index'),
-            title: '${sectionType.capitalize()} ${index + 1}',
+            title:
+                '${sectionType == 'obstetric' ? 'Obstetric' : 'Gynecology'} ${index + 1}',
             data: data,
             isEditable: isEditable,
             sectionType: sectionType,
             sectionIndex: index,
             medicalRecordId: medicalRecordId,
+            collapsible: true,
+            initiallyExpanded: sectionType == 'information',
+            onDelete:
+                sectionType == 'obstetric' && isEditable && items.length > 1
+                ? () => _deleteObstetric(ref, index)
+                : null,
           ),
         );
       }, childCount: items.length),
     );
   }
+
+  Future<void> _addObstetric(WidgetRef ref) async {
+    final list = List<ObstetricRecord>.from(record.obstetric ?? const []);
+    Map<String, dynamic> json;
+    if (list.isNotEmpty) {
+      // Deep clone using JSON roundtrip to ensure nested GeneralInfo become maps
+      json = (jsonDecode(jsonEncode(list.last)) as Map).cast<String, dynamic>();
+    } else {
+      json = <String, dynamic>{};
+    }
+    // Set new identity
+    json['id'] = 0;
+    json['uid'] = 'tmp-${DateTime.now().millisecondsSinceEpoch}';
+    final cloned = ObstetricRecord.fromJson(json);
+    list.add(cloned);
+    final updated = record.copyWith(obstetric: list);
+    await ref
+        .read(MedicalRecordNotifierProvider(medicalRecordId).notifier)
+        .updateRecord(updated);
+    // Clear and mark modified so new section initializes and changes are tracked fresh
+    ref.read(formDataProvider.notifier).clear();
+    ref.read(formModificationNotifierProvider.notifier).setModified(true);
+  }
+
+  Future<void> _deleteObstetric(WidgetRef ref, int index) async {
+    final list = List<ObstetricRecord>.from(record.obstetric ?? const []);
+    if (index < 0 || index >= list.length) return;
+    list.removeAt(index);
+    final updated = record.copyWith(obstetric: list);
+    await ref
+        .read(MedicalRecordNotifierProvider(medicalRecordId).notifier)
+        .updateRecord(updated);
+    // Reset change tracking so indices realign
+    ref.read(formDataProvider.notifier).clear();
+    ref.read(formModificationNotifierProvider.notifier).setModified(true);
+  }
 }
 
-// 🎯 OPTIMIZATION 15: Const widgets for static content
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
 
@@ -227,6 +277,43 @@ class _ErrorState extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _PinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
+  final double minExtentHeight;
+  final double maxExtentHeight;
+  final Widget child;
+
+  _PinnedHeaderDelegate({
+    required this.minExtentHeight,
+    required this.maxExtentHeight,
+    required this.child,
+  });
+
+  @override
+  double get minExtent => minExtentHeight;
+
+  @override
+  double get maxExtent => maxExtentHeight;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return SizedBox(
+      height: maxExtent,
+      child: Container(color: Colors.white, child: child),
+    );
+  }
+
+  @override
+  bool shouldRebuild(covariant _PinnedHeaderDelegate oldDelegate) {
+    return oldDelegate.minExtentHeight != minExtentHeight ||
+        oldDelegate.maxExtentHeight != maxExtentHeight ||
+        oldDelegate.child != child;
   }
 }
 

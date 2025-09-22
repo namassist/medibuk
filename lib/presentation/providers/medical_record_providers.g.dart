@@ -167,35 +167,33 @@ class _ProcessedMainDataProviderElement
   MedicalRecord get record => (origin as ProcessedMainDataProvider).record;
 }
 
-String _$optimizedMedicalRecordNotifierHash() =>
-    r'ad544577e4b506d41ec1d15243b62817e6bad1f5';
+String _$medicalRecordNotifierHash() =>
+    r'31d525c2a027b6560e2106cd84eef288d6b041f0';
 
-abstract class _$OptimizedMedicalRecordNotifier
+abstract class _$MedicalRecordNotifier
     extends BuildlessAutoDisposeAsyncNotifier<MedicalRecord?> {
   late final String medicalRecordId;
 
   FutureOr<MedicalRecord?> build(String medicalRecordId);
 }
 
-/// See also [OptimizedMedicalRecordNotifier].
-@ProviderFor(OptimizedMedicalRecordNotifier)
-const optimizedMedicalRecordNotifierProvider =
-    OptimizedMedicalRecordNotifierFamily();
+/// See also [MedicalRecordNotifier].
+@ProviderFor(MedicalRecordNotifier)
+const medicalRecordNotifierProvider = MedicalRecordNotifierFamily();
 
-/// See also [OptimizedMedicalRecordNotifier].
-class OptimizedMedicalRecordNotifierFamily
-    extends Family<AsyncValue<MedicalRecord?>> {
-  /// See also [OptimizedMedicalRecordNotifier].
-  const OptimizedMedicalRecordNotifierFamily();
+/// See also [MedicalRecordNotifier].
+class MedicalRecordNotifierFamily extends Family<AsyncValue<MedicalRecord?>> {
+  /// See also [MedicalRecordNotifier].
+  const MedicalRecordNotifierFamily();
 
-  /// See also [OptimizedMedicalRecordNotifier].
-  OptimizedMedicalRecordNotifierProvider call(String medicalRecordId) {
-    return OptimizedMedicalRecordNotifierProvider(medicalRecordId);
+  /// See also [MedicalRecordNotifier].
+  MedicalRecordNotifierProvider call(String medicalRecordId) {
+    return MedicalRecordNotifierProvider(medicalRecordId);
   }
 
   @override
-  OptimizedMedicalRecordNotifierProvider getProviderOverride(
-    covariant OptimizedMedicalRecordNotifierProvider provider,
+  MedicalRecordNotifierProvider getProviderOverride(
+    covariant MedicalRecordNotifierProvider provider,
   ) {
     return call(provider.medicalRecordId);
   }
@@ -212,33 +210,32 @@ class OptimizedMedicalRecordNotifierFamily
       _allTransitiveDependencies;
 
   @override
-  String? get name => r'optimizedMedicalRecordNotifierProvider';
+  String? get name => r'medicalRecordNotifierProvider';
 }
 
-/// See also [OptimizedMedicalRecordNotifier].
-class OptimizedMedicalRecordNotifierProvider
+/// See also [MedicalRecordNotifier].
+class MedicalRecordNotifierProvider
     extends
         AutoDisposeAsyncNotifierProviderImpl<
-          OptimizedMedicalRecordNotifier,
+          MedicalRecordNotifier,
           MedicalRecord?
         > {
-  /// See also [OptimizedMedicalRecordNotifier].
-  OptimizedMedicalRecordNotifierProvider(String medicalRecordId)
+  /// See also [MedicalRecordNotifier].
+  MedicalRecordNotifierProvider(String medicalRecordId)
     : this._internal(
-        () =>
-            OptimizedMedicalRecordNotifier()..medicalRecordId = medicalRecordId,
-        from: optimizedMedicalRecordNotifierProvider,
-        name: r'optimizedMedicalRecordNotifierProvider',
+        () => MedicalRecordNotifier()..medicalRecordId = medicalRecordId,
+        from: medicalRecordNotifierProvider,
+        name: r'medicalRecordNotifierProvider',
         debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
             ? null
-            : _$optimizedMedicalRecordNotifierHash,
-        dependencies: OptimizedMedicalRecordNotifierFamily._dependencies,
+            : _$medicalRecordNotifierHash,
+        dependencies: MedicalRecordNotifierFamily._dependencies,
         allTransitiveDependencies:
-            OptimizedMedicalRecordNotifierFamily._allTransitiveDependencies,
+            MedicalRecordNotifierFamily._allTransitiveDependencies,
         medicalRecordId: medicalRecordId,
       );
 
-  OptimizedMedicalRecordNotifierProvider._internal(
+  MedicalRecordNotifierProvider._internal(
     super._createNotifier, {
     required super.name,
     required super.dependencies,
@@ -252,16 +249,16 @@ class OptimizedMedicalRecordNotifierProvider
 
   @override
   FutureOr<MedicalRecord?> runNotifierBuild(
-    covariant OptimizedMedicalRecordNotifier notifier,
+    covariant MedicalRecordNotifier notifier,
   ) {
     return notifier.build(medicalRecordId);
   }
 
   @override
-  Override overrideWith(OptimizedMedicalRecordNotifier Function() create) {
+  Override overrideWith(MedicalRecordNotifier Function() create) {
     return ProviderOverride(
       origin: this,
-      override: OptimizedMedicalRecordNotifierProvider._internal(
+      override: MedicalRecordNotifierProvider._internal(
         () => create()..medicalRecordId = medicalRecordId,
         from: from,
         name: null,
@@ -274,17 +271,14 @@ class OptimizedMedicalRecordNotifierProvider
   }
 
   @override
-  AutoDisposeAsyncNotifierProviderElement<
-    OptimizedMedicalRecordNotifier,
-    MedicalRecord?
-  >
+  AutoDisposeAsyncNotifierProviderElement<MedicalRecordNotifier, MedicalRecord?>
   createElement() {
-    return _OptimizedMedicalRecordNotifierProviderElement(this);
+    return _MedicalRecordNotifierProviderElement(this);
   }
 
   @override
   bool operator ==(Object other) {
-    return other is OptimizedMedicalRecordNotifierProvider &&
+    return other is MedicalRecordNotifierProvider &&
         other.medicalRecordId == medicalRecordId;
   }
 
@@ -299,24 +293,24 @@ class OptimizedMedicalRecordNotifierProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin OptimizedMedicalRecordNotifierRef
+mixin MedicalRecordNotifierRef
     on AutoDisposeAsyncNotifierProviderRef<MedicalRecord?> {
   /// The parameter `medicalRecordId` of this provider.
   String get medicalRecordId;
 }
 
-class _OptimizedMedicalRecordNotifierProviderElement
+class _MedicalRecordNotifierProviderElement
     extends
         AutoDisposeAsyncNotifierProviderElement<
-          OptimizedMedicalRecordNotifier,
+          MedicalRecordNotifier,
           MedicalRecord?
         >
-    with OptimizedMedicalRecordNotifierRef {
-  _OptimizedMedicalRecordNotifierProviderElement(super.provider);
+    with MedicalRecordNotifierRef {
+  _MedicalRecordNotifierProviderElement(super.provider);
 
   @override
   String get medicalRecordId =>
-      (origin as OptimizedMedicalRecordNotifierProvider).medicalRecordId;
+      (origin as MedicalRecordNotifierProvider).medicalRecordId;
 }
 
 String _$cachedGeneralInfoOptionsHash() =>

@@ -1,5 +1,22 @@
 // lib/domain/entities/medical_record.dart
 import 'package:json_annotation/json_annotation.dart';
+import 'package:flutter/material.dart';
+import 'package:medibuk/domain/entities/anak_record.dart';
+import 'package:medibuk/domain/entities/andrologi_record.dart';
+import 'package:medibuk/domain/entities/dental_record.dart';
+import 'package:medibuk/domain/entities/laktasi_record.dart';
+import 'package:medibuk/domain/entities/service_record.dart';
+import 'package:medibuk/domain/entities/umum_record.dart';
+import 'format_definition.dart';
+import 'general_info.dart';
+import 'obstetric_record.dart';
+import 'gynecology_record.dart';
+import 'prescription_record.dart';
+
+export 'general_info.dart';
+export 'obstetric_record.dart';
+export 'gynecology_record.dart';
+export 'prescription_record.dart';
 
 part 'medical_record.g.dart';
 
@@ -35,17 +52,17 @@ class MedicalRecord {
   final bool processed;
   final List<ObstetricRecord>? obstetric;
   final List<GynecologyRecord>? gynecology;
+  final List<DentalRecord>? dental;
+  @JsonKey(name: 'medical-record-anak')
+  final List<AnakRecord>? anak;
+  @JsonKey(name: 'medical-record-umum')
+  final List<UmumRecord>? umum;
+  @JsonKey(name: 'laktasi')
+  final List<LaktasiRecord>? laktasi;
+  @JsonKey(name: 'andrologi')
+  final List<AndrologiRecord>? andrologi;
+  final List<ServiceRecord>? services;
   final List<PrescriptionRecord>? prescriptions;
-  // @JsonKey(name: 'medical-record-umum')
-  // final List<dynamic>? medicalRecordUmum;
-  // @JsonKey(name: 'medical-record-anak')
-  // final List<dynamic>? medicalRecordAnak;
-  // final List<dynamic>? services;
-  // @JsonKey(name: 'icd-codes')
-  // final List<dynamic>? icdCodes;
-  // final List<dynamic>? dental;
-  // final List<dynamic>? laktasi;
-  // final List<dynamic>? andrologi;
 
   const MedicalRecord({
     required this.id,
@@ -65,383 +82,19 @@ class MedicalRecord {
     required this.processed,
     required this.obstetric,
     required this.gynecology,
+    required this.dental,
+    required this.anak,
+    required this.umum,
+    required this.laktasi,
+    required this.andrologi,
+    required this.services,
     required this.prescriptions,
-    // required this.medicalRecordUmum,
-    // required this.medicalRecordAnak,
-    // required this.services,
-    // required this.icdCodes,
-    // required this.dental,
-    // required this.laktasi,
-    // required this.andrologi,
   });
 
   factory MedicalRecord.fromJson(Map<String, dynamic> json) =>
       _$MedicalRecordFromJson(json);
 
   Map<String, dynamic> toJson() => _$MedicalRecordToJson(this);
-}
-
-@JsonSerializable()
-class GeneralInfo {
-  final String propertyLabel;
-  final dynamic id;
-  final String identifier;
-  @JsonKey(name: 'model-name')
-  final String? modelName;
-
-  const GeneralInfo({
-    required this.propertyLabel,
-    required this.id,
-    required this.identifier,
-    this.modelName,
-  });
-
-  factory GeneralInfo.fromJson(Map<String, dynamic> json) =>
-      _$GeneralInfoFromJson(json);
-
-  Map<String, dynamic> toJson() => _$GeneralInfoToJson(this);
-}
-
-@JsonSerializable()
-class ObstetricRecord {
-  final int id;
-  final String uid;
-  @JsonKey(name: 'AD_Client_ID')
-  final GeneralInfo? adClientId;
-  @JsonKey(name: 'AD_Org_ID')
-  final GeneralInfo? adOrgId;
-  @JsonKey(name: 'C_MedicalRecord_ID')
-  final GeneralInfo? cMedicalRecordId;
-  @JsonKey(name: 'C_SalesRegion_ID')
-  final GeneralInfo? cSalesRegionId;
-  @JsonKey(name: 'Doctor_ID')
-  final GeneralInfo? doctorId;
-  @JsonKey(name: 'Assistant_ID')
-  final GeneralInfo? assistantId;
-  @JsonKey(name: 'LineNo')
-  final int? lineNo;
-  @JsonKey(name: 'Birthday')
-  final String? birthday;
-  @JsonKey(name: 'Age')
-  final String? age;
-  @JsonKey(name: 'GPA')
-  final String? gpa;
-  @JsonKey(name: 'VisitDate')
-  final String? visitDate;
-  @JsonKey(name: 'NextVisitDate')
-  final String? nextVisitDate;
-  @JsonKey(name: 'ChiefComplaint')
-  final String? chiefComplaint;
-  @JsonKey(name: 'BodyTemperature')
-  final num? bodyTemperature;
-  @JsonKey(name: 'Miscarriage')
-  final int? miscarriage;
-  @JsonKey(name: 'PregnancyNo')
-  final int? pregnancyNo;
-  @JsonKey(name: 'FirstDayOfMenstrualPeriod')
-  final String? firstDayOfMenstrualPeriod;
-  @JsonKey(name: 'Riwayat_alergi')
-  final String? riwayatAlergi;
-  @JsonKey(name: 'HPL')
-  final String? hpl;
-  @JsonKey(name: 'EstimatedDateOfConception')
-  final String? estimatedDateOfConception;
-  @JsonKey(name: 'LaborSC')
-  final num? laborSC;
-  @JsonKey(name: 'LaborSpontanNormal')
-  final num? laborSpontanNormal;
-  @JsonKey(name: 'LaborSpontanVacuum')
-  final num? laborSpontanVacuum;
-  @JsonKey(name: 'BodyHeight')
-  final num? bodyHeight;
-  @JsonKey(name: 'BMI')
-  final num? bmi;
-  @JsonKey(name: 'BodyWeight')
-  final num? bodyWeight;
-  @JsonKey(name: 'SystolicPressure')
-  final num? systolicPressure;
-  @JsonKey(name: 'DiastolicPressure')
-  final num? diastolicPressure;
-  @JsonKey(name: 'LILA')
-  final num? lila;
-  @JsonKey(name: 'ICD_10')
-  final GeneralInfo? icd10;
-  @JsonKey(name: 'Note')
-  final String? note;
-  @JsonKey(name: 'InternalNote')
-  final String? internalNote;
-  @JsonKey(name: 'IsShowMore')
-  final bool? isShowMore;
-  @JsonKey(name: 'NutritionNotes')
-  final String? nutritionNotes;
-  @JsonKey(name: 'Presentation')
-  final GeneralInfo? presentation;
-  @JsonKey(name: 'PlacentaGrade')
-  final num? placentaGrade;
-  @JsonKey(name: 'PlacentaPosition')
-  final GeneralInfo? placentaPosition;
-  @JsonKey(name: 'Weight')
-  final num? weight;
-  @JsonKey(name: 'GS')
-  final num? gs;
-  @JsonKey(name: 'YS')
-  final num? ys;
-  @JsonKey(name: 'DJJ')
-  final num? djj;
-  @JsonKey(name: 'FL')
-  final num? fl;
-  @JsonKey(name: 'CRL')
-  final num? crl;
-  @JsonKey(name: 'BPD')
-  final num? bpd;
-  @JsonKey(name: 'HC')
-  final num? hc;
-  @JsonKey(name: 'AC')
-  final num? ac;
-  @JsonKey(name: 'Gender')
-  final GeneralInfo? gender;
-  @JsonKey(name: 'SDP')
-  final num? sdp;
-  @JsonKey(name: 'AFI')
-  final num? afi;
-  @JsonKey(name: 'Cairan_Ketuban')
-  final GeneralInfo? cairanKetuban;
-
-  const ObstetricRecord({
-    required this.id,
-    required this.uid,
-    this.adClientId,
-    this.adOrgId,
-    this.cMedicalRecordId,
-    this.cSalesRegionId,
-    this.doctorId,
-    this.assistantId,
-    this.lineNo,
-    this.birthday,
-    this.age,
-    this.gpa,
-    this.visitDate,
-    this.nextVisitDate,
-    this.chiefComplaint,
-    this.bodyTemperature,
-    this.miscarriage,
-    this.pregnancyNo,
-    this.firstDayOfMenstrualPeriod,
-    this.riwayatAlergi,
-    this.hpl,
-    this.estimatedDateOfConception,
-    this.laborSC,
-    this.laborSpontanNormal,
-    this.laborSpontanVacuum,
-    this.bodyHeight,
-    this.bmi,
-    this.bodyWeight,
-    this.systolicPressure,
-    this.diastolicPressure,
-    this.lila,
-    this.icd10,
-    this.note,
-    this.internalNote,
-    this.isShowMore,
-    this.nutritionNotes,
-    this.presentation,
-    this.placentaGrade,
-    this.placentaPosition,
-    this.weight,
-    this.gs,
-    this.ys,
-    this.djj,
-    this.fl,
-    this.crl,
-    this.bpd,
-    this.hc,
-    this.ac,
-    this.gender,
-    this.sdp,
-    this.afi,
-    this.cairanKetuban,
-  });
-
-  factory ObstetricRecord.fromJson(Map<String, dynamic> json) =>
-      _$ObstetricRecordFromJson(json);
-
-  Map<String, dynamic> toJson() => _$ObstetricRecordToJson(this);
-}
-
-@JsonSerializable()
-class GynecologyRecord {
-  final int id;
-  final String uid;
-  @JsonKey(name: 'AD_Client_ID')
-  final GeneralInfo? adClientId;
-  @JsonKey(name: 'AD_Org_ID')
-  final GeneralInfo? adOrgId;
-  @JsonKey(name: 'C_SalesRegion_ID')
-  final GeneralInfo? cSalesRegionId;
-  @JsonKey(name: 'C_MedicalRecord_ID')
-  final GeneralInfo? cMedicalRecordId;
-  @JsonKey(name: 'Doctor_ID')
-  final GeneralInfo? doctorId;
-  @JsonKey(name: 'Assistant_ID')
-  final GeneralInfo? assistantId;
-  @JsonKey(name: 'VisitDate')
-  final String? visitDate;
-  @JsonKey(name: 'NextVisitDate')
-  final String? nextVisitDate;
-  @JsonKey(name: 'ChiefComplaint')
-  final String? chiefComplaint;
-  @JsonKey(name: 'BirthControlMethod')
-  final GeneralInfo? birthControlMethod;
-  @JsonKey(name: 'BodyWeight')
-  final num? bodyWeight;
-  @JsonKey(name: 'SystolicPressure')
-  final num? systolicPressure;
-  @JsonKey(name: 'BodyHeight')
-  final num? bodyHeight;
-  @JsonKey(name: 'BMI')
-  final num? bmi;
-  @JsonKey(name: 'DiastolicPressure')
-  final num? diastolicPressure;
-  @JsonKey(name: 'Birthday')
-  final String? birthday;
-  @JsonKey(name: 'FirstDayOfMenstrualPeriod')
-  final String? firstDayOfMenstrualPeriod;
-  @JsonKey(name: 'ICD_10')
-  final GeneralInfo? icd10;
-  @JsonKey(name: 'InternalNote')
-  final String? internalNote;
-  @JsonKey(name: 'Note')
-  final String? note;
-  @JsonKey(name: 'IsShowMore')
-  final bool? isShowMore;
-  @JsonKey(name: 'NutritionNotes')
-  final String? nutritionNotes;
-  @JsonKey(name: 'UterusNote')
-  final String? uterusNote;
-  @JsonKey(name: 'UterusLength')
-  final num? uterusLength;
-  @JsonKey(name: 'UterusWidth')
-  final num? uterusWidth;
-  @JsonKey(name: 'UterusThickness')
-  final num? uterusThickness;
-  @JsonKey(name: 'UterusPosition')
-  final GeneralInfo? uterusPosition;
-  @JsonKey(name: 'EndometriumThickness')
-  final num? endometriumThickness;
-  @JsonKey(name: 'RightOvaryFollicleCount')
-  final num? rightOvaryFollicleCount;
-  @JsonKey(name: 'RightOvaryNote')
-  final String? rightOvaryNote;
-  @JsonKey(name: 'RightOvaryLength')
-  final num? rightOvaryLength;
-  @JsonKey(name: 'RightOvaryThickness')
-  final num? rightOvaryThickness;
-  @JsonKey(name: 'RightOvaryWidth')
-  final num? rightOvaryWidth;
-  @JsonKey(name: 'LeftOvaryFollicleCount')
-  final num? leftOvaryFollicleCount;
-  @JsonKey(name: 'LeftOvaryNote')
-  final String? leftOvaryNote;
-  @JsonKey(name: 'LeftOvaryLength')
-  final num? leftOvaryLength;
-  @JsonKey(name: 'LeftOvaryThickness')
-  final num? leftOvaryThickness;
-  @JsonKey(name: 'LeftOvaryWidth')
-  final num? leftOvaryWidth;
-
-  const GynecologyRecord({
-    required this.id,
-    required this.uid,
-    this.adClientId,
-    this.adOrgId,
-    this.cSalesRegionId,
-    this.cMedicalRecordId,
-    this.doctorId,
-    this.assistantId,
-    this.visitDate,
-    this.nextVisitDate,
-    this.chiefComplaint,
-    this.birthControlMethod,
-    this.bodyWeight,
-    this.systolicPressure,
-    this.bodyHeight,
-    this.bmi,
-    this.diastolicPressure,
-    this.birthday,
-    this.firstDayOfMenstrualPeriod,
-    this.icd10,
-    this.internalNote,
-    this.note,
-    this.isShowMore,
-    this.nutritionNotes,
-    this.uterusNote,
-    this.uterusLength,
-    this.uterusWidth,
-    this.uterusThickness,
-    this.uterusPosition,
-    this.endometriumThickness,
-    this.rightOvaryFollicleCount,
-    this.rightOvaryNote,
-    this.rightOvaryLength,
-    this.rightOvaryThickness,
-    this.rightOvaryWidth,
-    this.leftOvaryFollicleCount,
-    this.leftOvaryNote,
-    this.leftOvaryLength,
-    this.leftOvaryThickness,
-    this.leftOvaryWidth,
-  });
-
-  factory GynecologyRecord.fromJson(Map<String, dynamic> json) =>
-      _$GynecologyRecordFromJson(json);
-
-  Map<String, dynamic> toJson() => _$GynecologyRecordToJson(this);
-}
-
-@JsonSerializable()
-class PrescriptionRecord {
-  final int id;
-  final String uid;
-  @JsonKey(name: 'AD_Client_ID')
-  final GeneralInfo? adClientId;
-  @JsonKey(name: 'AD_Org_ID')
-  final GeneralInfo? adOrgId;
-  @JsonKey(name: 'LineNo')
-  final int? lineNo;
-  @JsonKey(name: 'C_MedicalRecord_ID')
-  final GeneralInfo? cMedicalRecordId;
-  @JsonKey(name: 'M_Product_ID')
-  final GeneralInfo? mProductId;
-  @JsonKey(name: 'Qty')
-  final num? qty;
-  @JsonKey(name: 'isMedicationCompund')
-  final GeneralInfo? isMedicationCompund;
-  @JsonKey(name: 'QtyOnHand')
-  final num? qtyOnHand;
-  @JsonKey(name: 'IsActive')
-  final bool? isActive;
-  @JsonKey(name: 'Description')
-  final String? description;
-
-  const PrescriptionRecord({
-    required this.id,
-    required this.uid,
-    this.adClientId,
-    this.adOrgId,
-    this.lineNo,
-    this.cMedicalRecordId,
-    this.mProductId,
-    this.qty,
-    this.isMedicationCompund,
-    this.qtyOnHand,
-    this.isActive,
-    this.description,
-  });
-
-  factory PrescriptionRecord.fromJson(Map<String, dynamic> json) =>
-      _$PrescriptionRecordFromJson(json);
-
-  Map<String, dynamic> toJson() => _$PrescriptionRecordToJson(this);
 }
 
 extension MedicalRecordCopyWith on MedicalRecord {
@@ -463,6 +116,12 @@ extension MedicalRecordCopyWith on MedicalRecord {
     bool? processed,
     List<ObstetricRecord>? obstetric,
     List<GynecologyRecord>? gynecology,
+    List<DentalRecord>? dental,
+    List<AnakRecord>? anak,
+    List<UmumRecord>? umum,
+    List<LaktasiRecord>? laktasi,
+    List<AndrologiRecord>? andrologi,
+    List<ServiceRecord>? services,
     List<PrescriptionRecord>? prescriptions,
   }) {
     return MedicalRecord(
@@ -483,7 +142,576 @@ extension MedicalRecordCopyWith on MedicalRecord {
       processed: processed ?? this.processed,
       obstetric: obstetric ?? this.obstetric,
       gynecology: gynecology ?? this.gynecology,
+      dental: dental ?? this.dental,
+      anak: anak ?? this.anak,
+      umum: umum ?? this.umum,
+      laktasi: laktasi ?? this.laktasi,
+      andrologi: andrologi ?? this.andrologi,
+      services: services ?? this.services,
       prescriptions: prescriptions ?? this.prescriptions,
     );
+  }
+}
+
+class MedicalRecordFieldConfiguration {
+  static const Map<String, Map<String, FormatDefinition>>
+  sectionConfigurations = {
+    'main': {
+      'DateTrx': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.date,
+      ),
+      'OrderType_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'M_Specialist_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'C_BPartner_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'GestationalAgeWeek': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        newLine: true,
+        isMandatory: true,
+        fieldType: FieldType.number,
+      ),
+      'GestationalAgeDay': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        isMandatory: true,
+        fieldType: FieldType.number,
+      ),
+    },
+    'gynecology': {
+      'Doctor_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Assistant_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Birthday': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.date,
+      ),
+      'NextVisitDate': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.date,
+      ),
+      'ChiefComplaint': FormatDefinition(
+        wideCount: 8,
+        newLine: true,
+        multiLine: true,
+        editable: true,
+        maxLines: 7,
+      ),
+      'FirstDayOfMenstrualPeriod': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        newLine: true,
+        fieldType: FieldType.date,
+      ),
+      'BirthControlMethod': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'BodyHeight': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'BodyWeight': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'SystolicPressure': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'DiastolicPressure': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'ICD_10': FormatDefinition(
+        wideCount: 4,
+        editable: true,
+        newLine: true,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'EndometriumThickness': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'InternalNote': FormatDefinition(
+        wideCount: 8,
+        editable: true,
+        multiLine: true,
+        newLine: true,
+        maxLines: 7,
+      ),
+      'Note': FormatDefinition(
+        wideCount: 8,
+        editable: true,
+        multiLine: true,
+        newLine: true,
+        maxLines: 7,
+      ),
+      'IsShowMore': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        newLine: true,
+        fieldType: FieldType.boolean,
+      ),
+      'NutritionNotes': FormatDefinition(
+        wideCount: 8,
+        newLine: true,
+        multiLine: true,
+        editable: true,
+        maxLines: 7,
+      ),
+      'UterusLength': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'UterusWidth': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'UterusThickness': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'UterusPosition': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'UterusNote': FormatDefinition(
+        wideCount: 8,
+        editable: true,
+        multiLine: true,
+        newLine: true,
+        maxLines: 7,
+      ),
+      'LeftOvaryFollicleCount': FormatDefinition(
+        wideCount: 2,
+        newLine: true,
+        editable: true,
+        fieldType: FieldType.number,
+      ),
+      'LeftOvaryLength': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'LeftOvaryThickness': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'LeftOvaryWidth': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'LeftOvaryNote': FormatDefinition(
+        wideCount: 8,
+        editable: true,
+        multiLine: true,
+        newLine: true,
+        maxLines: 7,
+      ),
+      'RightOvaryFollicleCount': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'RightOvaryLength': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'RightOvaryThickness': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'RightOvaryWidth': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'RightOvaryNote': FormatDefinition(
+        wideCount: 8,
+        editable: true,
+        multiLine: true,
+        newLine: true,
+        maxLines: 7,
+      ),
+    },
+    'obstetric': {
+      'Doctor_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Assistant_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Birthday': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.date,
+      ),
+      'Age': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.text,
+      ),
+      'GPA': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.text,
+      ),
+      'LineNo': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'VisitDate': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.date,
+      ),
+      'NextVisitDate': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.date,
+      ),
+      'ChiefComplaint': FormatDefinition(
+        wideCount: 8,
+        editable: true,
+        multiLine: true,
+        newLine: true,
+        maxLines: 7,
+      ),
+      'BodyTemperature': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'Miscarriage': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'PregnancyNo': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'EstimatedDateOfConception': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        fieldType: FieldType.date,
+      ),
+      'FirstDayOfMenstrualPeriod': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        fieldType: FieldType.date,
+      ),
+      'HPL': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.date,
+      ),
+      'Riwayat_alergi': FormatDefinition(
+        wideCount: 8,
+        newLine: true,
+        multiLine: true,
+        editable: true,
+        maxLines: 7,
+      ),
+      'LaborSC': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'LaborSpontanNormal': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'LaborSpontanVacuum': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'BodyHeight': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'BodyWeight': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'SystolicPressure': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'DiastolicPressure': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'LILA': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'BMI': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        newLine: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'ICD_10': FormatDefinition(
+        wideCount: 4,
+        newLine: true,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Note': FormatDefinition(
+        wideCount: 8,
+        editable: true,
+        multiLine: true,
+        maxLines: 6,
+      ),
+      'InternalNote': FormatDefinition(
+        wideCount: 8,
+        multiLine: true,
+        editable: true,
+        maxLines: 7,
+      ),
+      'IsShowMore': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.boolean,
+      ),
+      'NutritionNotes': FormatDefinition(
+        wideCount: 8,
+        multiLine: true,
+        newLine: true,
+        editable: true,
+        maxLines: 7,
+      ),
+      'Presentation': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'PlacentaGrade': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'PlacentaPosition': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Cairan_Ketuban': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Gender': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Weight': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'GS': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        newLine: true,
+        fieldType: FieldType.number,
+      ),
+      'YS': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+      'DJJ': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+      'FL': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+      'CRL': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+      'BPD': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+      'HC': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+      'AC': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+      'SDP': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+      'AFI': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+    },
+  };
+
+  static FormatDefinition getConfig(
+    String fieldName, {
+    required String section,
+  }) {
+    final sectionMap = sectionConfigurations[section];
+    if (sectionMap != null && sectionMap.containsKey(fieldName)) {
+      return sectionMap[fieldName]!;
+    }
+    return const FormatDefinition(
+      wideCount: 2,
+      editable: true,
+      icon: Icons.text_fields,
+    );
+  }
+
+  static List<String> orderedKeysForSection(String section) {
+    final sectionMap = sectionConfigurations[section];
+    if (sectionMap != null && sectionMap.isNotEmpty) {
+      return sectionMap.keys.toList();
+    }
+    return const <String>[];
   }
 }
