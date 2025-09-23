@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../data/repositories/medical_record_repository.dart';
 import '../../domain/entities/medical_record.dart';
@@ -5,9 +6,7 @@ import '../../domain/entities/medical_record.dart';
 part 'medical_record_providers.g.dart';
 
 @Riverpod(keepAlive: true)
-MedicalRecordRepository medicalRecordRepository(
-  MedicalRecordRepositoryRef ref,
-) {
+MedicalRecordRepository medicalRecordRepository(Ref ref) {
   return MedicalRecordRepositoryImpl();
 }
 
@@ -90,10 +89,7 @@ class FormModificationNotifier extends _$FormModificationNotifier {
 }
 
 @riverpod
-Map<String, dynamic> processedMainData(
-  ProcessedMainDataRef ref,
-  MedicalRecord record,
-) {
+Map<String, dynamic> processedMainData(Ref ref, MedicalRecord record) {
   // This provider will only recompute when the record changes
   return {
     'DocumentNo': record.documentNo,

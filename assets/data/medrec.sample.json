@@ -291,7 +291,7 @@
         "identifier": "No",
         "model-name": "ad_ref_list"
       },
-      "QtyOnHand": 1,
+      "QtyOnHand": 1.0,
       "IsActive": true
     },
     {
@@ -330,7 +330,397 @@
         "identifier": "No",
         "model-name": "ad_ref_list"
       },
-      "QtyOnHand": 165,
+      "QtyOnHand": 165.0,
+      "IsActive": true
+    },
+    {
+      "id": 1011046,
+      "uid": "08f622c3-56d3-4882-9fb1-3b6c39839b13",
+      "AD_Client_ID": {
+        "propertyLabel": "Client",
+        "id": 1000000,
+        "identifier": "KSS Group",
+        "model-name": "ad_client"
+      },
+      "AD_Org_ID": {
+        "propertyLabel": "Organization",
+        "id": 1000001,
+        "identifier": "PT KEHAMILAN SEHAT SEJAHTERA",
+        "model-name": "ad_org"
+      },
+      "Description": "prolic",
+      "LineNo": 0,
+      "C_MedicalRecord_ID": {
+        "propertyLabel": "Medical Record",
+        "id": 1268301,
+        "identifier": "henry test2 ",
+        "model-name": "c_medicalrecord"
+      },
+      "M_Product_ID": {
+        "propertyLabel": "Product",
+        "id": 1002712,
+        "identifier": "PROLIC 300 CAP",
+        "model-name": "m_product"
+      },
+      "Qty": 1,
+      "isMedicationCompund": {
+        "propertyLabel": "Is Medication Compund",
+        "id": "N",
+        "identifier": "No",
+        "model-name": "ad_ref_list"
+      },
+      "QtyOnHand": 305.0,
+      "IsActive": true
+    },
+    {
+      "id": 1011047,
+      "uid": "67b5b6d7-67a7-47f4-84b9-5c1a7f85e7be",
+      "AD_Client_ID": {
+        "propertyLabel": "Client",
+        "id": 1000000,
+        "identifier": "KSS Group",
+        "model-name": "ad_client"
+      },
+      "AD_Org_ID": {
+        "propertyLabel": "Organization",
+        "id": 1000001,
+        "identifier": "PT KEHAMILAN SEHAT SEJAHTERA",
+        "model-name": "ad_org"
+      },
+      "Description": "cathether",
+      "LineNo": 0,
+      "C_MedicalRecord_ID": {
+        "propertyLabel": "Medical Record",
+        "id": 1268301,
+        "identifier": "henry test2 ",
+        "model-name": "c_medicalrecord"
+      },
+      "M_Product_ID": {
+        "propertyLabel": "Product",
+        "id": 1004361,
+        "identifier": "CATHETER TIP 50CC",
+        "model-name": "m_product"
+      },
+      "Qty": 1,
+      "isMedicationCompund": {
+        "propertyLabel": "Is Medication Compund",
+        "id": "N",
+        "identifier": "No",
+        "model-name": "ad_ref_list"
+      },
+      "QtyOnHand": 22.0,
+      "IsActive": true
+    },
+    {
+      "id": 1011048,
+      "uid": "defda2d4-d40c-4feb-8d37-4166e1292fba",
+      "AD_Client_ID": {
+        "propertyLabel": "Client",
+        "id": 1000000,
+        "identifier": "KSS Group",
+        "model-name": "ad_client"
+      },
+      "AD_Org_ID": {
+        "propertyLabel": "Organization",
+        "id": 1000001,
+        "identifier": "PT KEHAMILAN SEHAT SEJAHTERA",
+        "model-name": "ad_org"
+      },
+      "Description": "canopy",
+      "LineNo": 0,
+      "C_MedicalRecord_ID": {
+        "propertyLabel": "Medical Record",
+        "id": 1268301,
+        "identifier": "henry test2 ",
+        "model-name": "c_medicalrecord"
+      },
+      "M_Product_ID": {
+        "propertyLabel": "Product",
+        "id": 1004142,
+        "identifier": "CANOPY",
+        "model-name": "m_product"
+      },
+      "Qty": 1,
+      "isMedicationCompund": {
+        "propertyLabel": "Is Medication Compund",
+        "id": "N",
+        "identifier": "No",
+        "model-name": "ad_ref_list"
+      },
+      "QtyOnHand": 99999,
+      "IsActive": true
+    },
+    {
+      "id": 1011049,
+      "uid": "f747a6ed-72a6-4e8b-a94f-b1d531f04c5c",
+      "AD_Client_ID": {
+        "propertyLabel": "Client",
+        "id": 1000000,
+        "identifier": "KSS Group",
+        "model-name": "ad_client"
+      },
+      "AD_Org_ID": {
+        "propertyLabel": "Organization",
+        "id": 1000001,
+        "identifier": "PT KEHAMILAN SEHAT SEJAHTERA",
+        "model-name": "ad_org"
+      },
+      "Description": "ca125",
+      "LineNo": 0,
+      "C_MedicalRecord_ID": {
+        "propertyLabel": "Medical Record",
+        "id": 1268301,
+        "identifier": "henry test2 ",
+        "model-name": "c_medicalrecord"
+      },
+      "M_Product_ID": {
+        "propertyLabel": "Product",
+        "id": 1000857,
+        "identifier": "CA 125",
+        "model-name": "m_product"
+      },
+      "Qty": 1,
+      "isMedicationCompund": {
+        "propertyLabel": "Is Medication Compund",
+        "id": "N",
+        "identifier": "No",
+        "model-name": "ad_ref_list"
+      },
+      "QtyOnHand": 99999,
+      "IsActive": true
+    },
+    {
+      "id": 1011050,
+      "uid": "7ec587fb-c247-4a7b-853e-46712df133b4",
+      "AD_Client_ID": {
+        "propertyLabel": "Client",
+        "id": 1000000,
+        "identifier": "KSS Group",
+        "model-name": "ad_client"
+      },
+      "AD_Org_ID": {
+        "propertyLabel": "Organization",
+        "id": 1000001,
+        "identifier": "PT KEHAMILAN SEHAT SEJAHTERA",
+        "model-name": "ad_org"
+      },
+      "Description": "cal95",
+      "LineNo": 0,
+      "C_MedicalRecord_ID": {
+        "propertyLabel": "Medical Record",
+        "id": 1268301,
+        "identifier": "henry test2 ",
+        "model-name": "c_medicalrecord"
+      },
+      "M_Product_ID": {
+        "propertyLabel": "Product",
+        "id": 1000323,
+        "identifier": "CAL95",
+        "model-name": "m_product"
+      },
+      "Qty": 1,
+      "isMedicationCompund": {
+        "propertyLabel": "Is Medication Compund",
+        "id": "N",
+        "identifier": "No",
+        "model-name": "ad_ref_list"
+      },
+      "QtyOnHand": 165.0,
+      "IsActive": true
+    },
+    {
+      "id": 1011051,
+      "uid": "3d34e8a6-820f-4b3d-ac7b-f4fc8ace5ba2",
+      "AD_Client_ID": {
+        "propertyLabel": "Client",
+        "id": 1000000,
+        "identifier": "KSS Group",
+        "model-name": "ad_client"
+      },
+      "AD_Org_ID": {
+        "propertyLabel": "Organization",
+        "id": 1000001,
+        "identifier": "PT KEHAMILAN SEHAT SEJAHTERA",
+        "model-name": "ad_org"
+      },
+      "Description": "lapified",
+      "LineNo": 0,
+      "C_MedicalRecord_ID": {
+        "propertyLabel": "Medical Record",
+        "id": 1268301,
+        "identifier": "henry test2 ",
+        "model-name": "c_medicalrecord"
+      },
+      "M_Product_ID": {
+        "propertyLabel": "Product",
+        "id": 1000354,
+        "identifier": "LAPIFED DM SYRUP",
+        "model-name": "m_product"
+      },
+      "Qty": 1,
+      "isMedicationCompund": {
+        "propertyLabel": "Is Medication Compund",
+        "id": "N",
+        "identifier": "No",
+        "model-name": "ad_ref_list"
+      },
+      "QtyOnHand": 2.0,
+      "IsActive": true
+    },
+    {
+      "id": 1011052,
+      "uid": "3867ece9-3e5e-4419-af5f-32f4000451fc",
+      "AD_Client_ID": {
+        "propertyLabel": "Client",
+        "id": 1000000,
+        "identifier": "KSS Group",
+        "model-name": "ad_client"
+      },
+      "AD_Org_ID": {
+        "propertyLabel": "Organization",
+        "id": 1000001,
+        "identifier": "PT KEHAMILAN SEHAT SEJAHTERA",
+        "model-name": "ad_org"
+      },
+      "Description": "lapified",
+      "LineNo": 0,
+      "C_MedicalRecord_ID": {
+        "propertyLabel": "Medical Record",
+        "id": 1268301,
+        "identifier": "henry test2 ",
+        "model-name": "c_medicalrecord"
+      },
+      "M_Product_ID": {
+        "propertyLabel": "Product",
+        "id": 1000358,
+        "identifier": "LAPIFED EXP 60ML",
+        "model-name": "m_product"
+      },
+      "Qty": 1,
+      "isMedicationCompund": {
+        "propertyLabel": "Is Medication Compund",
+        "id": "N",
+        "identifier": "No",
+        "model-name": "ad_ref_list"
+      },
+      "QtyOnHand": 3.0,
+      "IsActive": true
+    },
+    {
+      "id": 1011053,
+      "uid": "20ea1a79-2900-4378-b53a-6a4345be9035",
+      "AD_Client_ID": {
+        "propertyLabel": "Client",
+        "id": 1000000,
+        "identifier": "KSS Group",
+        "model-name": "ad_client"
+      },
+      "AD_Org_ID": {
+        "propertyLabel": "Organization",
+        "id": 1000001,
+        "identifier": "PT KEHAMILAN SEHAT SEJAHTERA",
+        "model-name": "ad_org"
+      },
+      "Description": "lapified",
+      "LineNo": 0,
+      "C_MedicalRecord_ID": {
+        "propertyLabel": "Medical Record",
+        "id": 1268301,
+        "identifier": "henry test2 ",
+        "model-name": "c_medicalrecord"
+      },
+      "M_Product_ID": {
+        "propertyLabel": "Product",
+        "id": 1000344,
+        "identifier": "LAPIFED TABLET",
+        "model-name": "m_product"
+      },
+      "Qty": 1,
+      "isMedicationCompund": {
+        "propertyLabel": "Is Medication Compund",
+        "id": "N",
+        "identifier": "No",
+        "model-name": "ad_ref_list"
+      },
+      "QtyOnHand": 205.0,
+      "IsActive": true
+    },
+    {
+      "id": 1011054,
+      "uid": "39c25ee6-8683-4190-abbd-b16a7e2df40b",
+      "AD_Client_ID": {
+        "propertyLabel": "Client",
+        "id": 1000000,
+        "identifier": "KSS Group",
+        "model-name": "ad_client"
+      },
+      "AD_Org_ID": {
+        "propertyLabel": "Organization",
+        "id": 1000001,
+        "identifier": "PT KEHAMILAN SEHAT SEJAHTERA",
+        "model-name": "ad_org"
+      },
+      "Description": "lapicef",
+      "LineNo": 0,
+      "C_MedicalRecord_ID": {
+        "propertyLabel": "Medical Record",
+        "id": 1268301,
+        "identifier": "henry test2 ",
+        "model-name": "c_medicalrecord"
+      },
+      "M_Product_ID": {
+        "propertyLabel": "Product",
+        "id": 1000352,
+        "identifier": "LAPICEF",
+        "model-name": "m_product"
+      },
+      "Qty": 1,
+      "isMedicationCompund": {
+        "propertyLabel": "Is Medication Compund",
+        "id": "N",
+        "identifier": "No",
+        "model-name": "ad_ref_list"
+      },
+      "QtyOnHand": 556.0,
+      "IsActive": true
+    },
+    {
+      "id": 1011055,
+      "uid": "bee25743-d4c1-4b47-96f2-2b2540daa3cb",
+      "AD_Client_ID": {
+        "propertyLabel": "Client",
+        "id": 1000000,
+        "identifier": "KSS Group",
+        "model-name": "ad_client"
+      },
+      "AD_Org_ID": {
+        "propertyLabel": "Organization",
+        "id": 1000001,
+        "identifier": "PT KEHAMILAN SEHAT SEJAHTERA",
+        "model-name": "ad_org"
+      },
+      "Description": "lapistan",
+      "LineNo": 0,
+      "C_MedicalRecord_ID": {
+        "propertyLabel": "Medical Record",
+        "id": 1268301,
+        "identifier": "henry test2 ",
+        "model-name": "c_medicalrecord"
+      },
+      "M_Product_ID": {
+        "propertyLabel": "Product",
+        "id": 1000370,
+        "identifier": "LAPISTAN",
+        "model-name": "m_product"
+      },
+      "Qty": 1,
+      "isMedicationCompund": {
+        "propertyLabel": "Is Medication Compund",
+        "id": "N",
+        "identifier": "No",
+        "model-name": "ad_ref_list"
+      },
+      "QtyOnHand": 679.0,
       "IsActive": true
     }
   ],

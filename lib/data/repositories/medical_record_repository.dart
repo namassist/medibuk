@@ -1,24 +1,42 @@
 import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:dio/dio.dart';
+import 'package:medibuk/domain/entities/product_info.dart';
 import '../../domain/entities/medical_record.dart';
 
 abstract class MedicalRecordRepository {
   Future<MedicalRecord> getMedicalRecord(String id);
   Future<MedicalRecord> updateMedicalRecord(MedicalRecord record);
   Future<List<GeneralInfo>> getGeneralInfoOptions(String modelName);
+  Future<List<ProductInfo>> searchProducts(String query);
 }
 
 class MedicalRecordRepositoryImpl implements MedicalRecordRepository {
   static const String _baseUrl = 'https://devkss.idempiereonline.com/api/v1';
   static const String _authToken =
-      'eyJraWQiOiJpZGVtcGllcmUiLCJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJTdXBlckFuYWFtIiwiTV9XYXJlaG91c2VfSUQiOjEwMDAwMTMsIkFEX0xhbmd1YWdlIjoiZW5fVVMiLCJBRF9TZXNzaW9uX0lEIjoyMjI4MDQ1LCJBRF9Vc2VyX0lEIjoxMDk5MDcxLCJBRF9Sb2xlX0lEIjoxMDAwMDE1LCJBRF9PcmdfSUQiOjEwMDAwMDEsImlzcyI6ImlkZW1waWVyZS5vcmciLCJBRF9DbGllbnRfSUQiOjEwMDAwMDAsImV4cCI6MTc1ODU5NzY3N30.7CG1QKyyBfyOmtoKhGZae-uvGxwvQ7zErHmECk5Ba_aOsqE92ES9X14EvddG6oNh5z9TO7HTQH7yDOlkCvLy_Q';
+      'eyJraWQiOiJpZGVtcGllcmUiLCJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJTdXBlckFuYWFtIiwiTV9XYXJlaG91c2VfSUQiOjEwMDAwMTMsIkFEX0xhbmd1YWdlIjoiZW5fVVMiLCJBRF9TZXNzaW9uX0lEIjoyMjI4Mjc3LCJBRF9Vc2VyX0lEIjoxMDk5MDcxLCJBRF9Sb2xlX0lEIjoxMDAwMDE1LCJBRF9PcmdfSUQiOjEwMDAwMDEsImlzcyI6ImlkZW1waWVyZS5vcmciLCJBRF9DbGllbnRfSUQiOjEwMDAwMDAsImV4cCI6MTc1ODYyMDI4M30.JrX8egqArEdwpFXmINqNPKcYbPX31qNjhpK2NABnll0i1v71KNr5inow3UkwkmlVa9AV2KColGj6GXNvYx5wqg';
+
+  static const String _nodeBaseUrl = 'https://medibook.medital.id/api';
+  static const String _nodeAuthToken =
+      'eyJraWQiOiJpZGVtcGllcmUiLCJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJTdXBlckFuYWFtIiwiTV9XYXJlaG91c2VfSUQiOjEwMDAwMTMsIkFEX0xhbmd1YWdlIjoiZW5fVVMiLCJBRF9TZXNzaW9uX0lEIjoyMjI4Mjc3LCJBRF9Vc2VyX0lEIjoxMDk5MDcxLCJBRF9Sb2xlX0lEIjoxMDAwMDE1LCJBRF9PcmdfSUQiOjEwMDAwMDEsImlzcyI6ImlkZW1waWVyZS5vcmciLCJBRF9DbGllbnRfSUQiOjEwMDAwMDAsImV4cCI6MTc1ODYyMDI4M30.JrX8egqArEdwpFXmINqNPKcYbPX31qNjhpK2NABnll0i1v71KNr5inow3UkwkmlVa9AV2KColGj6GXNvYx5wqg';
 
   final Dio _dio = Dio(
     BaseOptions(
       baseUrl: _baseUrl,
       headers: {
         'Authorization': 'Bearer $_authToken',
+        'Accept': 'application/json',
+      },
+      connectTimeout: const Duration(seconds: 15),
+      receiveTimeout: const Duration(seconds: 20),
+    ),
+  );
+
+  final Dio _nodeDio = Dio(
+    BaseOptions(
+      baseUrl: _nodeBaseUrl,
+      headers: {
+        'Authorization': 'Bearer $_nodeAuthToken',
         'Accept': 'application/json',
       },
       connectTimeout: const Duration(seconds: 15),
@@ -177,6 +195,34 @@ class MedicalRecordRepositoryImpl implements MedicalRecordRepository {
     } catch (e) {
       // Handle potential errors, e.g., network issues
       // For now, return an empty list to prevent crashes
+      return [];
+    }
+  }
+
+  @override
+  Future<List<ProductInfo>> searchProducts(String query) async {
+    if (query.isEmpty) return [];
+    try {
+      // Sesuaikan parameter ini dengan kebutuhan production
+      final parameters = json.encode({
+        "name": "%${query.toLowerCase()}%",
+        "category": null,
+        "M_WareHouse_ID": "1000013",
+        "mPriceListVersionId": null,
+        "AD_Org_ID": "1000001",
+      });
+
+      final response = await _nodeDio.get(
+        '/infos/product-info',
+        queryParameters: {
+          'node': 'dev',
+          r'$parameters': parameters,
+          r'$order_by': 'QtyAvailable DESC',
+        },
+      );
+      final records = response.data['infowindow-records'] as List;
+      return records.map((json) => ProductInfo.fromJson(json)).toList();
+    } catch (e) {
       return [];
     }
   }

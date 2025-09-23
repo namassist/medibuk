@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../providers/medical_record_providers.dart';
+import '../../providers/medical_record_providers.dart';
 import 'dynamic_fields.dart';
-import 'responsive_grid.dart';
-import '../../domain/entities/medical_record.dart';
+import '../layouts/responsive_grid.dart';
+import '../../../domain/entities/medical_record.dart';
 import 'package:medibuk/presentation/providers/form_data_provider.dart';
 
 class FormSection extends ConsumerStatefulWidget {

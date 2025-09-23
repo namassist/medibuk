@@ -6,9 +6,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:intl/intl.dart';
 import 'package:medibuk/domain/entities/fields_dictionary.dart';
-import '../providers/medical_record_providers.dart';
-import '../../domain/entities/medical_record.dart';
-import '../../domain/entities/format_definition.dart';
+import '../../providers/medical_record_providers.dart';
+import '../../../domain/entities/medical_record.dart';
+import '../../../domain/entities/format_definition.dart';
 
 class DynamicFields extends ConsumerStatefulWidget {
   final String fieldName;

@@ -5,8 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medibuk/domain/entities/medical_record.dart';
 import 'package:medibuk/presentation/providers/medical_record_providers.dart';
 import 'package:medibuk/presentation/providers/form_data_provider.dart';
-import 'package:medibuk/presentation/widgets/form_section.dart';
+import 'package:medibuk/presentation/widgets/fields/form_section.dart';
 import 'package:medibuk/presentation/widgets/layouts/app_toolbar.dart';
+import 'package:medibuk/presentation/widgets/tabs/tab_view.dart';
 
 class MedicalRecordScreen extends ConsumerWidget {
   final String medicalRecordId;
@@ -128,6 +129,35 @@ class _Content extends ConsumerWidget {
             ),
           ),
         ],
+
+        SliverToBoxAdapter(
+          child: Builder(
+            // Gunakan Builder agar context tersedia untuk helper
+            builder: (context) {
+              // Definisikan semua tab yang ingin Anda tampilkan di sini
+              final List<TabData> clinicalFindingTabs = [
+                TabData(
+                  title: 'Prescriptions',
+                  icon: Icons.medication,
+                  content: buildPrescriptionTabContent(record, context, ref),
+                ),
+                TabData(
+                  title: 'Services',
+                  icon: Icons.miscellaneous_services,
+                  content: buildServiceTabContent(record, context, ref),
+                ),
+              ];
+
+              return TabView(
+                title: 'Clinical Findings',
+                subtitle: 'Prescriptions & Services Provided',
+                headerIcon: Icons.medical_services_outlined,
+                tabs: clinicalFindingTabs,
+                record: record,
+              );
+            },
+          ),
+        ),
 
         const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
       ],
