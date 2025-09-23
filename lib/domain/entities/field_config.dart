@@ -550,99 +550,151 @@ class FieldConfig {
         fieldType: FieldType.number,
       ),
     },
-    'encounter': {
+    'encounter_information': {
+      'DocumentNo': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        fieldType: FieldType.text,
+      ),
+      'Antrian': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        fieldType: FieldType.text,
+      ),
       'DateTrx': FormatDefinition(
         wideCount: 2,
-        editable: false,
+        editable: true,
         fieldType: FieldType.date,
       ),
-      'DocumentNo': FormatDefinition(wideCount: 2, editable: false),
-      'Antrian': FormatDefinition(wideCount: 2),
-      'C_BPartner_ID': FormatDefinition(
+      'C_DocType_ID': FormatDefinition(
         wideCount: 2,
-        editable: false,
+        editable: true,
         fieldType: FieldType.generalInfo,
       ),
-      'Birthday': FormatDefinition(
+      'C_BPartner_ID': FormatDefinition(
         wideCount: 2,
-        editable: false,
-        fieldType: FieldType.date,
+        editable: true,
+        newLine: true,
+        fieldType: FieldType.generalInfo,
       ),
-      'tensi': FormatDefinition(wideCount: 2, fieldType: FieldType.boolean),
+      'C_BPartnerRelation_ID': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        fieldType: FieldType.generalInfo,
+      ),
+      'QA_Sources_ID': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        fieldType: FieldType.generalInfo,
+      ),
       'C_SalesRegion_ID': FormatDefinition(
         wideCount: 2,
-        editable: false,
+        editable: true,
+        newLine: true,
         fieldType: FieldType.generalInfo,
       ),
       'M_Specialist_ID': FormatDefinition(
         wideCount: 2,
-        editable: false,
+        editable: true,
         fieldType: FieldType.generalInfo,
       ),
       'Doctor_ID': FormatDefinition(
         wideCount: 2,
-        editable: false,
+        editable: true,
         fieldType: FieldType.generalInfo,
       ),
       'Assistant_ID': FormatDefinition(
         wideCount: 2,
-        editable: false,
+        editable: true,
         fieldType: FieldType.generalInfo,
       ),
       'Info': FormatDefinition(
         wideCount: 8,
+        maxLines: 6,
+        editable: true,
         newLine: true,
         multiLine: true,
-        maxLines: 4,
+        fieldType: FieldType.text,
       ),
+    },
+    'encounter_patient_medical': {
       'SystolicPressure': FormatDefinition(
         wideCount: 1,
+        editable: true,
         fieldType: FieldType.number,
       ),
       'DiastolicPressure': FormatDefinition(
         wideCount: 1,
+        editable: true,
         fieldType: FieldType.number,
       ),
-      'BodyWeight': FormatDefinition(wideCount: 1, fieldType: FieldType.number),
-      'BodyHeight': FormatDefinition(wideCount: 1, fieldType: FieldType.number),
-      'BodyTemperature': FormatDefinition(
+      'BodyWeight': FormatDefinition(
         wideCount: 1,
+        editable: true,
         fieldType: FieldType.number,
       ),
-      'BirthWeight': FormatDefinition(
+      'BodyHeight': FormatDefinition(
         wideCount: 1,
-        fieldType: FieldType.number,
-      ),
-      'FirstDayOfMenstrualPeriod': FormatDefinition(
-        wideCount: 2,
-        fieldType: FieldType.date,
-      ),
-      'head_circumference': FormatDefinition(
-        wideCount: 1,
+        editable: true,
         fieldType: FieldType.number,
       ),
       'PregnancyNo': FormatDefinition(
         wideCount: 1,
+        editable: true,
         fieldType: FieldType.number,
       ),
       'Miscarriage': FormatDefinition(
         wideCount: 1,
+        editable: true,
+        fieldType: FieldType.number,
+      ),
+      'FirstDayOfMenstrualPeriod': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        newLine: true,
+        fieldType: FieldType.date,
+      ),
+      'BodyTemperature': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        fieldType: FieldType.number,
+      ),
+      'BirthWeight': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        fieldType: FieldType.number,
+      ),
+      'head_circumference': FormatDefinition(
+        wideCount: 1,
+        editable: true,
         fieldType: FieldType.number,
       ),
       'LaborSpontanNormal': FormatDefinition(
         wideCount: 1,
+        editable: true,
+        newLine: true,
         fieldType: FieldType.number,
       ),
-      'LaborSC': FormatDefinition(wideCount: 1, fieldType: FieldType.number),
+      'LaborSC': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        fieldType: FieldType.number,
+      ),
       'LaborSpontanForcep': FormatDefinition(
         wideCount: 1,
+        editable: true,
         fieldType: FieldType.number,
       ),
       'LaborSpontanVacuum': FormatDefinition(
         wideCount: 1,
+        editable: true,
         fieldType: FieldType.number,
       ),
-      'LILA': FormatDefinition(wideCount: 1, fieldType: FieldType.number),
+      'LILA': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        fieldType: FieldType.number,
+      ),
     },
   };
 
@@ -654,7 +706,6 @@ class FieldConfig {
     if (sectionMap != null && sectionMap.containsKey(fieldName)) {
       return sectionMap[fieldName]!;
     }
-    // Default fallback
     return const FormatDefinition(
       wideCount: 2,
       editable: true,

@@ -2,11 +2,11 @@ import 'package:dio/dio.dart';
 
 class ApiClient {
   final Dio _dio;
-  final Dio _nodeDio; // Tetap ada jika masih dibutuhkan untuk API lain
+  final Dio _nodeDio;
 
   // Token dari dokumentasi Anda
   static const String _authToken =
-      'eyJraWQiOiJpZGVtcGllcmUiLCJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJTdXBlckFuYWFtIiwiTV9XYXJlaG91c2VfSUQiOjEwMDAwMTMsIkFEX0xhbmd1YWdlIjoiZW5fVVMiLCJBRF9TZXNzaW9uX0lEIjoyMjI4Mjc3LCJBRF9Vc2VyX0lEIjoxMDk5MDcxLCJBRF9Sb2xlX0lEIjoxMDAwMDE1LCJBRF9PcmdfSUQiOjEwMDAwMDEsImlzcyI6ImlkZW1waWVyZS5vcmciLCJBRF9DbGllbnRfSUQiOjEwMDAwMDAsImV4cCI6MTc1ODYyMDI4M30.JrX8egqArEdwpFXmINqNPKcYbPX31qNjhpK2NABnll0i1v71KNr5inow3UkwkmlVa9AV2KColGj6GXNvYx5wqg';
+      'eyJraWQiOiJpZGVtcGllcmUiLCJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJTdXBlckFuYWFtIiwiTV9XYXJlaG91c2VfSUQiOjEwMDAwMTMsIkFEX0xhbmd1YWdlIjoiZW5fVVMiLCJBRF9TZXNzaW9uX0lEIjoyMjI4Mzg3LCJBRF9Vc2VyX0lEIjoxMDk5MDcxLCJBRF9Sb2xlX0lEIjoxMDAwMDE1LCJBRF9PcmdfSUQiOjEwMDAwMDEsImlzcyI6ImlkZW1waWVyZS5vcmciLCJBRF9DbGllbnRfSUQiOjEwMDAwMDAsImV4cCI6MTc1ODYzMTIwOX0.PpmRItuLgbLHJCHGTmci4r_zXSlV4jSYiENK91U9WaJ7ubBOKohCPZfVUp-mz7kIYMwWnTuJqKyhpBTDhttZpA';
 
   ApiClient()
     : _dio = Dio(
@@ -20,7 +20,6 @@ class ApiClient {
           receiveTimeout: const Duration(seconds: 20),
         ),
       ),
-      // Inisialisasi _nodeDio tetap ada jika diperlukan untuk fitur lain
       _nodeDio = Dio(
         BaseOptions(
           baseUrl: 'https://medibook.medital.id/api',
@@ -71,7 +70,6 @@ class ApiClient {
     String path,
     Map<String, dynamic> params,
   ) async {
-    // ... implementasi getNode
     return [];
   }
 }

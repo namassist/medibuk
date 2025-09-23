@@ -54,7 +54,7 @@ class _Content extends ConsumerWidget {
                   icon: const Icon(Icons.refresh),
                   tooltip: 'Reload Data',
                   onPressed: () {
-                    ref.invalidate(EncounterNotifierProvider(record.uid));
+                    ref.invalidate(EncounterNotifierProvider('${record.id}'));
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Data reloaded.')),
                     );
@@ -63,7 +63,7 @@ class _Content extends ConsumerWidget {
                 const SizedBox(width: 12),
                 ElevatedButton.icon(
                   onPressed: isModified
-                      ? () => _save(ref, context, record)
+                      ? () => _save(ref, context, '${record.id}')
                       : null,
                   icon: const Icon(Icons.save),
                   label: const Text('Save'),
@@ -81,12 +81,23 @@ class _Content extends ConsumerWidget {
           sliver: SliverList(
             delegate: SliverChildListDelegate([
               FormSection(
-                title: 'Encounter Details',
+                title: 'Information',
                 data: record.toJson(),
                 isEditable: record.docStatus.id != 'CO',
-                sectionType: 'encounter',
+                sectionType: 'encounter_information',
                 sectionIndex: 0,
-                recordId: '${record.id}',
+                recordId: record.uid,
+              ),
+
+              const SizedBox(height: 16),
+
+              FormSection(
+                title: 'Patient Medical Information',
+                data: record.toJson(),
+                isEditable: record.docStatus.id != 'CO',
+                sectionType: 'encounter_patient_medical',
+                sectionIndex: 1,
+                recordId: record.uid,
               ),
             ]),
           ),
@@ -98,36 +109,47 @@ class _Content extends ConsumerWidget {
   Future<void> _save(
     WidgetRef ref,
     BuildContext context,
-    EncounterRecord record,
+    String recordId,
   ) async {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Saving...')));
+    if (!context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(const SnackBar(content: Text('Saving...')));
+
     try {
+      final currentState = await ref.read(
+        EncounterNotifierProvider(recordId).future,
+      );
+      if (currentState == null) {
+        throw Exception("Cannot save, record not found in state.");
+      }
+
       final formState = ref.read(formDataProvider);
 
       final patchedJson = buildPatchedJsonFromModel(
-        record, // Langsung gunakan record karena patcher sudah generik
+        currentState,
         formState,
-        record.uid,
+        recordId,
         listSections: [],
       );
+
       final updatedRecord = EncounterRecord.fromJson(patchedJson);
 
       await ref
-          .read(EncounterNotifierProvider(record.uid).notifier)
+          .read(EncounterNotifierProvider(recordId).notifier)
           .updateRecord(updatedRecord);
 
       ref.read(formModificationNotifierProvider.notifier).reset();
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!context.mounted) return;
+      messenger.showSnackBar(
         const SnackBar(
           content: Text('Save successful!'),
           backgroundColor: Colors.green,
         ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!context.mounted) return;
+      messenger.showSnackBar(
         SnackBar(content: Text('Save failed: $e'), backgroundColor: Colors.red),
       );
     }

@@ -26,8 +26,12 @@ EncounterRecord _$EncounterRecordFromJson(
   cBPartnerId: json['C_BPartner_ID'] == null
       ? null
       : GeneralInfo.fromJson(json['C_BPartner_ID'] as Map<String, dynamic>),
+  cBPartnerRelationID: json['C_BPartnerRelation_ID'] == null
+      ? null
+      : GeneralInfo.fromJson(
+          json['C_BPartnerRelation_ID'] as Map<String, dynamic>,
+        ),
   birthday: json['Birthday'] as String?,
-  tensi: json['tensi'] as bool?,
   cSalesRegionId: json['C_SalesRegion_ID'] == null
       ? null
       : GeneralInfo.fromJson(json['C_SalesRegion_ID'] as Map<String, dynamic>),
@@ -41,6 +45,11 @@ EncounterRecord _$EncounterRecordFromJson(
       ? null
       : GeneralInfo.fromJson(json['Assistant_ID'] as Map<String, dynamic>),
   info: json['Info'] as String?,
+  cEncounterScheduleID: json['C_EncounterSchedule_ID'] == null
+      ? null
+      : GeneralInfo.fromJson(
+          json['C_EncounterSchedule_ID'] as Map<String, dynamic>,
+        ),
   systolicPressure: json['SystolicPressure'] as num?,
   diastolicPressure: json['DiastolicPressure'] as num?,
   bodyWeight: json['BodyWeight'] as num?,
@@ -63,6 +72,18 @@ EncounterRecord _$EncounterRecordFromJson(
   isPaid: json['IsPaid'] as bool,
   discountAmt: json['DiscountAmt'] as num?,
   amtBeforeDisc: json['AmtBeforeDisc'] as num?,
+  docAction: json['doc_action'] as String?,
+  cOrderID: json['C_Order_ID'] == null
+      ? null
+      : GeneralInfo.fromJson(json['C_Order_ID'] as Map<String, dynamic>),
+  qaSourcesID: json['QA_Sources_ID'] == null
+      ? null
+      : GeneralInfo.fromJson(json['QA_Sources_ID'] as Map<String, dynamic>),
+  cMedicalRecordID: json['C_MedicalRecord_ID'] == null
+      ? null
+      : GeneralInfo.fromJson(
+          json['C_MedicalRecord_ID'] as Map<String, dynamic>,
+        ),
 );
 
 Map<String, dynamic> _$EncounterRecordToJson(EncounterRecord instance) =>
@@ -76,9 +97,11 @@ Map<String, dynamic> _$EncounterRecordToJson(EncounterRecord instance) =>
       'DateTrx': instance.dateTrx,
       'Antrian': instance.antrian,
       'C_BPartner_ID': instance.cBPartnerId,
+      'C_BPartnerRelation_ID': instance.cBPartnerRelationID,
       'Birthday': instance.birthday,
-      'tensi': instance.tensi,
       'C_SalesRegion_ID': instance.cSalesRegionId,
+      'C_EncounterSchedule_ID': instance.cEncounterScheduleID,
+      'C_MedicalRecord_ID': instance.cMedicalRecordID,
       'M_Specialist_ID': instance.mSpecialistId,
       'Doctor_ID': instance.doctorId,
       'Assistant_ID': instance.assistantId,
@@ -105,4 +128,7 @@ Map<String, dynamic> _$EncounterRecordToJson(EncounterRecord instance) =>
       'IsPaid': instance.isPaid,
       'DiscountAmt': instance.discountAmt,
       'AmtBeforeDisc': instance.amtBeforeDisc,
+      'doc_action': instance.docAction,
+      'C_Order_ID': instance.cOrderID,
+      'QA_Sources_ID': instance.qaSourcesID,
     };

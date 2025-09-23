@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medibuk/data/api/api_client.dart';
 import 'package:medibuk/domain/entities/encounter_record.dart';
 import 'package:medibuk/presentation/providers/api_client_provider.dart';
+import 'package:medibuk/presentation/utils/formatted.dart';
 
 abstract class EncounterRepository {
   Future<EncounterRecord> getEncounterRecord(String id);
@@ -20,17 +21,15 @@ class EncounterRepositoryImpl implements EncounterRepository {
 
   @override
   Future<EncounterRecord> getEncounterRecord(String id) async {
-    // Menggunakan endpoint dari dokumentasi
     final jsonData = await _apiClient.get('/windows/encounter/$id');
     return EncounterRecord.fromJson(jsonData);
   }
 
   @override
   Future<void> updateEncounterRecord(EncounterRecord record) async {
-    // Menggunakan metode PUT dengan data dari record
-    await _apiClient.put(
-      '/windows/encounter/${record.id}',
-      data: record.toJson(),
-    );
+    final rawJson = record.toJson();
+    final cleanedJson = removeNullValues(rawJson);
+
+    await _apiClient.put('/windows/encounter/${record.id}', data: cleanedJson);
   }
 }

@@ -20,11 +20,16 @@ class EncounterRecord extends Record {
   final String? antrian;
   @JsonKey(name: 'C_BPartner_ID')
   final GeneralInfo? cBPartnerId;
+  @JsonKey(name: 'C_BPartnerRelation_ID')
+  final GeneralInfo? cBPartnerRelationID;
   @JsonKey(name: 'Birthday')
   final String? birthday;
-  final bool? tensi;
   @JsonKey(name: 'C_SalesRegion_ID')
   final GeneralInfo? cSalesRegionId;
+  @JsonKey(name: 'C_EncounterSchedule_ID')
+  final GeneralInfo? cEncounterScheduleID;
+  @JsonKey(name: 'C_MedicalRecord_ID')
+  final GeneralInfo? cMedicalRecordID;
   @JsonKey(name: 'M_Specialist_ID')
   final GeneralInfo? mSpecialistId;
   @JsonKey(name: 'Doctor_ID')
@@ -77,6 +82,12 @@ class EncounterRecord extends Record {
   final num? discountAmt;
   @JsonKey(name: 'AmtBeforeDisc')
   final num? amtBeforeDisc;
+  @JsonKey(name: 'doc_action')
+  final String? docAction;
+  @JsonKey(name: 'C_Order_ID')
+  final GeneralInfo? cOrderID;
+  @JsonKey(name: 'QA_Sources_ID')
+  final GeneralInfo? qaSourcesID;
 
   EncounterRecord({
     required super.id,
@@ -88,13 +99,14 @@ class EncounterRecord extends Record {
     required this.dateTrx,
     this.antrian,
     this.cBPartnerId,
+    this.cBPartnerRelationID,
     this.birthday,
-    this.tensi,
     this.cSalesRegionId,
     this.mSpecialistId,
     this.doctorId,
     this.assistantId,
     this.info,
+    this.cEncounterScheduleID,
     this.systolicPressure,
     this.diastolicPressure,
     this.bodyWeight,
@@ -117,6 +129,10 @@ class EncounterRecord extends Record {
     required this.isPaid,
     this.discountAmt,
     this.amtBeforeDisc,
+    this.docAction,
+    this.cOrderID,
+    this.qaSourcesID,
+    this.cMedicalRecordID,
   });
 
   factory EncounterRecord.fromJson(Map<String, dynamic> json) =>
