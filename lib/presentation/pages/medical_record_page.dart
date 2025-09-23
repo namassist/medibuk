@@ -4,13 +4,16 @@ import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medibuk/domain/entities/medical_record.dart';
+import 'package:medibuk/presentation/pages/encounter_page.dart';
 import 'package:medibuk/presentation/providers/medical_record_providers.dart';
 import 'package:medibuk/presentation/providers/form_data_provider.dart';
 import 'package:medibuk/presentation/providers/table_data_provider.dart';
+import 'package:medibuk/presentation/providers/ui_providers.dart';
+import 'package:medibuk/presentation/utils/json_patcher.dart';
 import 'package:medibuk/presentation/widgets/dialogs/prescription_form_dialog.dart';
 import 'package:medibuk/presentation/widgets/dialogs/prescription_service_dialog.dart';
 import 'package:medibuk/presentation/widgets/fields/form_section.dart';
-import 'package:medibuk/presentation/widgets/layouts/app_toolbar.dart';
+import 'package:medibuk/presentation/widgets/core/app_toolbar.dart';
 import 'package:medibuk/presentation/widgets/tables/data_table.dart';
 import 'package:medibuk/presentation/widgets/tabs/tab_view.dart';
 
@@ -51,6 +54,7 @@ class _Content extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isEditable = record.docStatus.id != 'CO';
+    final isModified = ref.watch(formModificationNotifierProvider);
 
     return CustomScrollView(
       slivers: [
@@ -59,9 +63,65 @@ class _Content extends ConsumerWidget {
           delegate: _PinnedHeaderDelegate(
             minExtentHeight: 210,
             maxExtentHeight: 210,
-            child: AppToolbar(record: record, medicalRecordId: medicalRecordId),
+            child: AppToolbar(
+              title: 'Medical Record - ${record.documentNo}',
+              actions: [
+                // Tombol Reload
+                IconButton(
+                  icon: const Icon(Icons.refresh),
+                  tooltip: 'Reload Data',
+                  onPressed: () {
+                    // IMPLEMENTASI RELOAD: Cukup panggil ref.refresh
+                    ref.invalidate(
+                      MedicalRecordNotifierProvider(medicalRecordId),
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Data reloaded.')),
+                    );
+                  },
+                ),
+                const SizedBox(width: 12),
+                // Tombol Save
+                ElevatedButton.icon(
+                  onPressed: isModified ? () => _save(ref, context) : null,
+                  icon: const Icon(Icons.save),
+                  label: const Text('Save'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.teal[800],
+                    foregroundColor: Colors.white,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    // Navigasi ke halaman Encounter
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const EncounterScreen(encounterId: '1305660'),
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.badge_outlined),
+                  label: const Text('Encounter'),
+                ),
+                const Spacer(),
+                if (isEditable)
+                  ElevatedButton.icon(
+                    onPressed: () => _markAsComplete(context, ref),
+                    icon: const Icon(Icons.check),
+                    label: const Text('Complete'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green[600],
+                      foregroundColor: Colors.white,
+                    ),
+                  ),
+              ],
+            ),
           ),
         ),
+        // ... sisa widget (SliverPadding, SliverList, dll) tidak berubah
         SliverPadding(
           padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
           sliver: SliverList(
@@ -76,7 +136,7 @@ class _Content extends ConsumerWidget {
                     isEditable: isEditable,
                     sectionType: 'main',
                     sectionIndex: 0,
-                    medicalRecordId: medicalRecordId,
+                    recordId: medicalRecordId,
                     collapsible: true,
                     initiallyExpanded: true,
                   );
@@ -161,10 +221,51 @@ class _Content extends ConsumerWidget {
             },
           ),
         ),
-
-        const SliverPadding(padding: EdgeInsets.only(bottom: 80)),
       ],
     );
+  }
+
+  Future<void> _save(WidgetRef ref, BuildContext context) async {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Saving...')));
+
+    try {
+      // 1. Dapatkan state form saat ini
+      final formState = ref.read(formDataProvider);
+
+      // 2. Gunakan json_patcher untuk membuat JSON yang sudah diperbarui
+      final patchedJson = buildPatchedJsonFromModel(
+        record,
+        formState,
+        medicalRecordId,
+      );
+      final updatedRecord = MedicalRecord.fromJson(patchedJson);
+
+      // 3. Panggil metode updateRecord dari notifier
+      await ref
+          .read(MedicalRecordNotifierProvider(medicalRecordId).notifier)
+          .updateRecord(updatedRecord);
+
+      // 4. Reset state modifikasi form
+      ref.read(formModificationNotifierProvider.notifier).reset();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Save successful!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Save failed: $e'), backgroundColor: Colors.red),
+      );
+    }
+  }
+
+  // ... sisa metode (_markAsComplete, _buildVirtualizedSections, dll) tidak berubah
+  Future<void> _markAsComplete(BuildContext context, WidgetRef ref) async {
+    // Implementasi mark as complete
   }
 
   Widget _buildVirtualizedSections<T>(
@@ -198,7 +299,7 @@ class _Content extends ConsumerWidget {
             isEditable: isEditable,
             sectionType: sectionType,
             sectionIndex: index,
-            medicalRecordId: medicalRecordId,
+            recordId: medicalRecordId,
             collapsible: true,
             initiallyExpanded: sectionType == 'information',
             onDelete:
@@ -333,6 +434,7 @@ class _Content extends ConsumerWidget {
   }
 }
 
+// ... (_EmptyState, _ErrorState, _PinnedHeaderDelegate) tidak berubah
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
 
@@ -429,15 +531,6 @@ class _PinnedHeaderDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   bool shouldRebuild(covariant _PinnedHeaderDelegate oldDelegate) {
-    return oldDelegate.minExtentHeight != minExtentHeight ||
-        oldDelegate.maxExtentHeight != maxExtentHeight ||
-        oldDelegate.child != child;
-  }
-}
-
-extension StringCapitalization on String {
-  String capitalize() {
-    if (isEmpty) return this;
-    return '${this[0].toUpperCase()}${substring(1)}';
+    return true;
   }
 }

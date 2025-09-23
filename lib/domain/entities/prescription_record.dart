@@ -1,13 +1,11 @@
-// lib/domain/entities/prescription_record.dart
-import 'package:json_annotation/json_annotation.dart';
 import 'general_info.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:medibuk/domain/entities/record.dart';
 
 part 'prescription_record.g.dart';
 
 @JsonSerializable()
-class PrescriptionRecord {
-  final int id;
-  final String uid;
+class PrescriptionRecord extends Record {
   @JsonKey(name: 'AD_Client_ID')
   final GeneralInfo? adClientId;
   @JsonKey(name: 'AD_Org_ID')
@@ -30,8 +28,8 @@ class PrescriptionRecord {
   final String? description;
 
   const PrescriptionRecord({
-    required this.id,
-    required this.uid,
+    required super.id,
+    required super.uid,
     this.adClientId,
     this.adOrgId,
     this.lineNo,

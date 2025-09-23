@@ -1,14 +1,13 @@
-// lib/presentation/widgets/dynamic_fields.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:intl/intl.dart';
+import 'package:medibuk/domain/entities/field_config.dart';
 import 'package:medibuk/domain/entities/fields_dictionary.dart';
-import '../../providers/medical_record_providers.dart';
-import '../../../domain/entities/medical_record.dart';
-import '../../../domain/entities/format_definition.dart';
+import 'package:medibuk/presentation/providers/medical_record_providers.dart';
+import 'package:medibuk/domain/entities/medical_record.dart';
+import 'package:medibuk/domain/entities/format_definition.dart';
 
 class DynamicFields extends ConsumerStatefulWidget {
   final String fieldName;
@@ -44,7 +43,7 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
     super.initState();
     _controller = TextEditingController(text: _getDisplayValue(widget.value));
 
-    _config = MedicalRecordFieldConfiguration.getConfig(
+    _config = FieldConfig.getConfig(
       widget.fieldName,
       section: widget.sectionType ?? '',
     );

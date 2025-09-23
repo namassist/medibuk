@@ -1,9 +1,7 @@
-// lib/presentation/providers/add_item_provider.dart
-import 'package:medibuk/domain/entities/prescription_record.dart';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../domain/entities/product_info.dart';
-import 'medical_record_providers.dart';
+import 'package:medibuk/data/repositories/shared_data_repository.dart'; // Ganti import ini
+import 'package:medibuk/domain/entities/product_info.dart';
+import 'package:medibuk/domain/entities/prescription_record.dart';
 
 // Provider untuk mengambil hasil pencarian produk dari API
 final productSearchProvider = FutureProvider.autoDispose
@@ -14,7 +12,8 @@ final productSearchProvider = FutureProvider.autoDispose
       // Menunggu sebentar (debounce) sebelum benar-benar memanggil API
       await Future.delayed(const Duration(milliseconds: 500));
 
-      final repository = ref.read(medicalRecordRepositoryProvider);
+      // PERBAIKAN: Ganti medicalRecordRepositoryProvider dengan sharedDataRepositoryProvider
+      final repository = ref.read(sharedDataRepositoryProvider);
       return repository.searchProducts(query);
     });
 

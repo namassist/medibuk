@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../providers/medical_record_providers.dart';
-import 'dynamic_fields.dart';
-import '../layouts/responsive_grid.dart';
-import '../../../domain/entities/medical_record.dart';
+import 'package:medibuk/domain/entities/field_config.dart';
+import 'package:medibuk/presentation/providers/ui_providers.dart';
+import 'package:medibuk/presentation/widgets/fields/dynamic_fields.dart';
+import 'package:medibuk/presentation/widgets/core/responsive_grid.dart';
 import 'package:medibuk/presentation/providers/form_data_provider.dart';
 
 class FormSection extends ConsumerStatefulWidget {
@@ -12,7 +12,7 @@ class FormSection extends ConsumerStatefulWidget {
   final bool isEditable;
   final String sectionType;
   final int sectionIndex;
-  final String medicalRecordId;
+  final String recordId;
   final bool initiallyExpanded;
   final VoidCallback? onDelete;
   final bool collapsible;
@@ -24,7 +24,7 @@ class FormSection extends ConsumerStatefulWidget {
     required this.isEditable,
     required this.sectionType,
     required this.sectionIndex,
-    required this.medicalRecordId,
+    required this.recordId,
     this.initiallyExpanded = true,
     this.onDelete,
     this.collapsible = true,
@@ -56,7 +56,7 @@ class _FormSectionState extends ConsumerState<FormSection>
       ref
           .read(formDataProvider.notifier)
           .ensureSectionInitialized(
-            recordId: widget.medicalRecordId,
+            recordId: widget.recordId,
             sectionType: widget.sectionType,
             sectionIndex: widget.sectionIndex,
             fields: initMap,
@@ -67,7 +67,7 @@ class _FormSectionState extends ConsumerState<FormSection>
   @override
   void didUpdateWidget(covariant FormSection oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.medicalRecordId != widget.medicalRecordId ||
+    if (oldWidget.recordId != widget.recordId ||
         oldWidget.sectionIndex != widget.sectionIndex ||
         oldWidget.sectionType != widget.sectionType) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -76,7 +76,7 @@ class _FormSectionState extends ConsumerState<FormSection>
         ref
             .read(formDataProvider.notifier)
             .ensureSectionInitialized(
-              recordId: widget.medicalRecordId,
+              recordId: widget.recordId,
               sectionType: widget.sectionType,
               sectionIndex: widget.sectionIndex,
               fields: initMap,
@@ -95,7 +95,7 @@ class _FormSectionState extends ConsumerState<FormSection>
     ref
         .read(formDataProvider.notifier)
         .updateField(
-          recordId: widget.medicalRecordId,
+          recordId: widget.recordId,
           sectionType: widget.sectionType,
           sectionIndex: widget.sectionIndex,
           fieldName: fieldName,
@@ -200,11 +200,11 @@ class _FormSectionState extends ConsumerState<FormSection>
     final entries = _getFilteredEntries();
     final children = _buildFormFieldsFromEntries(entries);
 
-    // Derive layout hints from field configuration
     final spans = <int>[];
     final breaks = <bool>[];
     for (final entry in entries) {
-      final config = MedicalRecordFieldConfiguration.getConfig(
+      // PERBAIKAN: Gunakan FieldConfig yang netral
+      final config = FieldConfig.getConfig(
         entry.key,
         section: widget.sectionType,
       );
@@ -253,24 +253,18 @@ class _FormSectionState extends ConsumerState<FormSection>
     return fields;
   }
 
-  // Prepare filtered entries once to keep order and avoid duplicates
   List<MapEntry<String, dynamic>> _getFilteredEntries() {
-    final allowedKeys = MedicalRecordFieldConfiguration.orderedKeysForSection(
-      widget.sectionType,
-    );
+    final allowedKeys = FieldConfig.orderedKeysForSection(widget.sectionType);
     if (allowedKeys.isEmpty) return const <MapEntry<String, dynamic>>[];
 
     final result = <MapEntry<String, dynamic>>[];
     for (final key in allowedKeys) {
       if (!_localData.containsKey(key)) continue;
-      final cfg = MedicalRecordFieldConfiguration.getConfig(
-        key,
-        section: widget.sectionType,
-      );
+      // PERBAIKAN: Gunakan FieldConfig yang netral
+      final cfg = FieldConfig.getConfig(key, section: widget.sectionType);
       if (cfg.isHidden == true) continue;
       result.add(MapEntry(key, _localData[key]));
     }
-
     return result;
   }
 }

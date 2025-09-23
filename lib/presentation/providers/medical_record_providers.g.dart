@@ -6,26 +6,7 @@ part of 'medical_record_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$medicalRecordRepositoryHash() =>
-    r'76fa24cb95badb8cff6cf6b73faf9b2e53e3bb9b';
-
-/// See also [medicalRecordRepository].
-@ProviderFor(medicalRecordRepository)
-final medicalRecordRepositoryProvider =
-    Provider<MedicalRecordRepository>.internal(
-      medicalRecordRepository,
-      name: r'medicalRecordRepositoryProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$medicalRecordRepositoryHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-typedef MedicalRecordRepositoryRef = ProviderRef<MedicalRecordRepository>;
-String _$processedMainDataHash() => r'48b22a85b798b71718c2ed9d6ef27240ea439b08';
+String _$processedMainDataHash() => r'79cf61403c6bed8f2352fe8e9aeb3619d179e56e';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -314,7 +295,7 @@ class _MedicalRecordNotifierProviderElement
 }
 
 String _$cachedGeneralInfoOptionsHash() =>
-    r'209b8847f48d3e4397a9d9869244edf30b3d3770';
+    r'a078546dcc89b44fbce467c204bc483090c34a66';
 
 abstract class _$CachedGeneralInfoOptions
     extends BuildlessAsyncNotifier<List<GeneralInfo>> {
@@ -457,22 +438,5 @@ class _CachedGeneralInfoOptionsProviderElement
       (origin as CachedGeneralInfoOptionsProvider).modelName;
 }
 
-String _$formModificationNotifierHash() =>
-    r'1005e8db5eb992ce9690c2063d02c32fa2b46539';
-
-/// See also [FormModificationNotifier].
-@ProviderFor(FormModificationNotifier)
-final formModificationNotifierProvider =
-    AutoDisposeNotifierProvider<FormModificationNotifier, bool>.internal(
-      FormModificationNotifier.new,
-      name: r'formModificationNotifierProvider',
-      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-          ? null
-          : _$formModificationNotifierHash,
-      dependencies: null,
-      allTransitiveDependencies: null,
-    );
-
-typedef _$FormModificationNotifier = AutoDisposeNotifier<bool>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

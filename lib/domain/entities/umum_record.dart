@@ -1,13 +1,11 @@
-// lib/domain/entities/umum_record.dart
-import 'package:json_annotation/json_annotation.dart';
 import 'general_info.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:medibuk/domain/entities/record.dart';
 
 part 'umum_record.g.dart';
 
 @JsonSerializable()
-class UmumRecord {
-  final int id;
-  final String uid;
+class UmumRecord extends Record {
   @JsonKey(name: 'AD_Client_ID')
   final GeneralInfo? adClientId;
   @JsonKey(name: 'AD_Org_ID')
@@ -110,8 +108,8 @@ class UmumRecord {
   final GeneralInfo? cairanKetuban;
 
   const UmumRecord({
-    required this.id,
-    required this.uid,
+    required super.id,
+    required super.uid,
     this.adClientId,
     this.adOrgId,
     this.cMedicalRecordId,

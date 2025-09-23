@@ -1,13 +1,11 @@
-// lib/domain/entities/obstetric_record.dart
-import 'package:json_annotation/json_annotation.dart';
 import 'general_info.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:medibuk/domain/entities/record.dart';
 
 part 'obstetric_record.g.dart';
 
 @JsonSerializable()
-class ObstetricRecord {
-  final int id;
-  final String uid;
+class ObstetricRecord extends Record {
   @JsonKey(name: 'AD_Client_ID')
   final GeneralInfo? adClientId;
   @JsonKey(name: 'AD_Org_ID')
@@ -110,8 +108,8 @@ class ObstetricRecord {
   final GeneralInfo? cairanKetuban;
 
   const ObstetricRecord({
-    required this.id,
-    required this.uid,
+    required super.id,
+    required super.uid,
     this.adClientId,
     this.adOrgId,
     this.cMedicalRecordId,

@@ -1,0 +1,672 @@
+import 'package:flutter/material.dart';
+import 'package:medibuk/domain/entities/format_definition.dart';
+
+class FieldConfig {
+  static const Map<String, Map<String, FormatDefinition>>
+  sectionConfigurations = {
+    'main': {
+      'DateTrx': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.date,
+      ),
+      'OrderType_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'M_Specialist_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'C_BPartner_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'GestationalAgeWeek': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        newLine: true,
+        isMandatory: true,
+        fieldType: FieldType.number,
+      ),
+      'GestationalAgeDay': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        isMandatory: true,
+        fieldType: FieldType.number,
+      ),
+    },
+    'gynecology': {
+      'Doctor_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Assistant_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Birthday': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.date,
+      ),
+      'NextVisitDate': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.date,
+      ),
+      'ChiefComplaint': FormatDefinition(
+        wideCount: 8,
+        newLine: true,
+        multiLine: true,
+        editable: true,
+        maxLines: 7,
+        fieldType: FieldType.text,
+      ),
+      'FirstDayOfMenstrualPeriod': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        newLine: true,
+        fieldType: FieldType.date,
+      ),
+      'BirthControlMethod': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'BodyHeight': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'BodyWeight': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'SystolicPressure': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'DiastolicPressure': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'ICD_10': FormatDefinition(
+        wideCount: 4,
+        editable: true,
+        newLine: true,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'EndometriumThickness': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'InternalNote': FormatDefinition(
+        wideCount: 8,
+        editable: true,
+        multiLine: true,
+        newLine: true,
+        maxLines: 7,
+        fieldType: FieldType.text,
+      ),
+      'Note': FormatDefinition(
+        wideCount: 8,
+        editable: true,
+        multiLine: true,
+        newLine: true,
+        maxLines: 7,
+        fieldType: FieldType.text,
+      ),
+      'IsShowMore': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        newLine: true,
+        fieldType: FieldType.boolean,
+      ),
+      'NutritionNotes': FormatDefinition(
+        wideCount: 8,
+        newLine: true,
+        multiLine: true,
+        editable: true,
+        maxLines: 7,
+        fieldType: FieldType.text,
+      ),
+      'UterusLength': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'UterusWidth': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'UterusThickness': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'UterusPosition': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'UterusNote': FormatDefinition(
+        wideCount: 8,
+        editable: true,
+        multiLine: true,
+        newLine: true,
+        maxLines: 7,
+        fieldType: FieldType.text,
+      ),
+      'LeftOvaryFollicleCount': FormatDefinition(
+        wideCount: 2,
+        newLine: true,
+        editable: true,
+        fieldType: FieldType.number,
+      ),
+      'LeftOvaryLength': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'LeftOvaryThickness': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'LeftOvaryWidth': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'LeftOvaryNote': FormatDefinition(
+        wideCount: 8,
+        editable: true,
+        multiLine: true,
+        newLine: true,
+        maxLines: 7,
+        fieldType: FieldType.text,
+      ),
+      'RightOvaryFollicleCount': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'RightOvaryLength': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'RightOvaryThickness': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'RightOvaryWidth': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'RightOvaryNote': FormatDefinition(
+        wideCount: 8,
+        editable: true,
+        multiLine: true,
+        newLine: true,
+        maxLines: 7,
+        fieldType: FieldType.text,
+      ),
+    },
+    'obstetric': {
+      'Doctor_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Assistant_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Birthday': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.date,
+      ),
+      'Age': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.text,
+      ),
+      'GPA': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.text,
+      ),
+      'LineNo': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'VisitDate': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        multiLine: false,
+        fieldType: FieldType.date,
+      ),
+      'NextVisitDate': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.date,
+      ),
+      'ChiefComplaint': FormatDefinition(
+        wideCount: 8,
+        editable: true,
+        multiLine: true,
+        newLine: true,
+        maxLines: 7,
+        fieldType: FieldType.text,
+      ),
+      'BodyTemperature': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'Miscarriage': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'PregnancyNo': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'EstimatedDateOfConception': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        fieldType: FieldType.date,
+      ),
+      'FirstDayOfMenstrualPeriod': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        fieldType: FieldType.date,
+      ),
+      'HPL': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.date,
+      ),
+      'Riwayat_alergi': FormatDefinition(
+        wideCount: 8,
+        newLine: true,
+        multiLine: true,
+        editable: true,
+        maxLines: 7,
+        fieldType: FieldType.text,
+      ),
+      'LaborSC': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'LaborSpontanNormal': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'LaborSpontanVacuum': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'BodyHeight': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'BodyWeight': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'SystolicPressure': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'DiastolicPressure': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'LILA': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'BMI': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        newLine: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'ICD_10': FormatDefinition(
+        wideCount: 4,
+        newLine: true,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Note': FormatDefinition(
+        wideCount: 8,
+        editable: true,
+        multiLine: true,
+        maxLines: 6,
+        fieldType: FieldType.text,
+      ),
+      'InternalNote': FormatDefinition(
+        wideCount: 8,
+        multiLine: true,
+        editable: true,
+        maxLines: 7,
+        fieldType: FieldType.text,
+      ),
+      'IsShowMore': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.boolean,
+      ),
+      'NutritionNotes': FormatDefinition(
+        wideCount: 8,
+        multiLine: true,
+        newLine: true,
+        editable: true,
+        maxLines: 7,
+        fieldType: FieldType.text,
+      ),
+      'Presentation': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'PlacentaGrade': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'PlacentaPosition': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Cairan_Ketuban': FormatDefinition(
+        wideCount: 2,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Gender': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Weight': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        fieldType: FieldType.number,
+      ),
+      'GS': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        newLine: true,
+        fieldType: FieldType.number,
+      ),
+      'YS': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+      'DJJ': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+      'FL': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+      'CRL': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+      'BPD': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+      'HC': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+      'AC': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+      'SDP': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+      'AFI': FormatDefinition(
+        wideCount: 1,
+        editable: true,
+        multiLine: false,
+        isMandatory: false,
+        fieldType: FieldType.number,
+      ),
+    },
+    'encounter': {
+      'DateTrx': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        fieldType: FieldType.date,
+      ),
+      'DocumentNo': FormatDefinition(wideCount: 2, editable: false),
+      'Antrian': FormatDefinition(wideCount: 2),
+      'C_BPartner_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Birthday': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        fieldType: FieldType.date,
+      ),
+      'tensi': FormatDefinition(wideCount: 2, fieldType: FieldType.boolean),
+      'C_SalesRegion_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'M_Specialist_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Doctor_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Assistant_ID': FormatDefinition(
+        wideCount: 2,
+        editable: false,
+        fieldType: FieldType.generalInfo,
+      ),
+      'Info': FormatDefinition(
+        wideCount: 8,
+        newLine: true,
+        multiLine: true,
+        maxLines: 4,
+      ),
+      'SystolicPressure': FormatDefinition(
+        wideCount: 1,
+        fieldType: FieldType.number,
+      ),
+      'DiastolicPressure': FormatDefinition(
+        wideCount: 1,
+        fieldType: FieldType.number,
+      ),
+      'BodyWeight': FormatDefinition(wideCount: 1, fieldType: FieldType.number),
+      'BodyHeight': FormatDefinition(wideCount: 1, fieldType: FieldType.number),
+      'BodyTemperature': FormatDefinition(
+        wideCount: 1,
+        fieldType: FieldType.number,
+      ),
+      'BirthWeight': FormatDefinition(
+        wideCount: 1,
+        fieldType: FieldType.number,
+      ),
+      'FirstDayOfMenstrualPeriod': FormatDefinition(
+        wideCount: 2,
+        fieldType: FieldType.date,
+      ),
+      'head_circumference': FormatDefinition(
+        wideCount: 1,
+        fieldType: FieldType.number,
+      ),
+      'PregnancyNo': FormatDefinition(
+        wideCount: 1,
+        fieldType: FieldType.number,
+      ),
+      'Miscarriage': FormatDefinition(
+        wideCount: 1,
+        fieldType: FieldType.number,
+      ),
+      'LaborSpontanNormal': FormatDefinition(
+        wideCount: 1,
+        fieldType: FieldType.number,
+      ),
+      'LaborSC': FormatDefinition(wideCount: 1, fieldType: FieldType.number),
+      'LaborSpontanForcep': FormatDefinition(
+        wideCount: 1,
+        fieldType: FieldType.number,
+      ),
+      'LaborSpontanVacuum': FormatDefinition(
+        wideCount: 1,
+        fieldType: FieldType.number,
+      ),
+      'LILA': FormatDefinition(wideCount: 1, fieldType: FieldType.number),
+    },
+  };
+
+  static FormatDefinition getConfig(
+    String fieldName, {
+    required String section,
+  }) {
+    final sectionMap = sectionConfigurations[section];
+    if (sectionMap != null && sectionMap.containsKey(fieldName)) {
+      return sectionMap[fieldName]!;
+    }
+    // Default fallback
+    return const FormatDefinition(
+      wideCount: 2,
+      editable: true,
+      icon: Icons.text_fields,
+    );
+  }
+
+  static List<String> orderedKeysForSection(String section) {
+    final sectionMap = sectionConfigurations[section];
+    if (sectionMap != null && sectionMap.isNotEmpty) {
+      return sectionMap.keys.toList();
+    }
+    return const <String>[];
+  }
+}

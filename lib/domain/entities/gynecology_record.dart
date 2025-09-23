@@ -1,13 +1,11 @@
-// lib/domain/entities/gynecology_record.dart
-import 'package:json_annotation/json_annotation.dart';
 import 'general_info.dart';
+import 'package:json_annotation/json_annotation.dart';
+import 'package:medibuk/domain/entities/record.dart';
 
 part 'gynecology_record.g.dart';
 
 @JsonSerializable()
-class GynecologyRecord {
-  final int id;
-  final String uid;
+class GynecologyRecord extends Record {
   @JsonKey(name: 'AD_Client_ID')
   final GeneralInfo? adClientId;
   @JsonKey(name: 'AD_Org_ID')
@@ -86,8 +84,8 @@ class GynecologyRecord {
   final num? leftOvaryWidth;
 
   const GynecologyRecord({
-    required this.id,
-    required this.uid,
+    required super.id,
+    required super.uid,
     this.adClientId,
     this.adOrgId,
     this.cSalesRegionId,
