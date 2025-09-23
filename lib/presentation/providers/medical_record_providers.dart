@@ -15,8 +15,12 @@ MedicalRecordRepository medicalRecordRepository(
 class MedicalRecordNotifier extends _$MedicalRecordNotifier {
   @override
   Future<MedicalRecord?> build(String medicalRecordId) async {
-    final repository = ref.read(medicalRecordRepositoryProvider);
+    // Jika medicalRecordId null, kita masuk ke mode Buat Baru
+    if (medicalRecordId == 'NEW') {
+      return MedicalRecord.empty();
+    }
 
+    final repository = ref.read(medicalRecordRepositoryProvider);
     try {
       return await repository.getMedicalRecord(medicalRecordId);
     } catch (e) {

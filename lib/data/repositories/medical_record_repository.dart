@@ -12,7 +12,7 @@ abstract class MedicalRecordRepository {
 class MedicalRecordRepositoryImpl implements MedicalRecordRepository {
   static const String _baseUrl = 'https://devkss.idempiereonline.com/api/v1';
   static const String _authToken =
-      'eyJraWQiOiJpZGVtcGllcmUiLCJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJTdXBlckFuYWFtIiwiTV9XYXJlaG91c2VfSUQiOjEwMDAwMTMsIkFEX0xhbmd1YWdlIjoiZW5fVVMiLCJBRF9TZXNzaW9uX0lEIjoyMjI3NTk1LCJBRF9Vc2VyX0lEIjoxMDk5MDcxLCJBRF9Sb2xlX0lEIjoxMDAwMDE1LCJBRF9PcmdfSUQiOjEwMDAwMDEsImlzcyI6ImlkZW1waWVyZS5vcmciLCJBRF9DbGllbnRfSUQiOjEwMDAwMDAsImV4cCI6MTc1ODU0NTU3Mn0.ZW3oYQaBDA1Neowwc0FhUgVFPitF_LFRL_B2qP55e5mdVrBRTW-Sxqa0JlPFMNAVPjJZQBB1HpbylIlGqJXeuQ';
+      'eyJraWQiOiJpZGVtcGllcmUiLCJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJTdXBlckFuYWFtIiwiTV9XYXJlaG91c2VfSUQiOjEwMDAwMTMsIkFEX0xhbmd1YWdlIjoiZW5fVVMiLCJBRF9TZXNzaW9uX0lEIjoyMjI4MDQ1LCJBRF9Vc2VyX0lEIjoxMDk5MDcxLCJBRF9Sb2xlX0lEIjoxMDAwMDE1LCJBRF9PcmdfSUQiOjEwMDAwMDEsImlzcyI6ImlkZW1waWVyZS5vcmciLCJBRF9DbGllbnRfSUQiOjEwMDAwMDAsImV4cCI6MTc1ODU5NzY3N30.7CG1QKyyBfyOmtoKhGZae-uvGxwvQ7zErHmECk5Ba_aOsqE92ES9X14EvddG6oNh5z9TO7HTQH7yDOlkCvLy_Q';
 
   final Dio _dio = Dio(
     BaseOptions(
@@ -45,6 +45,12 @@ class MedicalRecordRepositoryImpl implements MedicalRecordRepository {
 
   @override
   Future<List<GeneralInfo>> getGeneralInfoOptions(String modelName) async {
+    // This logic determines whether to call the generic ad_ref_list fetcher
+    // or handle other specific models.
+    if (modelName.toLowerCase().startsWith('ad_ref_list:')) {
+      return _fetchAdRefList(modelName);
+    }
+
     switch (modelName.toLowerCase()) {
       case 'c_bpartner':
         return [
@@ -106,74 +112,6 @@ class MedicalRecordRepositoryImpl implements MedicalRecordRepository {
             modelName: 'm_product',
           ),
         ];
-      case 'ad_client':
-        return const [
-          GeneralInfo(
-            propertyLabel: 'Client',
-            id: 1000000,
-            identifier: 'KSS Group',
-            modelName: 'ad_client',
-          ),
-          GeneralInfo(
-            propertyLabel: 'Client',
-            id: 1000002,
-            identifier: 'KSS Clinic Network',
-            modelName: 'ad_client',
-          ),
-        ];
-      case 'ad_org':
-        return const [
-          GeneralInfo(
-            propertyLabel: 'Organization',
-            id: 1000001,
-            identifier: 'PT KEHAMILAN SEHAT SEJAHTERA',
-            modelName: 'ad_org',
-          ),
-          GeneralInfo(
-            propertyLabel: 'Organization',
-            id: 1000003,
-            identifier: 'PT KEHAMILAN SEHAT GROUP',
-            modelName: 'ad_org',
-          ),
-        ];
-      case 'ordertype':
-        return const [
-          GeneralInfo(
-            propertyLabel: 'Order Type',
-            id: 1000004,
-            identifier: 'Kandungan',
-            modelName: 'ordertype',
-          ),
-          GeneralInfo(
-            propertyLabel: 'Order Type',
-            id: 1000005,
-            identifier: 'Gynecology',
-            modelName: 'ordertype',
-          ),
-        ];
-      case 'c_encounter':
-        return const [
-          GeneralInfo(
-            propertyLabel: 'Encounter',
-            id: 1305573,
-            identifier: '1305573',
-            modelName: 'c_encounter',
-          ),
-          GeneralInfo(
-            propertyLabel: 'Encounter',
-            id: 1305574,
-            identifier: '1305574',
-            modelName: 'c_encounter',
-          ),
-        ];
-      case 'ad_ref_list:presentation':
-      case 'ad_ref_list:placentaposition':
-      case 'ad_ref_list:gender':
-      case 'ad_ref_list:uterusposition':
-      case 'ad_ref_list:ismedicationcompund':
-      case 'ad_ref_list:birthcontrolmethod':
-      case 'ad_ref_list:cairan_ketuban':
-        return _fetchAdRefList(modelName);
       case 'icd_10':
         return const [
           GeneralInfo(
@@ -196,17 +134,17 @@ class MedicalRecordRepositoryImpl implements MedicalRecordRepository {
           ),
         ];
       default:
+        // Return empty list for unhandled cases
         return [];
     }
   }
 
   Future<List<GeneralInfo>> _fetchAdRefList(String modelName) async {
-    // Map field key to reference ID based on provided API list
-    // modelName format: 'ad_ref_list:<FieldName>'
     final parts = modelName.split(':');
     if (parts.length != 2) return [];
     final fieldKey = parts[1].toLowerCase();
 
+    // Mapping from field name to its reference ID for the API endpoint
     final Map<String, int> fieldToRefId = {
       'birthcontrolmethod': 1000007,
       'uterusposition': 1000008,
@@ -214,7 +152,7 @@ class MedicalRecordRepositoryImpl implements MedicalRecordRepository {
       'placentaposition': 1000009,
       'gender': 1000005,
       'cairan_ketuban': 1000030,
-      'tipe_pemeriksaan': 1000031,
+      'tipe_pemeriksaan': 1000031, // Asumsi ID, sesuaikan jika perlu
     };
 
     final refId = fieldToRefId[fieldKey];
@@ -225,6 +163,7 @@ class MedicalRecordRepositoryImpl implements MedicalRecordRepository {
       final data = response.data as Map<String, dynamic>;
       final reflist = (data['reflist'] as List<dynamic>? ?? []);
       final label = _humanizeField(parts[1]);
+
       return reflist.map((e) {
         final item = (e as Map).cast<String, dynamic>();
         return GeneralInfo(
@@ -235,7 +174,9 @@ class MedicalRecordRepositoryImpl implements MedicalRecordRepository {
           modelName: 'ad_ref_list',
         );
       }).toList();
-    } catch (_) {
+    } catch (e) {
+      // Handle potential errors, e.g., network issues
+      // For now, return an empty list to prevent crashes
       return [];
     }
   }

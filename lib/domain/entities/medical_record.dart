@@ -12,6 +12,7 @@ import 'general_info.dart';
 import 'obstetric_record.dart';
 import 'gynecology_record.dart';
 import 'prescription_record.dart';
+import 'package:intl/intl.dart';
 
 export 'general_info.dart';
 export 'obstetric_record.dart';
@@ -90,6 +91,32 @@ class MedicalRecord {
     required this.services,
     required this.prescriptions,
   });
+
+  factory MedicalRecord.empty() {
+    final now = DateTime.now();
+    return MedicalRecord(
+      id: 0, // ID 0 menandakan record baru
+      uid: 'new-${now.millisecondsSinceEpoch}',
+      documentNo: 'NEW RECORD',
+      dateTrx: DateFormat('yyyy-MM-dd').format(now),
+      docStatus: const GeneralInfo(
+        propertyLabel: 'Document Status',
+        id: 'DR',
+        identifier: 'Drafted',
+        modelName: 'ad_ref_list',
+      ),
+      processed: false,
+      obstetric: const [],
+      gynecology: const [],
+      dental: const [],
+      anak: const [],
+      umum: const [],
+      laktasi: const [],
+      andrologi: const [],
+      services: const [],
+      prescriptions: const [],
+    );
+  }
 
   factory MedicalRecord.fromJson(Map<String, dynamic> json) =>
       _$MedicalRecordFromJson(json);
@@ -228,6 +255,7 @@ class MedicalRecordFieldConfiguration {
         multiLine: true,
         editable: true,
         maxLines: 7,
+        fieldType: FieldType.text,
       ),
       'FirstDayOfMenstrualPeriod': FormatDefinition(
         wideCount: 2,
@@ -284,6 +312,7 @@ class MedicalRecordFieldConfiguration {
         multiLine: true,
         newLine: true,
         maxLines: 7,
+        fieldType: FieldType.text,
       ),
       'Note': FormatDefinition(
         wideCount: 8,
@@ -291,6 +320,7 @@ class MedicalRecordFieldConfiguration {
         multiLine: true,
         newLine: true,
         maxLines: 7,
+        fieldType: FieldType.text,
       ),
       'IsShowMore': FormatDefinition(
         wideCount: 2,
@@ -304,6 +334,7 @@ class MedicalRecordFieldConfiguration {
         multiLine: true,
         editable: true,
         maxLines: 7,
+        fieldType: FieldType.text,
       ),
       'UterusLength': FormatDefinition(
         wideCount: 2,
@@ -335,6 +366,7 @@ class MedicalRecordFieldConfiguration {
         multiLine: true,
         newLine: true,
         maxLines: 7,
+        fieldType: FieldType.text,
       ),
       'LeftOvaryFollicleCount': FormatDefinition(
         wideCount: 2,
@@ -366,6 +398,7 @@ class MedicalRecordFieldConfiguration {
         multiLine: true,
         newLine: true,
         maxLines: 7,
+        fieldType: FieldType.text,
       ),
       'RightOvaryFollicleCount': FormatDefinition(
         wideCount: 2,
@@ -397,6 +430,7 @@ class MedicalRecordFieldConfiguration {
         multiLine: true,
         newLine: true,
         maxLines: 7,
+        fieldType: FieldType.text,
       ),
     },
     'obstetric': {
@@ -454,6 +488,7 @@ class MedicalRecordFieldConfiguration {
         multiLine: true,
         newLine: true,
         maxLines: 7,
+        fieldType: FieldType.text,
       ),
       'BodyTemperature': FormatDefinition(
         wideCount: 1,
@@ -495,6 +530,7 @@ class MedicalRecordFieldConfiguration {
         multiLine: true,
         editable: true,
         maxLines: 7,
+        fieldType: FieldType.text,
       ),
       'LaborSC': FormatDefinition(
         wideCount: 1,
@@ -563,12 +599,14 @@ class MedicalRecordFieldConfiguration {
         editable: true,
         multiLine: true,
         maxLines: 6,
+        fieldType: FieldType.text,
       ),
       'InternalNote': FormatDefinition(
         wideCount: 8,
         multiLine: true,
         editable: true,
         maxLines: 7,
+        fieldType: FieldType.text,
       ),
       'IsShowMore': FormatDefinition(
         wideCount: 2,
@@ -582,6 +620,7 @@ class MedicalRecordFieldConfiguration {
         newLine: true,
         editable: true,
         maxLines: 7,
+        fieldType: FieldType.text,
       ),
       'Presentation': FormatDefinition(
         wideCount: 1,

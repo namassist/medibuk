@@ -11,7 +11,6 @@ class FormatDefinition {
   final int? maxLines;
   final bool? multiLine;
   final IconData? icon;
-  final dynamic value;
   final FieldType? fieldType;
 
   const FormatDefinition({
@@ -23,7 +22,6 @@ class FormatDefinition {
     this.isHidden,
     this.isMandatory = false,
     this.icon,
-    this.value,
     this.fieldType,
   });
 }

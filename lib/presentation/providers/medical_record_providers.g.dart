@@ -168,7 +168,7 @@ class _ProcessedMainDataProviderElement
 }
 
 String _$medicalRecordNotifierHash() =>
-    r'31d525c2a027b6560e2106cd84eef288d6b041f0';
+    r'940be8ea1afa743de186c643fd4f37558c3a1839';
 
 abstract class _$MedicalRecordNotifier
     extends BuildlessAutoDisposeAsyncNotifier<MedicalRecord?> {

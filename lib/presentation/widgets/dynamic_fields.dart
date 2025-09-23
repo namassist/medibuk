@@ -1,8 +1,11 @@
+// lib/presentation/widgets/dynamic_fields.dart
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:intl/intl.dart';
+import 'package:medibuk/domain/entities/fields_dictionary.dart';
 import '../providers/medical_record_providers.dart';
 import '../../domain/entities/medical_record.dart';
 import '../../domain/entities/format_definition.dart';
@@ -53,16 +56,32 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(covariant DynamicFields oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value) {
+      final newText = _getDisplayValue(widget.value);
+      if (_controller.text != newText) {
+        _controller.text = newText;
+      }
+    }
+  }
+
   String _getDisplayValue(dynamic value) {
     if (value == null) return '';
     if (value is GeneralInfo) return value.identifier;
     if (value is String && _isDateString(value)) {
-      return DateFormat('dd/MM/yyyy').format(DateTime.parse(value));
+      try {
+        return DateFormat('dd/MM/yyyy').format(DateTime.parse(value));
+      } catch (_) {
+        return value;
+      }
     }
     return value.toString();
   }
 
   bool _isDateString(String value) {
+    if (value.length < 10) return false;
     try {
       DateTime.parse(value);
       return true;
@@ -91,6 +110,9 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
   }
 
   Widget _buildFieldLabel() {
+    final String labelText =
+        fieldLabels[widget.fieldName] ?? _formatFieldName(widget.fieldName);
+
     return Row(
       children: [
         if (_config.icon != null) ...[
@@ -99,7 +121,7 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
         ],
         Expanded(
           child: Text(
-            _formatFieldName(widget.fieldName),
+            labelText,
             style: TextStyle(
               fontWeight: FontWeight.w500,
               color: Colors.grey[700],
@@ -134,30 +156,8 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
     if (_isDisabled) {
       return _buildReadOnlyField();
     }
-
-    // Check if field type is explicitly defined in configuration
-    if (_config.fieldType != null) {
-      return _buildFieldByType(_config.fieldType!);
-    }
-
-    // Fallback to runtime type checking
-    if (widget.value is GeneralInfo) {
-      return _buildOptimizedGeneralInfoDropdown(widget.value as GeneralInfo);
-    }
-
-    if (widget.value is String && _isDateString(widget.value.toString())) {
-      return _buildDatePicker();
-    }
-
-    if (widget.value is bool) {
-      return _buildCheckbox();
-    }
-
-    if (widget.value is num) {
-      return _buildNumberField();
-    }
-
-    return _buildTextField();
+    // Logic is now solely based on the fieldType from configuration
+    return _buildFieldByType(_config.fieldType ?? FieldType.text);
   }
 
   Widget _buildFieldByType(FieldType fieldType) {
@@ -175,84 +175,6 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
     }
   }
 
-  Widget _buildGeneralInfoDropdown() {
-    final modelName = _resolveModelNameFromFieldName(widget.fieldName);
-
-    return Consumer(
-      builder: (context, ref, _) {
-        final optionsAsync = ref.watch(
-          cachedGeneralInfoOptionsProvider(modelName),
-        );
-
-        return optionsAsync.when(
-          data: (options) => DropdownSearch<GeneralInfo>(
-            compareFn: (item1, item2) => item1.id == item2.id,
-            items: options,
-            selectedItem: widget.value is GeneralInfo
-                ? widget.value as GeneralInfo
-                : null,
-            itemAsString: (item) => item.identifier,
-            onChanged: widget.onChanged,
-            dropdownDecoratorProps: DropDownDecoratorProps(
-              baseStyle: TextStyle(
-                decorationColor: Theme.of(context).colorScheme.onSurface,
-                color: Theme.of(context).colorScheme.onSurface,
-                fontSize: 14,
-              ),
-            ),
-            popupProps: const PopupProps.menu(
-              showSelectedItems: true,
-              showSearchBox: true,
-              searchFieldProps: TextFieldProps(
-                decoration: InputDecoration(
-                  hintText: 'Search...',
-                  prefixIcon: Icon(Icons.search),
-                ),
-              ),
-            ),
-          ),
-          loading: () => const SizedBox(
-            height: 48,
-            child: Center(child: CircularProgressIndicator()),
-          ),
-          error: (error, stack) => Container(
-            height: 48,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.red[300]!),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Center(
-              child: Text(
-                'Error loading options',
-                style: TextStyle(color: Colors.red[600]),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  String _resolveModelNameFromFieldName(String fieldName) {
-    // Map field names to their corresponding model names
-    switch (fieldName.toLowerCase()) {
-      case 'tipe_pemeriksaan':
-        return 'ad_ref_list:tipe_pemeriksaan';
-      case 'icd_10':
-        return 'icd_10';
-      case 'doctor_id':
-        return 'c_bpartner';
-      case 'm_specialist_id':
-        return 'm_specialist';
-      case 'c_salesregion_id':
-        return 'c_salesregion';
-      case 'order_type_id':
-        return 'order_type';
-      default:
-        return 'ad_ref_list:$fieldName';
-    }
-  }
-
   Widget _buildReadOnlyField() {
     return SizedBox(
       height: _config.multiLine == true ? null : 40,
@@ -262,14 +184,19 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
         style: const TextStyle(fontSize: 14),
         decoration: _inputDecoration(
           true,
-          suffix: _buildSuffix(disabled: true, includeType: false),
+          suffix: _buildSuffix(disabled: true, includeType: true),
         ),
       ),
     );
   }
 
-  Widget _buildOptimizedGeneralInfoDropdown(GeneralInfo currentValue) {
-    final modelName = _resolveModelName(currentValue, widget.fieldName);
+  // This is the single, robust method for all GeneralInfo dropdowns
+  Widget _buildGeneralInfoDropdown() {
+    // Resolve model name based on fieldName, not the value
+    final modelName = _resolveModelNameFromFieldName(widget.fieldName);
+    final currentValue = widget.value is GeneralInfo
+        ? widget.value as GeneralInfo
+        : null;
 
     return Consumer(
       builder: (context, ref, _) {
@@ -290,8 +217,8 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
                 color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 14,
               ),
+              dropdownSearchDecoration: _inputDecoration(false),
             ),
-
             popupProps: const PopupProps.menu(
               showSelectedItems: true,
               showSearchBox: true,
@@ -309,13 +236,15 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
           ),
           error: (error, stack) => Container(
             height: 48,
+            padding: const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.red[300]!),
               borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
             ),
             child: Center(
               child: Text(
-                'Error loading options',
+                'Error: Options not loaded',
                 style: TextStyle(color: Colors.red[600]),
               ),
             ),
@@ -325,19 +254,25 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
     );
   }
 
-  String _resolveModelName(GeneralInfo currentValue, String fieldName) {
-    final raw = (currentValue.modelName ?? '').toLowerCase();
-    if (raw == 'ad_ref_list') return 'ad_ref_list:$fieldName';
-    if (raw.isEmpty) {
-      // Fallbacks for known fields without model-name in payload
-      switch (fieldName) {
-        case 'ICD_10':
-          return 'icd_10';
-        default:
-          return '';
-      }
+  String _resolveModelNameFromFieldName(String fieldName) {
+    // This mapping is the single source of truth for model names
+    switch (fieldName) {
+      case 'ICD_10':
+        return 'icd_10';
+      case 'Doctor_ID':
+      case 'Assistant_ID':
+      case 'C_BPartner_ID':
+        return 'c_bpartner';
+      case 'M_Specialist_ID':
+        return 'm_specialist';
+      case 'C_SalesRegion_ID':
+        return 'c_salesregion';
+      case 'OrderType_ID':
+        return 'ordertype';
+      // For ad_ref_list types, format is 'ad_ref_list:<FieldNameInLowerCase>'
+      default:
+        return 'ad_ref_list:${fieldName.toLowerCase()}';
     }
-    return raw;
   }
 
   Widget _buildDatePicker() {
@@ -359,7 +294,8 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
           final date = await showDatePicker(
             context: context,
             initialDate:
-                DateTime.tryParse(widget.value.toString()) ?? DateTime.now(),
+                DateTime.tryParse(widget.value?.toString() ?? '') ??
+                DateTime.now(),
             firstDate: DateTime(1900),
             lastDate: DateTime(2100),
           );
@@ -374,14 +310,17 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
   }
 
   Widget _buildCheckbox() {
-    return Row(
-      children: [
-        Checkbox(
-          value: widget.value as bool? ?? false,
-          onChanged: (value) => widget.onChanged(value ?? false),
-        ),
-        const Text('Yes'),
-      ],
+    return SizedBox(
+      height: 44,
+      child: Row(
+        children: [
+          Checkbox(
+            value: widget.value as bool? ?? false,
+            onChanged: (value) => widget.onChanged(value ?? false),
+          ),
+          const Text('Yes'),
+        ],
+      ),
     );
   }
 
@@ -392,7 +331,7 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
         controller: _controller,
         decoration: _inputDecoration(
           false,
-          suffix: _buildSuffix(disabled: false),
+          suffix: _buildSuffix(disabled: false, includeType: true),
         ),
         style: Theme.of(context).textTheme.bodyMedium!.copyWith(
           color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -404,7 +343,7 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
             widget.onChanged(numValue);
           }
         },
-        keyboardType: TextInputType.numberWithOptions(decimal: true),
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
         textInputAction: TextInputAction.done,
         inputFormatters: [
           FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d{0,2}')),
@@ -414,10 +353,6 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
   }
 
   Widget _buildTextField() {
-    final showType =
-        (_config.maxLines == null || _config.maxLines == 1) &&
-        (widget.value is String) &&
-        !(widget.value is String && _isDateString(widget.value as String));
     return SizedBox(
       height: _config.multiLine == true ? null : 44,
       child: TextFormField(
@@ -426,22 +361,23 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
         style: const TextStyle(fontSize: 14),
         decoration: _inputDecoration(
           false,
-          suffix: _buildSuffix(disabled: false, forceType: showType),
+          suffix: _buildSuffix(disabled: false, includeType: true),
         ),
         onChanged: widget.onChanged,
       ),
     );
   }
 
-  // Build a small inline text to indicate field type (text vs number)
   Widget? _buildInlineTypeText() {
-    if (widget.value is num) {
-      return _typeText('123');
+    // FIX: Logic is now based purely on config, not runtime value
+    switch (_config.fieldType) {
+      case FieldType.number:
+        return _typeText('123');
+      case FieldType.text:
+        return _typeText('Tt');
+      default:
+        return null;
     }
-    if (widget.value is String && !_isDateString(widget.value as String)) {
-      return _typeText('Tt');
-    }
-    return null;
   }
 
   Widget _typeText(String label) {
@@ -457,7 +393,6 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
     );
   }
 
-  // Wrap interactive field with hover behavior (no hover when disabled)
   Widget _wrapWithHover(Widget child, bool disabled) {
     if (disabled) return child;
     return MouseRegion(
@@ -467,7 +402,6 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
     );
   }
 
-  // Input decoration that reacts to hover state
   InputDecoration _inputDecoration(
     bool disabled, {
     Widget? suffix,
@@ -480,54 +414,55 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
       borderSide: BorderSide(color: Colors.blue[300]!),
     );
     return InputDecoration(
-      contentPadding: const EdgeInsets.all(12),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       border: baseBorder,
       enabledBorder: _isHovering ? hoverBorder : baseBorder,
       focusedBorder: const UnderlineInputBorder(
         borderSide: BorderSide(color: Colors.blue, width: 2),
       ),
-      suffix: suffix,
-      prefixIcon: prefix == null
-          ? null
-          : Padding(
-              padding: const EdgeInsets.only(left: 8, right: 4),
-              child: prefix,
-            ),
+      suffixIcon: suffix, // Use suffixIcon for better alignment
+      prefixIcon: prefix,
       prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
       filled: true,
-      fillColor: disabled ? Colors.grey[300] : Colors.white,
+      fillColor: disabled ? Colors.grey[200] : Colors.white,
     );
   }
 
-  // Compose suffix content aligned to the right: type label and optional lock and/or extra widget
   Widget _buildSuffix({
     required bool disabled,
-    bool? includeType,
-    bool forceType = false,
+    bool includeType = false,
     Widget? extra,
   }) {
     final children = <Widget>[];
-    Widget? typeWidget;
-    if (forceType) {
-      typeWidget = _typeText(widget.value is num ? '123' : 'Tt');
-    } else if (includeType ?? true) {
-      typeWidget = _buildInlineTypeText();
+
+    // FIX: Simplified logic to use _buildInlineTypeText based on config
+    if (includeType) {
+      final typeWidget = _buildInlineTypeText();
+      if (typeWidget != null) {
+        children.add(typeWidget);
+      }
     }
-    if (typeWidget != null) {
-      children.add(Flexible(child: typeWidget));
-    }
+
     if (disabled) {
       if (children.isNotEmpty) children.add(const SizedBox(width: 6));
       children.add(Icon(Icons.lock, size: 16, color: Colors.grey[600]));
     }
+
     if (extra != null) {
       if (children.isNotEmpty) children.add(const SizedBox(width: 6));
       children.add(extra);
     }
+
     if (children.isEmpty) return const SizedBox.shrink();
-    return ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 120),
-      child: Row(mainAxisSize: MainAxisSize.min, children: children),
+
+    // Padding ensures the suffix icon doesn't touch the edge
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: children,
+      ),
     );
   }
 }
