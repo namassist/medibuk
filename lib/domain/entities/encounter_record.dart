@@ -1,6 +1,7 @@
 import 'package:json_annotation/json_annotation.dart';
 import 'package:medibuk/domain/entities/general_info.dart';
 import 'package:medibuk/domain/entities/record.dart';
+import 'package:medibuk/presentation/utils/formatter.dart';
 
 part 'encounter_record.g.dart';
 
@@ -139,4 +140,21 @@ class EncounterRecord extends Record {
       _$EncounterRecordFromJson(json);
 
   Map<String, dynamic> toJson() => _$EncounterRecordToJson(this);
+
+  DocumentStatus? get documentStatus {
+    switch (docStatus.id) {
+      case 'DR':
+        return DocumentStatus.drafted;
+      case 'IP':
+        return DocumentStatus.inprogress;
+      case 'CO':
+        return DocumentStatus.complete;
+      case 'IN':
+        return DocumentStatus.invalid;
+      case 'VO':
+        return DocumentStatus.voided;
+      default:
+        return null;
+    }
+  }
 }

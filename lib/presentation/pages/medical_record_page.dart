@@ -10,12 +10,12 @@ import 'package:medibuk/presentation/providers/form_data_provider.dart';
 import 'package:medibuk/presentation/providers/table_data_provider.dart';
 import 'package:medibuk/presentation/providers/ui_providers.dart';
 import 'package:medibuk/presentation/utils/json_patcher.dart';
-import 'package:medibuk/presentation/widgets/dialogs/prescription_form_dialog.dart';
-import 'package:medibuk/presentation/widgets/dialogs/prescription_service_dialog.dart';
-import 'package:medibuk/presentation/widgets/fields/form_section.dart';
+import 'package:medibuk/presentation/widgets/shared/prescription_form_dialog.dart';
+import 'package:medibuk/presentation/widgets/shared/prescription_service_dialog.dart';
+import 'package:medibuk/presentation/widgets/core/app_form_section.dart';
 import 'package:medibuk/presentation/widgets/core/app_toolbar.dart';
-import 'package:medibuk/presentation/widgets/tables/data_table.dart';
-import 'package:medibuk/presentation/widgets/tabs/tab_view.dart';
+import 'package:medibuk/presentation/widgets/core/app_table.dart';
+import 'package:medibuk/presentation/widgets/core/app_tab.dart';
 
 class MedicalRecordScreen extends ConsumerWidget {
   final String medicalRecordId;
@@ -124,7 +124,7 @@ class _Content extends ConsumerWidget {
               Consumer(
                 builder: (context, ref, _) {
                   final mainData = ref.watch(processedMainDataProvider(record));
-                  return FormSection(
+                  return AppFormSection(
                     key: const ValueKey('main_information'),
                     title: 'Information',
                     data: mainData,
@@ -206,7 +206,7 @@ class _Content extends ConsumerWidget {
                 ),
               ];
 
-              return TabView(
+              return AppTab(
                 title: 'Clinical Findings',
                 subtitle: 'Prescriptions & Services Provided',
                 headerIcon: Icons.medical_services_outlined,
@@ -221,9 +221,9 @@ class _Content extends ConsumerWidget {
   }
 
   Future<void> _save(WidgetRef ref, BuildContext context) async {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Saving...')));
+    if (!context.mounted) return;
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(const SnackBar(content: Text('Saving...')));
 
     try {
       final formState = ref.read(formDataProvider);
@@ -241,14 +241,16 @@ class _Content extends ConsumerWidget {
 
       ref.read(formModificationNotifierProvider.notifier).reset();
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!context.mounted) return;
+      messenger.showSnackBar(
         const SnackBar(
           content: Text('Save successful!'),
           backgroundColor: Colors.green,
         ),
       );
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      if (!context.mounted) return;
+      messenger.showSnackBar(
         SnackBar(content: Text('Save failed: $e'), backgroundColor: Colors.red),
       );
     }
@@ -279,7 +281,7 @@ class _Content extends ConsumerWidget {
 
         return Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: FormSection(
+          child: AppFormSection(
             key: ValueKey('${sectionType}_$index'),
             title:
                 '${sectionType == 'obstetric' ? 'Obstetric' : 'Gynecology'} ${index + 1}',
@@ -347,6 +349,7 @@ class _Content extends ConsumerWidget {
           final notifier = ref.read(
             tableDataProvider(record.prescriptions ?? []).notifier,
           );
+          // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
           notifier.state = notifier.state.copyWith(data: result);
         }
       });
@@ -365,7 +368,7 @@ class _Content extends ConsumerWidget {
       });
     }
 
-    return Tablegrid(
+    return AppTable(
       title: 'Prescriptions',
       initialData: record.prescriptions ?? [],
       columns: const [
@@ -392,7 +395,7 @@ class _Content extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
   ) {
-    return Tablegrid(
+    return AppTable(
       title: 'Services',
       initialData: record.services ?? [],
       columns: const [

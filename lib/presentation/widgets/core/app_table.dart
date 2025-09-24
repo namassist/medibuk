@@ -18,14 +18,14 @@ class TableColumn {
   });
 }
 
-class Tablegrid extends ConsumerWidget {
+class AppTable extends ConsumerWidget {
   final String title;
   final List<dynamic> initialData;
   final List<TableColumn> columns;
   final VoidCallback onAdd;
   final Function(dynamic) onEdit;
 
-  const Tablegrid({
+  const AppTable({
     super.key,
     required this.title,
     required this.initialData,

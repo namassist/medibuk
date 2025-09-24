@@ -9,14 +9,14 @@ import 'package:medibuk/presentation/providers/medical_record_providers.dart';
 import 'package:medibuk/domain/entities/medical_record.dart';
 import 'package:medibuk/domain/entities/format_definition.dart';
 
-class DynamicFields extends ConsumerStatefulWidget {
+class AppFields extends ConsumerStatefulWidget {
   final String fieldName;
   final dynamic value;
   final bool isEditable;
   final ValueChanged<dynamic> onChanged;
   final String? sectionType;
 
-  const DynamicFields({
+  const AppFields({
     super.key,
     required this.fieldName,
     required this.value,
@@ -26,10 +26,10 @@ class DynamicFields extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<DynamicFields> createState() => _DynamicFieldsState();
+  ConsumerState<AppFields> createState() => _AppFieldsState();
 }
 
-class _DynamicFieldsState extends ConsumerState<DynamicFields>
+class _AppFieldsState extends ConsumerState<AppFields>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
@@ -56,7 +56,7 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
   }
 
   @override
-  void didUpdateWidget(covariant DynamicFields oldWidget) {
+  void didUpdateWidget(covariant AppFields oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.value != oldWidget.value) {
       final newText = _getDisplayValue(widget.value);

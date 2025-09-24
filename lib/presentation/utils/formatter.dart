@@ -37,3 +37,35 @@ List _cleanList(List list) {
   }
   return cleanedList;
 }
+
+enum DocumentTypeEnum { bookingOnline, poli, pharmacy }
+
+enum DocumentStatus { drafted, inprogress, complete, invalid, voided }
+
+int getDocumentTypeID(DocumentTypeEnum dt) {
+  if (dt == DocumentTypeEnum.bookingOnline) {
+    return 1000056;
+  } else if (dt == DocumentTypeEnum.poli) {
+    return 1000049;
+  } else if (dt == DocumentTypeEnum.pharmacy) {
+    return 1000047;
+  }
+
+  return -1;
+}
+
+String? getDocumentStatusID(DocumentStatus dStat) {
+  if (dStat == DocumentStatus.drafted) {
+    return "DR";
+  } else if (dStat == DocumentStatus.inprogress) {
+    return "IP";
+  } else if (dStat == DocumentStatus.complete) {
+    return "CO";
+  } else if (dStat == DocumentStatus.invalid) {
+    return "IN";
+  } else if (dStat == DocumentStatus.voided) {
+    return "VO";
+  }
+
+  return "";
+}

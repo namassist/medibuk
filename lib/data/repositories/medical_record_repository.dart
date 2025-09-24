@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medibuk/data/api/api_client.dart';
 import 'package:medibuk/domain/entities/medical_record.dart';
 import 'package:medibuk/presentation/providers/api_client_provider.dart';
-import 'package:medibuk/presentation/utils/formatted.dart';
+import 'package:medibuk/presentation/utils/formatter.dart';
 
 abstract class MedicalRecordRepository {
   Future<MedicalRecord> getMedicalRecord(String id);

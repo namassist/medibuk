@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medibuk/domain/entities/field_config.dart';
 import 'package:medibuk/presentation/providers/ui_providers.dart';
-import 'package:medibuk/presentation/widgets/fields/dynamic_fields.dart';
+import 'package:medibuk/presentation/widgets/core/app_fields.dart';
 import 'package:medibuk/presentation/widgets/core/responsive_grid.dart';
 import 'package:medibuk/presentation/providers/form_data_provider.dart';
 
-class FormSection extends ConsumerStatefulWidget {
+class AppFormSection extends ConsumerStatefulWidget {
   final String title;
   final Map<String, dynamic> data;
   final bool isEditable;
@@ -17,7 +17,7 @@ class FormSection extends ConsumerStatefulWidget {
   final VoidCallback? onDelete;
   final bool collapsible;
 
-  const FormSection({
+  const AppFormSection({
     super.key,
     required this.title,
     required this.data,
@@ -31,10 +31,10 @@ class FormSection extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<FormSection> createState() => _FormSectionState();
+  ConsumerState<AppFormSection> createState() => _AppFormSectionState();
 }
 
-class _FormSectionState extends ConsumerState<FormSection>
+class _AppFormSectionState extends ConsumerState<AppFormSection>
     with AutomaticKeepAliveClientMixin {
   @override
   bool get wantKeepAlive => true;
@@ -65,7 +65,7 @@ class _FormSectionState extends ConsumerState<FormSection>
   }
 
   @override
-  void didUpdateWidget(covariant FormSection oldWidget) {
+  void didUpdateWidget(covariant AppFormSection oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.recordId != widget.recordId ||
         oldWidget.sectionIndex != widget.sectionIndex ||
@@ -236,7 +236,7 @@ class _FormSectionState extends ConsumerState<FormSection>
       final value = entry.value;
 
       fields.add(
-        DynamicFields(
+        AppFields(
           key: ValueKey(
             '${widget.sectionType}_${widget.sectionIndex}_$fieldName',
           ),

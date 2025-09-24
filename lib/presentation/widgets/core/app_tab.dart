@@ -10,13 +10,13 @@ class TabData {
   TabData({required this.title, required this.icon, required this.content});
 }
 
-class TabView extends ConsumerWidget {
+class AppTab extends ConsumerWidget {
   final String title;
   final String subtitle;
   final IconData headerIcon;
   final List<TabData> tabs;
 
-  const TabView({
+  const AppTab({
     super.key,
     required this.title,
     required this.subtitle,

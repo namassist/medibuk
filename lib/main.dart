@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:medibuk/domain/entities/color_schemes.g.dart';
 import 'package:medibuk/presentation/pages/home_page.dart';
 
 void main() {
@@ -13,7 +15,18 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Medical Record System',
-      theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
+      theme: ThemeData(
+        useMaterial3: true,
+        colorScheme: lightColorScheme,
+        textTheme: GoogleFonts.poppinsTextTheme(),
+      ),
+      // darkTheme: ThemeData(
+      //   useMaterial3: true,
+      //   colorScheme: darkColorScheme,
+      //   textTheme: GoogleFonts.poppinsTextTheme(
+      //     ThemeData(brightness: Brightness.dark).textTheme,
+      //   ),
+      // ),
       home: const HomePage(),
     );
   }

@@ -579,7 +579,7 @@ class FieldConfig {
       ),
       'C_BPartnerRelation_ID': FormatDefinition(
         wideCount: 2,
-        editable: true,
+        editable: false,
         fieldType: FieldType.generalInfo,
       ),
       'QA_Sources_ID': FormatDefinition(
