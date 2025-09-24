@@ -66,12 +66,10 @@ class _Content extends ConsumerWidget {
             child: AppToolbar(
               title: 'Medical Record - ${record.documentNo}',
               actions: [
-                // Tombol Reload
                 IconButton(
                   icon: const Icon(Icons.refresh),
                   tooltip: 'Reload Data',
                   onPressed: () {
-                    // IMPLEMENTASI RELOAD: Cukup panggil ref.refresh
                     ref.invalidate(
                       MedicalRecordNotifierProvider(medicalRecordId),
                     );
@@ -81,7 +79,6 @@ class _Content extends ConsumerWidget {
                   },
                 ),
                 const SizedBox(width: 12),
-                // Tombol Save
                 ElevatedButton.icon(
                   onPressed: isModified ? () => _save(ref, context) : null,
                   icon: const Icon(Icons.save),
@@ -94,7 +91,6 @@ class _Content extends ConsumerWidget {
                 const SizedBox(width: 12),
                 OutlinedButton.icon(
                   onPressed: () {
-                    // Navigasi ke halaman Encounter
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -121,7 +117,6 @@ class _Content extends ConsumerWidget {
             ),
           ),
         ),
-        // ... sisa widget (SliverPadding, SliverList, dll) tidak berubah
         SliverPadding(
           padding: const EdgeInsets.only(top: 16, left: 16, right: 16),
           sliver: SliverList(
@@ -231,10 +226,8 @@ class _Content extends ConsumerWidget {
     ).showSnackBar(const SnackBar(content: Text('Saving...')));
 
     try {
-      // 1. Dapatkan state form saat ini
       final formState = ref.read(formDataProvider);
 
-      // 2. Gunakan json_patcher untuk membuat JSON yang sudah diperbarui
       final patchedJson = buildPatchedJsonFromModel(
         record,
         formState,
@@ -242,12 +235,10 @@ class _Content extends ConsumerWidget {
       );
       final updatedRecord = MedicalRecord.fromJson(patchedJson);
 
-      // 3. Panggil metode updateRecord dari notifier
       await ref
           .read(MedicalRecordNotifierProvider(medicalRecordId).notifier)
           .updateRecord(updatedRecord);
 
-      // 4. Reset state modifikasi form
       ref.read(formModificationNotifierProvider.notifier).reset();
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -263,10 +254,7 @@ class _Content extends ConsumerWidget {
     }
   }
 
-  // ... sisa metode (_markAsComplete, _buildVirtualizedSections, dll) tidak berubah
-  Future<void> _markAsComplete(BuildContext context, WidgetRef ref) async {
-    // Implementasi mark as complete
-  }
+  Future<void> _markAsComplete(BuildContext context, WidgetRef ref) async {}
 
   Widget _buildVirtualizedSections<T>(
     String sectionType,
@@ -316,12 +304,10 @@ class _Content extends ConsumerWidget {
     final list = List<ObstetricRecord>.from(record.obstetric ?? const []);
     Map<String, dynamic> json;
     if (list.isNotEmpty) {
-      // Deep clone using JSON roundtrip to ensure nested GeneralInfo become maps
       json = (jsonDecode(jsonEncode(list.last)) as Map).cast<String, dynamic>();
     } else {
       json = <String, dynamic>{};
     }
-    // Set new identity
     json['id'] = 0;
     json['uid'] = 'tmp-${DateTime.now().millisecondsSinceEpoch}';
     final cloned = ObstetricRecord.fromJson(json);
@@ -330,7 +316,6 @@ class _Content extends ConsumerWidget {
     await ref
         .read(MedicalRecordNotifierProvider(medicalRecordId).notifier)
         .updateRecord(updated);
-    // Clear and mark modified so new section initializes and changes are tracked fresh
     ref.read(formDataProvider.notifier).clear();
     ref.read(formModificationNotifierProvider.notifier).setModified(true);
   }
@@ -343,7 +328,6 @@ class _Content extends ConsumerWidget {
     await ref
         .read(MedicalRecordNotifierProvider(medicalRecordId).notifier)
         .updateRecord(updated);
-    // Reset change tracking so indices realign
     ref.read(formDataProvider.notifier).clear();
     ref.read(formModificationNotifierProvider.notifier).setModified(true);
   }
@@ -363,7 +347,6 @@ class _Content extends ConsumerWidget {
           final notifier = ref.read(
             tableDataProvider(record.prescriptions ?? []).notifier,
           );
-          // ignore: invalid_use_of_protected_member, invalid_use_of_visible_for_testing_member
           notifier.state = notifier.state.copyWith(data: result);
         }
       });
@@ -434,7 +417,6 @@ class _Content extends ConsumerWidget {
   }
 }
 
-// ... (_EmptyState, _ErrorState, _PinnedHeaderDelegate) tidak berubah
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
 

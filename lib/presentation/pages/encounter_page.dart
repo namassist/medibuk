@@ -54,7 +54,9 @@ class _Content extends ConsumerWidget {
                   icon: const Icon(Icons.refresh),
                   tooltip: 'Reload Data',
                   onPressed: () {
-                    ref.invalidate(EncounterNotifierProvider('${record.id}'));
+                    ref.invalidate(
+                      EncounterNotifierProvider(record.id.toString()),
+                    );
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(content: Text('Data reloaded.')),
                     );
@@ -63,7 +65,7 @@ class _Content extends ConsumerWidget {
                 const SizedBox(width: 12),
                 ElevatedButton.icon(
                   onPressed: isModified
-                      ? () => _save(ref, context, '${record.id}')
+                      ? () => _save(ref, context, record.id)
                       : null,
                   icon: const Icon(Icons.save),
                   label: const Text('Save'),
@@ -88,9 +90,7 @@ class _Content extends ConsumerWidget {
                 sectionIndex: 0,
                 recordId: record.uid,
               ),
-
               const SizedBox(height: 16),
-
               FormSection(
                 title: 'Patient Medical Information',
                 data: record.toJson(),
@@ -106,18 +106,14 @@ class _Content extends ConsumerWidget {
     );
   }
 
-  Future<void> _save(
-    WidgetRef ref,
-    BuildContext context,
-    String recordId,
-  ) async {
+  Future<void> _save(WidgetRef ref, BuildContext context, int recordId) async {
     if (!context.mounted) return;
     final messenger = ScaffoldMessenger.of(context);
     messenger.showSnackBar(const SnackBar(content: Text('Saving...')));
 
     try {
       final currentState = await ref.read(
-        EncounterNotifierProvider(recordId).future,
+        EncounterNotifierProvider(recordId.toString()).future,
       );
       if (currentState == null) {
         throw Exception("Cannot save, record not found in state.");
@@ -128,14 +124,14 @@ class _Content extends ConsumerWidget {
       final patchedJson = buildPatchedJsonFromModel(
         currentState,
         formState,
-        recordId,
+        currentState.uid,
         listSections: [],
       );
 
       final updatedRecord = EncounterRecord.fromJson(patchedJson);
 
       await ref
-          .read(EncounterNotifierProvider(recordId).notifier)
+          .read(EncounterNotifierProvider(recordId.toString()).notifier)
           .updateRecord(updatedRecord);
 
       ref.read(formModificationNotifierProvider.notifier).reset();

@@ -60,7 +60,7 @@ class FormDataNotifier extends StateNotifier<FormDataState> {
   }) {
     final key = _key(recordId, sectionType, sectionIndex);
     if (state.original.containsKey(key) && state.current.containsKey(key)) {
-      return; // already initialized
+      return;
     }
     final original = Map<String, Map<String, dynamic>>.from(state.original);
     final current = Map<String, Map<String, dynamic>>.from(state.current);
@@ -93,7 +93,6 @@ class FormDataNotifier extends StateNotifier<FormDataState> {
   }
 
   bool _equals(dynamic a, dynamic b) {
-    // Basic equality check; can be extended if needed
     try {
       return a == b;
     } catch (_) {

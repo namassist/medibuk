@@ -1,5 +1,3 @@
-// lib/presentation/widgets/paged_data_table.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:data_table_2/data_table_2.dart';
@@ -129,7 +127,7 @@ class Tablegrid extends ConsumerWidget {
                 if (states.contains(WidgetState.selected)) {
                   return Theme.of(context).primaryColor.withValues(alpha: 0.08);
                 }
-                return null; // Gunakan warna default untuk state lain
+                return null;
               }),
               columns: [
                 ...columns.map(

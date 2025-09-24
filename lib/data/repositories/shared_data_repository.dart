@@ -17,13 +17,11 @@ final sharedDataRepositoryProvider = Provider<SharedDataRepository>((ref) {
 
 class SharedDataRepositoryImpl implements SharedDataRepository {
   final ApiClient _apiClient;
-  // Anda bisa menambahkan Dio di sini jika perlu, tapi lebih baik lewat ApiClient
 
   SharedDataRepositoryImpl(this._apiClient);
 
   @override
   Future<List<GeneralInfo>> getGeneralInfoOptions(String modelName) async {
-    // Logika ini dipindahkan dari MedicalRecordRepositoryImpl
     if (modelName.toLowerCase().startsWith('ad_ref_list:')) {
       return _fetchAdRefList(modelName);
     }
@@ -59,16 +57,13 @@ class SharedDataRepositoryImpl implements SharedDataRepository {
             modelName: 'm_specialist',
           ),
         ];
-      // ... kasus lainnya
       default:
         return [];
     }
   }
 
   Future<List<GeneralInfo>> _fetchAdRefList(String modelName) async {
-    // Implementasi _fetchAdRefList seperti sebelumnya
-    // (Dapat menggunakan _apiClient jika sudah diimplementasikan di sana)
-    return []; // Placeholder
+    return [];
   }
 
   @override

@@ -155,7 +155,6 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
     if (_isDisabled) {
       return _buildReadOnlyField();
     }
-    // Logic is now solely based on the fieldType from configuration
     return _buildFieldByType(_config.fieldType ?? FieldType.text);
   }
 
@@ -189,9 +188,7 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
     );
   }
 
-  // This is the single, robust method for all GeneralInfo dropdowns
   Widget _buildGeneralInfoDropdown() {
-    // Resolve model name based on fieldName, not the value
     final modelName = _resolveModelNameFromFieldName(widget.fieldName);
     final currentValue = widget.value is GeneralInfo
         ? widget.value as GeneralInfo
@@ -254,7 +251,6 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
   }
 
   String _resolveModelNameFromFieldName(String fieldName) {
-    // This mapping is the single source of truth for model names
     switch (fieldName) {
       case 'ICD_10':
         return 'icd_10';
@@ -268,7 +264,6 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
         return 'c_salesregion';
       case 'OrderType_ID':
         return 'ordertype';
-      // For ad_ref_list types, format is 'ad_ref_list:<FieldNameInLowerCase>'
       default:
         return 'ad_ref_list:${fieldName.toLowerCase()}';
     }
@@ -368,7 +363,6 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
   }
 
   Widget? _buildInlineTypeText() {
-    // FIX: Logic is now based purely on config, not runtime value
     switch (_config.fieldType) {
       case FieldType.number:
         return _typeText('123');
@@ -419,7 +413,7 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
       focusedBorder: const UnderlineInputBorder(
         borderSide: BorderSide(color: Colors.blue, width: 2),
       ),
-      suffixIcon: suffix, // Use suffixIcon for better alignment
+      suffixIcon: suffix,
       prefixIcon: prefix,
       prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
       filled: true,
@@ -434,7 +428,6 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
   }) {
     final children = <Widget>[];
 
-    // FIX: Simplified logic to use _buildInlineTypeText based on config
     if (includeType) {
       final typeWidget = _buildInlineTypeText();
       if (typeWidget != null) {
@@ -454,7 +447,6 @@ class _DynamicFieldsState extends ConsumerState<DynamicFields>
 
     if (children.isEmpty) return const SizedBox.shrink();
 
-    // Padding ensures the suffix icon doesn't touch the edge
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
       child: Row(

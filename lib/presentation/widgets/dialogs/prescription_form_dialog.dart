@@ -1,5 +1,3 @@
-// lib/presentation/widgets/prescription_form_dialog.dart
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +5,6 @@ import 'package:medibuk/domain/entities/general_info.dart';
 import 'package:medibuk/domain/entities/prescription_record.dart';
 
 class PrescriptionFormDialog extends ConsumerStatefulWidget {
-  // Menerima data awal untuk diedit, tidak boleh null.
   final PrescriptionRecord initialData;
 
   const PrescriptionFormDialog({super.key, required this.initialData});
@@ -28,7 +25,6 @@ class _PrescriptionFormDialogState
   void initState() {
     super.initState();
     final data = widget.initialData;
-    // Karena ini mode edit, kita asumsikan produk sudah ada.
     _selectedProduct = data.mProductId!;
     _qtyController = TextEditingController(text: data.qty?.toString() ?? '1');
     _descriptionController = TextEditingController(
@@ -49,7 +45,7 @@ class _PrescriptionFormDialogState
 
       final result = PrescriptionRecord(
         id: widget.initialData.id,
-        uid: widget.initialData.uid, // Gunakan UID yang sudah ada
+        uid: widget.initialData.uid,
         mProductId: _selectedProduct,
         qty: num.tryParse(_qtyController.text) ?? 1,
         description: _descriptionController.text,
@@ -69,7 +65,6 @@ class _PrescriptionFormDialogState
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Menampilkan nama produk sebagai teks (tidak bisa diganti)
               Text('Product', style: Theme.of(context).textTheme.labelMedium),
               const SizedBox(height: 4),
               Text(

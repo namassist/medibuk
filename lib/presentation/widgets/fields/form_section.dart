@@ -203,7 +203,6 @@ class _FormSectionState extends ConsumerState<FormSection>
     final spans = <int>[];
     final breaks = <bool>[];
     for (final entry in entries) {
-      // PERBAIKAN: Gunakan FieldConfig yang netral
       final config = FieldConfig.getConfig(
         entry.key,
         section: widget.sectionType,
@@ -260,7 +259,6 @@ class _FormSectionState extends ConsumerState<FormSection>
     final result = <MapEntry<String, dynamic>>[];
     for (final key in allowedKeys) {
       if (!_localData.containsKey(key)) continue;
-      // PERBAIKAN: Gunakan FieldConfig yang netral
       final cfg = FieldConfig.getConfig(key, section: widget.sectionType);
       if (cfg.isHidden == true) continue;
       result.add(MapEntry(key, _localData[key]));

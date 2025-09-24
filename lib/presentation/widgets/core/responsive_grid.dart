@@ -5,11 +5,8 @@ class ResponsiveGrid extends StatelessWidget {
   final List<Widget> children;
   final double maxWidth;
   final int maxWideCount;
-  // Optional per-child span (in grid units). Defaults to 2 when not provided.
   final List<int>? spans;
-  // Optional explicit line breaks: when true for an index, start a new row before that item.
   final List<bool>? breakBefore;
-  // Horizontal/vertical spacing between items
   final double spacing;
 
   const ResponsiveGrid({
@@ -32,27 +29,22 @@ class ResponsiveGrid extends StatelessWidget {
     return _buildFixedLayout(effectiveMaxWideCount, isMobile);
   }
 
-  // 🎯 FIX: Simplified and correct layout logic
   Widget _buildFixedLayout(int maxCount, bool isMobile) {
     final widgets = <Widget>[];
-    // Compute per-unit width taking spacing into account so that
-    // a row with sum(span) == maxCount fits exactly without wrapping.
     final unitWidth = (maxWidth - spacing * (maxCount - 1)) / maxCount;
 
     for (int i = 0; i < children.length; i++) {
       final child = children[i];
 
-      // Handle explicit line break before this item
       if ((breakBefore != null) && i < (breakBefore!.length)) {
         if (breakBefore![i]) {
           widgets.add(SizedBox(width: maxWidth));
         }
       }
 
-      // Span per item; default 2 units on wide screens, full width on mobile
       int span = 2;
       if (isMobile) {
-        span = maxCount; // full width on mobile
+        span = maxCount;
       } else if (spans != null && i < spans!.length) {
         span = spans![i];
       }
@@ -72,7 +64,6 @@ class ResponsiveGrid extends StatelessWidget {
       );
     }
 
-    // 🎯 FIX: Use simple Wrap instead of complex row logic
     return Wrap(runSpacing: spacing, spacing: spacing, children: widgets);
   }
 }

@@ -91,7 +91,7 @@ class MedicalRecord extends Record {
   factory MedicalRecord.empty() {
     final now = DateTime.now();
     return MedicalRecord(
-      id: 0, // ID 0 menandakan record baru
+      id: 0,
       uid: 'new-${now.millisecondsSinceEpoch}',
       documentNo: 'NEW RECORD',
       dateTrx: DateFormat('yyyy-MM-dd').format(now),

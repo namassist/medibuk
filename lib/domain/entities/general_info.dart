@@ -1,4 +1,3 @@
-// lib/domain/entities/general_info.dart
 import 'package:json_annotation/json_annotation.dart';
 
 part 'general_info.g.dart';

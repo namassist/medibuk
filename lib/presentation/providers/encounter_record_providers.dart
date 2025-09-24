@@ -18,17 +18,14 @@ class EncounterNotifier extends _$EncounterNotifier {
     }
   }
 
-  // TAMBAHKAN METODE INI
   Future<void> updateRecord(EncounterRecord record) async {
     final repository = ref.read(encounterRepositoryProvider);
     final previousState = state;
-    state = AsyncValue.data(record); // Optimistic update
-
+    state = AsyncValue.data(record);
     try {
       await repository.updateEncounterRecord(record);
-      // State sudah diupdate, jadi tidak perlu set lagi jika API tidak mengembalikan apa-apa
     } catch (e) {
-      state = previousState; // Rollback jika gagal
+      state = previousState;
       rethrow;
     }
   }

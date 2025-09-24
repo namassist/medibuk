@@ -1,4 +1,3 @@
-// lib/domain/entities/anak_record.dart
 import 'package:json_annotation/json_annotation.dart';
 import 'general_info.dart';
 

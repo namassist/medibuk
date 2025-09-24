@@ -1,4 +1,3 @@
-// lib/domain/entities/product_info.dart
 class ProductInfo {
   final int productId;
   final String name;

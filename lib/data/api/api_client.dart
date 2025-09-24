@@ -4,9 +4,8 @@ class ApiClient {
   final Dio _dio;
   final Dio _nodeDio;
 
-  // Token dari dokumentasi Anda
   static const String _authToken =
-      'eyJraWQiOiJpZGVtcGllcmUiLCJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJTdXBlckFuYWFtIiwiTV9XYXJlaG91c2VfSUQiOjEwMDAwMTMsIkFEX0xhbmd1YWdlIjoiZW5fVVMiLCJBRF9TZXNzaW9uX0lEIjoyMjI4Mzg3LCJBRF9Vc2VyX0lEIjoxMDk5MDcxLCJBRF9Sb2xlX0lEIjoxMDAwMDE1LCJBRF9PcmdfSUQiOjEwMDAwMDEsImlzcyI6ImlkZW1waWVyZS5vcmciLCJBRF9DbGllbnRfSUQiOjEwMDAwMDAsImV4cCI6MTc1ODYzMTIwOX0.PpmRItuLgbLHJCHGTmci4r_zXSlV4jSYiENK91U9WaJ7ubBOKohCPZfVUp-mz7kIYMwWnTuJqKyhpBTDhttZpA';
+      'eyJraWQiOiJpZGVtcGllcmUiLCJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJTdXBlckFuYWFtIiwiTV9XYXJlaG91c2VfSUQiOjEwMDAwMTMsIkFEX0xhbmd1YWdlIjoiZW5fVVMiLCJBRF9TZXNzaW9uX0lEIjoyMjI4Nzc4LCJBRF9Vc2VyX0lEIjoxMDk5MDcxLCJBRF9Sb2xlX0lEIjoxMDAwMDE1LCJBRF9PcmdfSUQiOjEwMDAwMDEsImlzcyI6ImlkZW1waWVyZS5vcmciLCJBRF9DbGllbnRfSUQiOjEwMDAwMDAsImV4cCI6MTc1ODY3NjExMH0.Nw2mIre-h2aF-ZvFN8oEQxwgObPIWLL2j0V8w8izsqZEerxtgM6GN3hx-3KgF07nKgbBA3FqMIUWrCxcj4Pxfg';
 
   ApiClient()
     : _dio = Dio(
@@ -30,7 +29,6 @@ class ApiClient {
         ),
       );
 
-  // Metode GET yang sekarang melakukan panggilan jaringan nyata
   Future<Map<String, dynamic>> get(
     String path, {
     Map<String, dynamic>? queryParams,
@@ -39,7 +37,6 @@ class ApiClient {
       final response = await _dio.get(path, queryParameters: queryParams);
       return response.data as Map<String, dynamic>;
     } on DioException catch (e) {
-      // Penanganan error yang lebih baik
       throw Exception(
         'Failed to load data from $path: ${e.response?.data ?? e.message}',
       );
@@ -48,7 +45,6 @@ class ApiClient {
     }
   }
 
-  // Metode PUT untuk memperbarui data
   Future<Response> put(
     String path, {
     required Map<String, dynamic> data,
@@ -65,7 +61,6 @@ class ApiClient {
     }
   }
 
-  // Metode untuk Node API tetap tidak berubah
   Future<List<dynamic>> getNode(
     String path,
     Map<String, dynamic> params,

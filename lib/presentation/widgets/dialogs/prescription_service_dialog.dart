@@ -47,7 +47,6 @@ class _PrescriptionServiceDialogState
   void _onSave() {
     final selectedItems = ref.read(selectedItemsProvider(widget.initialItems));
     final List<PrescriptionRecord> result = selectedItems.map((item) {
-      // Mencari item original untuk mempertahankan ID dan UID jika sedang mengedit
       final originalItem = widget.initialItems.firstWhere(
         (p) => p.mProductId?.id == item.product.productId,
         orElse: () =>
@@ -103,7 +102,6 @@ class _PrescriptionServiceDialogState
                       ? Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            // FIX #2: Ubah rasio flex
                             Expanded(
                               flex: 3,
                               child: _buildSearchResults(
@@ -122,7 +120,6 @@ class _PrescriptionServiceDialogState
                           ],
                         )
                       : SingleChildScrollView(
-                          // FIX #1: Tambahkan SingleChildScrollView untuk mobile
                           child: Column(
                             children: [
                               _buildSearchResults(
@@ -220,7 +217,6 @@ class _PrescriptionServiceDialogState
           if (products.isEmpty && _searchQuery.isNotEmpty) {
             return const Center(child: Text("No products found."));
           }
-          // FIX #1: Bungkus dengan SingleChildScrollView
           return SingleChildScrollView(
             child: Column(
               children: products.map((product) {
@@ -276,7 +272,6 @@ class _PrescriptionServiceDialogState
                 style: TextStyle(color: Colors.grey),
               ),
             )
-          // FIX #1: Bungkus dengan SingleChildScrollView
           : SingleChildScrollView(
               child: Column(
                 children: items.map((item) {
@@ -391,7 +386,7 @@ class _PrescriptionServiceDialogState
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min, // Agar tidak memakan semua ruang
+        mainAxisSize: MainAxisSize.min,
         children: [
           Padding(
             padding: const EdgeInsets.all(12.0),
@@ -401,7 +396,6 @@ class _PrescriptionServiceDialogState
             ),
           ),
           const Divider(height: 1),
-          // FIX #1: Bungkus child dengan Flexible agar bisa scroll
           Flexible(
             child: Padding(padding: const EdgeInsets.all(8.0), child: child),
           ),

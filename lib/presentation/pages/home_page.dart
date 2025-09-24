@@ -1,5 +1,3 @@
-// lib/presentation/pages/home_page.dart
-
 import 'package:flutter/material.dart';
 import 'package:medibuk/presentation/pages/medical_record_page.dart';
 
@@ -18,7 +16,6 @@ class HomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Tombol untuk membuat rekam medis baru
             ElevatedButton.icon(
               icon: const Icon(Icons.add_circle_outline),
               label: const Text('Create New Medical Record'),
@@ -40,8 +37,7 @@ class HomePage extends StatelessWidget {
               },
             ),
 
-            const SizedBox(height: 24), // Spasi antar tombol
-            // Tombol untuk melihat detail rekam medis yang sudah ada
+            const SizedBox(height: 24),
             ElevatedButton.icon(
               icon: const Icon(Icons.find_in_page_outlined),
               label: const Text('Medical Record Detail'),
@@ -53,7 +49,6 @@ class HomePage extends StatelessWidget {
                 textStyle: const TextStyle(fontSize: 16),
               ),
               onPressed: () {
-                // Arahkan ke halaman detail rekam medis dengan ID yang sudah ada
                 Navigator.push(
                   context,
                   MaterialPageRoute(

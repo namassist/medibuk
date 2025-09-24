@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:medibuk/data/repositories/medical_record_repository.dart';
-import 'package:medibuk/data/repositories/shared_data_repository.dart'; // Import repo baru
+import 'package:medibuk/data/repositories/shared_data_repository.dart';
 import 'package:medibuk/domain/entities/medical_record.dart';
 
 part 'medical_record_providers.g.dart';
@@ -13,7 +13,6 @@ class MedicalRecordNotifier extends _$MedicalRecordNotifier {
     if (medicalRecordId == 'NEW') {
       return MedicalRecord.empty();
     }
-    // Menggunakan provider repository yang sudah benar
     final repository = ref.read(medicalRecordRepositoryProvider);
     try {
       return await repository.getMedicalRecord(medicalRecordId);
@@ -23,13 +22,11 @@ class MedicalRecordNotifier extends _$MedicalRecordNotifier {
   }
 
   Future<void> updateRecord(MedicalRecord record) async {
-    // Menggunakan provider repository yang sudah benar
     final repository = ref.read(medicalRecordRepositoryProvider);
     final previousState = state;
     state = AsyncValue.data(record);
 
     try {
-      // ERROR TERATASI: Metode ini sekarang ada di MedicalRecordRepository
       final updatedRecord = await repository.updateMedicalRecord(record);
       state = AsyncValue.data(updatedRecord);
     } catch (e) {
@@ -51,9 +48,7 @@ class CachedGeneralInfoOptions extends _$CachedGeneralInfoOptions {
       return _cache[modelName]!;
     }
 
-    // Menggunakan sharedDataRepositoryProvider yang benar
     final repository = ref.read(sharedDataRepositoryProvider);
-    // ERROR TERATASI: Metode ini sekarang ada di SharedDataRepository
     final options = await repository.getGeneralInfoOptions(modelName);
 
     _cache[modelName] = options;
@@ -68,7 +63,6 @@ class CachedGeneralInfoOptions extends _$CachedGeneralInfoOptions {
 
 @riverpod
 Map<String, dynamic> processedMainData(Ref ref, MedicalRecord record) {
-  // Provider ini tidak berubah dan tetap benar
   return {
     'DocumentNo': record.documentNo,
     'DateTrx': record.dateTrx,
