@@ -5,9 +5,9 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:intl/intl.dart';
 import 'package:medibuk/domain/entities/field_config.dart';
 import 'package:medibuk/domain/entities/fields_dictionary.dart';
-import 'package:medibuk/presentation/providers/medical_record_providers.dart';
 import 'package:medibuk/domain/entities/medical_record.dart';
 import 'package:medibuk/domain/entities/format_definition.dart';
+import 'package:medibuk/presentation/providers/shared_providers.dart';
 
 class AppFields extends ConsumerStatefulWidget {
   final String fieldName;
@@ -15,6 +15,7 @@ class AppFields extends ConsumerStatefulWidget {
   final bool isEditable;
   final ValueChanged<dynamic> onChanged;
   final String? sectionType;
+  final Map<String, dynamic> allSectionData;
 
   const AppFields({
     super.key,
@@ -23,6 +24,7 @@ class AppFields extends ConsumerStatefulWidget {
     required this.isEditable,
     required this.onChanged,
     this.sectionType,
+    required this.allSectionData,
   });
 
   @override
@@ -36,22 +38,54 @@ class _AppFieldsState extends ConsumerState<AppFields>
 
   late final TextEditingController _controller;
   late final FormatDefinition _config;
-  bool _isHovering = false;
+  final FocusNode _focusNode = FocusNode();
+  bool _isFocused = false;
+  bool _hasBeenTouched = false;
+
+  bool get _showErrorState {
+    if (_isDisabled || !_config.isMandatory) {
+      return false;
+    }
+    return (_hasBeenTouched || _isFocused) && _isValueEmpty();
+  }
+
+  bool _isValueEmpty() {
+    final value = widget.value;
+    if (value == null) return true;
+    if (value is String && value.isEmpty) return true;
+    if (value is num && value == 0) {
+      return true;
+    }
+    return false;
+  }
 
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController(text: _getDisplayValue(widget.value));
-
     _config = FieldConfig.getConfig(
       widget.fieldName,
       section: widget.sectionType ?? '',
     );
+
+    if (_config.isMandatory) {
+      _hasBeenTouched = true;
+    }
+
+    _focusNode.addListener(() {
+      setState(() {
+        _isFocused = _focusNode.hasFocus;
+        if (!_isFocused && !_hasBeenTouched) {
+          _hasBeenTouched = true;
+        }
+      });
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -102,7 +136,7 @@ class _AppFieldsState extends ConsumerState<AppFields>
         children: [
           _buildFieldLabel(),
           const SizedBox(height: 4),
-          _wrapWithHover(_buildFieldWidget(), _isDisabled),
+          _buildFieldWidget(),
         ],
       ),
     );
@@ -121,17 +155,17 @@ class _AppFieldsState extends ConsumerState<AppFields>
         Expanded(
           child: Text(
             labelText,
-            style: TextStyle(
+            style: const TextStyle(
               fontWeight: FontWeight.w500,
-              color: Colors.grey[700],
-              fontSize: 12,
+              color: Color(0xff333333),
+              fontSize: 14,
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
             softWrap: false,
           ),
         ),
-        if (_config.isMandatory)
+        if (_showErrorState)
           Text('*', style: TextStyle(color: Colors.red[600])),
       ],
     );
@@ -149,7 +183,20 @@ class _AppFieldsState extends ConsumerState<AppFields>
         .join(' ');
   }
 
-  bool get _isDisabled => !widget.isEditable || !_config.editable;
+  bool get _isDisabled {
+    if (widget.fieldName == 'C_BPartnerRelation_ID') {
+      final specialist = widget.allSectionData['M_Specialist_ID'];
+
+      if (specialist is GeneralInfo &&
+          specialist.identifier.toLowerCase().contains('laktasi')) {
+        return !widget.isEditable;
+      } else {
+        return true;
+      }
+    }
+
+    return !widget.isEditable || !_config.editable;
+  }
 
   Widget _buildFieldWidget() {
     if (_isDisabled) {
@@ -175,14 +222,15 @@ class _AppFieldsState extends ConsumerState<AppFields>
 
   Widget _buildReadOnlyField() {
     return SizedBox(
-      height: _config.multiLine == true ? null : 40,
+      height: _config.multiLine == true ? null : 44,
       child: TextFormField(
         controller: _controller,
         readOnly: true,
+        maxLines: _config.maxLines ?? 1,
         style: const TextStyle(fontSize: 14),
         decoration: _inputDecoration(
           true,
-          suffix: _buildSuffix(disabled: true, includeType: true),
+          suffix: _buildSuffix(disabled: true, includeType: false),
         ),
       ),
     );
@@ -196,42 +244,58 @@ class _AppFieldsState extends ConsumerState<AppFields>
 
     return Consumer(
       builder: (context, ref, _) {
+        late final GeneralInfoParameter providerParam;
+
+        if (modelName == 'Doctor_ID') {
+          final specialist =
+              widget.allSectionData['M_Specialist_ID'] as GeneralInfo?;
+          providerParam = GeneralInfoParameter(
+            modelName: modelName,
+            dependencies: {'M_Specialist_ID': specialist?.id},
+          );
+        } else {
+          providerParam = GeneralInfoParameter(modelName: modelName);
+        }
+
         final optionsAsync = ref.watch(
-          cachedGeneralInfoOptionsProvider(modelName),
+          cachedGeneralInfoOptionsProvider(providerParam),
         );
 
         return optionsAsync.when(
-          data: (options) => DropdownSearch<GeneralInfo>(
-            compareFn: (item1, item2) => item1.id == item2.id,
-            items: options,
-            selectedItem: currentValue,
-            itemAsString: (item) => item.identifier,
-            onChanged: widget.onChanged,
-            dropdownDecoratorProps: DropDownDecoratorProps(
-              baseStyle: TextStyle(
-                decorationColor: Theme.of(context).colorScheme.onSurface,
-                color: Theme.of(context).colorScheme.onSurface,
-                fontSize: 14,
+          data: (options) => SizedBox(
+            height: 44,
+            child: DropdownSearch<GeneralInfo>(
+              compareFn: (item1, item2) => item1.id == item2.id,
+              items: options,
+              selectedItem: currentValue,
+              itemAsString: (item) => item.identifier,
+              onChanged: widget.onChanged,
+              dropdownDecoratorProps: DropDownDecoratorProps(
+                baseStyle: TextStyle(
+                  decorationColor: Theme.of(context).colorScheme.onSurface,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 14,
+                ),
+                dropdownSearchDecoration: _inputDecoration(false),
               ),
-              dropdownSearchDecoration: _inputDecoration(false),
-            ),
-            popupProps: const PopupProps.menu(
-              showSelectedItems: true,
-              showSearchBox: true,
-              searchFieldProps: TextFieldProps(
-                decoration: InputDecoration(
-                  hintText: 'Search...',
-                  prefixIcon: Icon(Icons.search),
+              popupProps: const PopupProps.menu(
+                showSelectedItems: true,
+                showSearchBox: true,
+                searchFieldProps: TextFieldProps(
+                  decoration: InputDecoration(
+                    hintText: 'Cari...',
+                    border: OutlineInputBorder(),
+                  ),
                 ),
               ),
             ),
           ),
           loading: () => const SizedBox(
-            height: 48,
+            height: 44,
             child: Center(child: CircularProgressIndicator()),
           ),
           error: (error, stack) => Container(
-            height: 48,
+            height: 44,
             padding: const EdgeInsets.all(8.0),
             decoration: BoxDecoration(
               border: Border.all(color: Colors.red[300]!),
@@ -255,7 +319,9 @@ class _AppFieldsState extends ConsumerState<AppFields>
       case 'ICD_10':
         return 'icd_10';
       case 'Doctor_ID':
+        return 'Doctor_ID';
       case 'Assistant_ID':
+        return 'Assistant_ID';
       case 'C_BPartner_ID':
         return 'c_bpartner';
       case 'M_Specialist_ID':
@@ -273,6 +339,7 @@ class _AppFieldsState extends ConsumerState<AppFields>
     return SizedBox(
       height: 44,
       child: TextFormField(
+        focusNode: _focusNode,
         controller: _controller,
         readOnly: true,
         style: const TextStyle(fontSize: 14),
@@ -308,9 +375,12 @@ class _AppFieldsState extends ConsumerState<AppFields>
       height: 44,
       child: Row(
         children: [
-          Checkbox(
-            value: widget.value as bool? ?? false,
-            onChanged: (value) => widget.onChanged(value ?? false),
+          Focus(
+            focusNode: _focusNode,
+            child: Checkbox(
+              value: widget.value as bool? ?? false,
+              onChanged: (value) => widget.onChanged(value ?? false),
+            ),
           ),
           const Text('Yes'),
         ],
@@ -322,6 +392,7 @@ class _AppFieldsState extends ConsumerState<AppFields>
     return SizedBox(
       height: 44,
       child: TextFormField(
+        focusNode: _focusNode,
         controller: _controller,
         decoration: _inputDecoration(
           false,
@@ -332,9 +403,13 @@ class _AppFieldsState extends ConsumerState<AppFields>
           fontSize: 14,
         ),
         onChanged: (value) {
-          final numValue = num.tryParse(value);
-          if (numValue != null) {
-            widget.onChanged(numValue);
+          if (value.isEmpty) {
+            widget.onChanged(null);
+          } else {
+            final numValue = num.tryParse(value);
+            if (numValue != null) {
+              widget.onChanged(numValue);
+            }
           }
         },
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
@@ -350,6 +425,7 @@ class _AppFieldsState extends ConsumerState<AppFields>
     return SizedBox(
       height: _config.multiLine == true ? null : 44,
       child: TextFormField(
+        focusNode: _focusNode,
         controller: _controller,
         maxLines: _config.maxLines ?? 1,
         style: const TextStyle(fontSize: 14),
@@ -386,38 +462,44 @@ class _AppFieldsState extends ConsumerState<AppFields>
     );
   }
 
-  Widget _wrapWithHover(Widget child, bool disabled) {
-    if (disabled) return child;
-    return MouseRegion(
-      onEnter: (_) => setState(() => _isHovering = true),
-      onExit: (_) => setState(() => _isHovering = false),
-      child: child,
-    );
-  }
-
   InputDecoration _inputDecoration(
     bool disabled, {
     Widget? suffix,
     Widget? prefix,
   }) {
-    final baseBorder = UnderlineInputBorder(
-      borderSide: BorderSide(color: Colors.grey[400]!),
-    );
-    final hoverBorder = UnderlineInputBorder(
-      borderSide: BorderSide(color: Colors.blue[300]!),
-    );
+    const focusedBorderColor = Color(0xFF006876);
+    const focusedFillColor = Color(0xFFFFFFCC);
+    const enabledBorderColor = Color(0xFFCECECE);
+    final disabledFillColor = Colors.grey[200];
+    final disabledBorderColor = Colors.grey[350];
+    const errorBorderColor = Colors.red;
+
     return InputDecoration(
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      border: baseBorder,
-      enabledBorder: _isHovering ? hoverBorder : baseBorder,
-      focusedBorder: const UnderlineInputBorder(
-        borderSide: BorderSide(color: Colors.blue, width: 2),
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: _showErrorState ? errorBorderColor : enabledBorderColor,
+        ),
       ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: _showErrorState ? errorBorderColor : focusedBorderColor,
+          width: 2,
+        ),
+      ),
+      disabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: disabledBorderColor!),
+      ),
+      hoverColor: Colors.transparent,
       suffixIcon: suffix,
       prefixIcon: prefix,
       prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
       filled: true,
-      fillColor: disabled ? Colors.grey[200] : Colors.white,
+      fillColor: disabled
+          ? disabledFillColor
+          : _isFocused
+          ? focusedFillColor
+          : Colors.white,
     );
   }
 

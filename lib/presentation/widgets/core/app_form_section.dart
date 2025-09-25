@@ -111,15 +111,9 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: const Color.fromARGB(255, 250, 250, 250),
+        color: const Color(0xfff9f9f9),
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.blue.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: Colors.grey.shade300),
       ),
       child: Column(
         children: [_buildHeader(), if (_isExpanded) _buildContent()],
@@ -132,14 +126,12 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
       width: double.infinity,
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Color(0xffcde7ed),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-        border: Border(bottom: BorderSide(color: Colors.blue[100]!)),
+        color: Theme.of(context).colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(5),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
+            color: Colors.black.withValues(alpha: 0.3),
+            offset: Offset(0, 2),
           ),
         ],
       ),
@@ -163,26 +155,15 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
               icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
             ),
           ],
-          Container(
-            height: 28,
-            width: 28,
-            decoration: BoxDecoration(
-              color: Colors.black.withValues(alpha: 0.06),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.info_outline,
-              size: 16,
-              color: Colors.black87,
-            ),
+          Icon(
+            Icons.info_outline,
+            color: Theme.of(context).colorScheme.onSecondaryContainer,
           ),
           const SizedBox(width: 8),
           if (widget.collapsible)
             Icon(
-              _isExpanded
-                  ? Icons.keyboard_arrow_down
-                  : Icons.keyboard_arrow_right,
-              color: Colors.black,
+              _isExpanded ? Icons.arrow_right : Icons.arrow_drop_down,
+              color: Theme.of(context).colorScheme.onSecondaryContainer,
             ),
         ],
       ),
@@ -245,6 +226,7 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
           isEditable: widget.isEditable,
           sectionType: widget.sectionType,
           onChanged: (newValue) => _onFieldChanged(fieldName, newValue),
+          allSectionData: _localData,
         ),
       );
     }

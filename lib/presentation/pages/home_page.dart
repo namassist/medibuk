@@ -95,7 +95,7 @@ class HomePage extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                     builder: (context) =>
-                        const EncounterScreen(encounterId: '1305660'),
+                        const EncounterScreen(encounterId: '1305690'),
                   ),
                 );
               },

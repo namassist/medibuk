@@ -1,12 +1,15 @@
-import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medibuk/data/api/api_client.dart';
 import 'package:medibuk/domain/entities/general_info.dart';
 import 'package:medibuk/domain/entities/product_info.dart';
 import 'package:medibuk/presentation/providers/api_client_provider.dart';
+// Import the parameter class
+import 'package:medibuk/presentation/providers/shared_providers.dart';
 
 abstract class SharedDataRepository {
-  Future<List<GeneralInfo>> getGeneralInfoOptions(String modelName);
+  Future<List<GeneralInfo>> getGeneralInfoOptions(
+    GeneralInfoParameter parameter,
+  );
   Future<List<ProductInfo>> searchProducts(String query);
 }
 
@@ -21,63 +24,87 @@ class SharedDataRepositoryImpl implements SharedDataRepository {
   SharedDataRepositoryImpl(this._apiClient);
 
   @override
-  Future<List<GeneralInfo>> getGeneralInfoOptions(String modelName) async {
-    if (modelName.toLowerCase().startsWith('ad_ref_list:')) {
-      return _fetchAdRefList(modelName);
-    }
+  // *** PERBAIKAN 2: Ubah tipe parameter di sini juga ***
+  Future<List<GeneralInfo>> getGeneralInfoOptions(
+    GeneralInfoParameter parameter,
+  ) async {
+    final modelName = parameter.modelName;
+    final dependencies = parameter.dependencies;
 
-    switch (modelName.toLowerCase()) {
-      case 'c_bpartner':
-        return [
-          const GeneralInfo(
-            propertyLabel: 'Doctor',
-            id: 1000024,
-            identifier: 'dr. Hasni Kemala Sari, Sp.OG',
-            modelName: 'c_bpartner',
-          ),
-          const GeneralInfo(
-            propertyLabel: 'Doctor',
-            id: 1000025,
-            identifier: 'dr. Ahmad Fauzi, Sp.OG',
-            modelName: 'c_bpartner',
-          ),
-        ];
+    switch (modelName) {
+      case 'c_salesregion':
+        return _fetchFromApi(
+          modelName: 'C_SalesRegion',
+          payload: {
+            r'$context': 'AD_User_ID:1099071,AD_Org_ID:1000001',
+            r'$valrule': '1000031',
+          },
+          identifierKey: 'Name',
+        );
       case 'm_specialist':
-        return [
-          const GeneralInfo(
-            propertyLabel: 'Specialist',
-            id: 1000000,
-            identifier: 'KANDUNGAN PALEM SEMI',
-            modelName: 'm_specialist',
-          ),
-          const GeneralInfo(
-            propertyLabel: 'Specialist',
-            id: 1000001,
-            identifier: 'GINEKOLOGI PALEM SEMI',
-            modelName: 'm_specialist',
-          ),
-        ];
+        return _fetchFromApi(
+          modelName: 'M_Specialist',
+          payload: {
+            r'$context': 'C_SalesRegion_ID:1000017',
+            r'$valrule': '1000014',
+          },
+          identifierKey: 'Name',
+        );
+      case 'Doctor_ID':
+        final specialistId = dependencies['M_Specialist_ID'];
+        if (specialistId == null) return [];
+        return _fetchFromApi(
+          modelName: 'C_BPartner',
+          payload: {
+            r'$context': 'M_Specialist_ID:$specialistId',
+            r'$valrule': '1000017',
+          },
+          identifierKey: 'Name',
+        );
+      case 'Assistant_ID':
+        return _fetchFromApi(
+          modelName: 'C_BPartner',
+          payload: {
+            r'$context': 'C_SalesRegion_ID:1000017',
+            r'$valrule': '1000021',
+          },
+          identifierKey: 'Name',
+        );
       default:
         return [];
     }
   }
 
-  Future<List<GeneralInfo>> _fetchAdRefList(String modelName) async {
-    return [];
+  Future<List<GeneralInfo>> _fetchFromApi({
+    required String modelName,
+    required Map<String, dynamic> payload,
+    required String identifierKey,
+  }) async {
+    try {
+      final response = await _apiClient.get(
+        '/models/$modelName',
+        queryParams: payload,
+      );
+
+      if (response['records'] is List) {
+        final records = response['records'] as List;
+        return records.map((json) {
+          return GeneralInfo(
+            propertyLabel: modelName,
+            id: json['id'],
+            identifier: json[identifierKey] ?? 'Unknown',
+            modelName: json['model-name'],
+          );
+        }).toList();
+      }
+      return [];
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override
   Future<List<ProductInfo>> searchProducts(String query) async {
-    if (query.isEmpty) return [];
-    final parameters = json.encode({
-      "name": "%${query.toLowerCase()}%",
-      "M_WareHouse_ID": "1000013",
-    });
-    final records = await _apiClient.getNode('/infos/product-info', {
-      'node': 'dev',
-      r'$parameters': parameters,
-      r'$order_by': 'QtyAvailable DESC',
-    });
-    return records.map((json) => ProductInfo.fromJson(json)).toList();
+    return [];
   }
 }

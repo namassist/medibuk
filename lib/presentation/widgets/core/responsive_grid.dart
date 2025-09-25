@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 
 class ResponsiveGrid extends StatelessWidget {
   final List<Widget> children;
   final double maxWidth;
-  final int maxWideCount;
   final List<int>? spans;
   final List<bool>? breakBefore;
   final double spacing;
@@ -13,45 +11,64 @@ class ResponsiveGrid extends StatelessWidget {
     super.key,
     required this.children,
     required this.maxWidth,
-    this.maxWideCount = 8,
     this.spans,
     this.breakBefore,
     this.spacing = 8,
   });
 
+  static const double mobileBreakpoint = 600;
+  static const double desktopBreakpoint = 900;
+
   @override
   Widget build(BuildContext context) {
     if (children.isEmpty) return const SizedBox.shrink();
 
-    final isMobile = maxWidth < 600;
-    final effectiveMaxWideCount = isMobile ? 1 : maxWideCount;
+    int maxGridColumns;
+    if (maxWidth < mobileBreakpoint) {
+      maxGridColumns = 1;
+    } else if (maxWidth < desktopBreakpoint) {
+      maxGridColumns = 4;
+    } else {
+      maxGridColumns = 8;
+    }
 
-    return _buildFixedLayout(effectiveMaxWideCount, isMobile);
+    return _buildLayout(maxGridColumns);
   }
 
-  Widget _buildFixedLayout(int maxCount, bool isMobile) {
+  Widget _buildLayout(int maxGridColumns) {
     final widgets = <Widget>[];
-    final unitWidth = (maxWidth - spacing * (maxCount - 1)) / maxCount;
+    final unitWidth =
+        (maxWidth - spacing * (maxGridColumns - 1)) / maxGridColumns;
 
     for (int i = 0; i < children.length; i++) {
       final child = children[i];
 
-      if ((breakBefore != null) && i < (breakBefore!.length)) {
+      if (maxGridColumns == 8 &&
+          (breakBefore != null) &&
+          i < (breakBefore!.length)) {
         if (breakBefore![i]) {
           widgets.add(SizedBox(width: maxWidth));
         }
       }
 
-      int span = 2;
-      if (isMobile) {
-        span = maxCount;
-      } else if (spans != null && i < spans!.length) {
-        span = spans![i];
-      }
-      span = span.clamp(1, maxCount);
+      int configSpan = (spans != null && i < spans!.length) ? spans![i] : 2;
 
-      final clampedSpan = math.min(span, maxCount);
-      final itemWidth = unitWidth * clampedSpan + spacing * (clampedSpan - 1);
+      int effectiveSpan;
+      switch (maxGridColumns) {
+        case 1: // Mobile
+          effectiveSpan = 1;
+          break;
+        case 4: // Tablet
+          effectiveSpan = configSpan.clamp(1, 4);
+          break;
+        case 8: // Desktop
+        default:
+          effectiveSpan = configSpan.clamp(1, 8);
+          break;
+      }
+
+      final itemWidth =
+          unitWidth * effectiveSpan + spacing * (effectiveSpan - 1);
 
       widgets.add(
         SizedBox(

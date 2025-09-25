@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:medibuk/data/repositories/medical_record_repository.dart';
-import 'package:medibuk/data/repositories/shared_data_repository.dart';
 import 'package:medibuk/domain/entities/medical_record.dart';
 
 part 'medical_record_providers.g.dart';
@@ -33,31 +32,6 @@ class MedicalRecordNotifier extends _$MedicalRecordNotifier {
       state = previousState;
       rethrow;
     }
-  }
-}
-
-@Riverpod(keepAlive: true)
-class CachedGeneralInfoOptions extends _$CachedGeneralInfoOptions {
-  final Map<String, List<GeneralInfo>> _cache = {};
-
-  @override
-  Future<List<GeneralInfo>> build(String modelName) async {
-    if (modelName.isEmpty) return [];
-
-    if (_cache.containsKey(modelName)) {
-      return _cache[modelName]!;
-    }
-
-    final repository = ref.read(sharedDataRepositoryProvider);
-    final options = await repository.getGeneralInfoOptions(modelName);
-
-    _cache[modelName] = options;
-    return options;
-  }
-
-  void refreshModel(String modelName) {
-    _cache.remove(modelName);
-    ref.invalidateSelf();
   }
 }
 
