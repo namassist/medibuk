@@ -1,6 +1,12 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:medibuk/presentation/providers/shared_providers.dart';
 import 'package:medibuk/presentation/utils/formatter.dart';
 import 'package:medibuk/presentation/widgets/core/app_buttons.dart';
+import 'package:medibuk/presentation/widgets/core/app_clock.dart';
+import 'package:medibuk/presentation/widgets/shared/create_new_dialog.dart';
+import 'package:medibuk/presentation/widgets/shared/profile_dropdown.dart';
 
 class AppToolbar extends StatelessWidget {
   final String? title;
@@ -55,7 +61,7 @@ class _TopBarSection extends StatelessWidget {
         Row(
           children: [
             IconButton(
-              icon: const Icon(Icons.menu),
+              icon: const Icon(Icons.menu, size: 24),
               onPressed: () {
                 Scaffold.of(context).openDrawer();
               },
@@ -94,70 +100,67 @@ class _ToolbarActions extends StatelessWidget {
         const SizedBox(width: 16),
         const _CreateNewButton(),
         const SizedBox(width: 16),
-        const _ProfileChip(name: 'SuperAnaam'),
+        const ProfileDropdown(),
       ],
     );
   }
 }
 
-class _ProfileChip extends StatelessWidget {
-  final String name;
-  const _ProfileChip({required this.name});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 40,
-      padding: const EdgeInsets.symmetric(horizontal: 10),
-      decoration: BoxDecoration(
-        color: Colors.grey[200],
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey[300]!),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const CircleAvatar(radius: 14, child: Icon(Icons.person, size: 16)),
-          const SizedBox(width: 8),
-          Text(name, style: const TextStyle(fontWeight: FontWeight.w600)),
-          const SizedBox(width: 6),
-          const Icon(Icons.keyboard_arrow_down),
-        ],
-      ),
-    );
-  }
-}
-
-class _ConnectivityIcon extends StatelessWidget {
+class _ConnectivityIcon extends ConsumerWidget {
   const _ConnectivityIcon();
 
   @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer.withAlpha(77),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.primary.withAlpha(51),
-          width: 1,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final connectivityStatus = ref.watch(connectivityProvider);
+
+    return connectivityStatus.when(
+      data: (result) {
+        final bool isConnected =
+            !(result.length == 1 && result.first == ConnectivityResult.none);
+
+        final IconData icon = isConnected ? Icons.wifi : Icons.wifi_off;
+        final Color color = isConnected
+            ? Theme.of(context).colorScheme.primary
+            : Colors.grey;
+        final Color bgColor = isConnected
+            ? Theme.of(context).colorScheme.primaryContainer.withAlpha(77)
+            : Colors.grey.shade300;
+        final Color borderColor = isConnected
+            ? Theme.of(context).colorScheme.primary.withAlpha(51)
+            : Colors.grey.shade400;
+
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: bgColor,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: borderColor, width: 1),
+          ),
+          child: Icon(icon, color: color, size: 18),
+        );
+      },
+      loading: () => const SizedBox(
+        width: 42,
+        height: 42,
+        child: Padding(
+          padding: EdgeInsets.all(12.0),
+          child: CircularProgressIndicator(strokeWidth: 2),
         ),
       ),
-      child: Icon(
-        Icons.wifi,
-        color: Theme.of(context).colorScheme.primary,
-        size: 18,
-      ),
+      error: (err, stack) => const Icon(Icons.error_outline, color: Colors.red),
     );
   }
 }
 
-class _ThemeSwitcher extends StatelessWidget {
+class _ThemeSwitcher extends ConsumerWidget {
   const _ThemeSwitcher();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final currentTheme = ref.watch(appThemeProvider);
+    final isDarkMode = currentTheme == ThemeMode.dark;
+
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(
@@ -175,12 +178,13 @@ class _ThemeSwitcher extends StatelessWidget {
           transitionBuilder: (child, animation) =>
               RotationTransition(turns: animation, child: child),
           child: Icon(
-            Icons.light_mode_outlined,
+            isDarkMode ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+            key: ValueKey(isDarkMode),
             color: Theme.of(context).colorScheme.onSurfaceVariant,
             size: 18,
           ),
         ),
-        onPressed: () async {},
+        onPressed: () => ref.read(appThemeProvider.notifier).toggleTheme(),
         tooltip: "Switch Theme",
       ),
     );
@@ -316,7 +320,10 @@ class _CreateNewButton extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () {
-            // Logika untuk menampilkan dialog
+            showDialog(
+              context: context,
+              builder: (context) => const CreateNewDialog(),
+            );
           },
           child: Container(
             padding: EdgeInsets.symmetric(
@@ -370,7 +377,7 @@ class _ToolbarTitleSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      elevation: 2,
+      elevation: 1,
       child: Container(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -414,9 +421,7 @@ class _ToolbarTitleSection extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(
-                  width: (MediaQuery.of(context).size.width > 600) ? 32 : 16,
-                ),
+                AppLiveClock(),
               ],
             ),
           ],

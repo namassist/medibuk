@@ -4,7 +4,7 @@ import 'package:medibuk/presentation/widgets/core/app_toolbar.dart';
 import 'package:medibuk/presentation/utils/formatter.dart';
 
 class AppLayout extends StatelessWidget {
-  final Widget body;
+  final List<Widget> slivers;
   final String? pageTitle;
   final DocumentStatus? pageStatus;
   final Function? onRefresh;
@@ -12,7 +12,7 @@ class AppLayout extends StatelessWidget {
 
   const AppLayout({
     super.key,
-    required this.body,
+    this.slivers = const [],
     this.pageTitle,
     this.pageStatus,
     this.onRefresh,
@@ -21,6 +21,8 @@ class AppLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final double toolbarHeight = (pageActions != null) ? 245 : 180;
+
     return Scaffold(
       drawer: const AppDrawer(),
       body: CustomScrollView(
@@ -28,8 +30,8 @@ class AppLayout extends StatelessWidget {
           SliverPersistentHeader(
             pinned: true,
             delegate: _PinnedHeaderDelegate(
-              minExtentHeight: 240,
-              maxExtentHeight: 240,
+              minExtentHeight: toolbarHeight,
+              maxExtentHeight: toolbarHeight,
               child: AppToolbar(
                 title: pageTitle,
                 status: pageStatus,
@@ -38,7 +40,7 @@ class AppLayout extends StatelessWidget {
               ),
             ),
           ),
-          SliverFillRemaining(hasScrollBody: true, child: body),
+          ...slivers,
         ],
       ),
     );

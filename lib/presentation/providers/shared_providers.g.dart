@@ -7,7 +7,7 @@ part of 'shared_providers.dart';
 // **************************************************************************
 
 String _$cachedGeneralInfoOptionsHash() =>
-    r'7ef316f95e0b5b3abc5d35270b83acc5e8d58f89';
+    r'ea553346e2d648bb39e0aa8334f4c72b8fd7190d';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -69,7 +69,7 @@ class CachedGeneralInfoOptionsFamily
 
 /// See also [cachedGeneralInfoOptions].
 class CachedGeneralInfoOptionsProvider
-    extends AutoDisposeFutureProvider<List<GeneralInfo>> {
+    extends FutureProvider<List<GeneralInfo>> {
   /// See also [cachedGeneralInfoOptions].
   CachedGeneralInfoOptionsProvider(GeneralInfoParameter parameter)
     : this._internal(
@@ -120,7 +120,7 @@ class CachedGeneralInfoOptionsProvider
   }
 
   @override
-  AutoDisposeFutureProviderElement<List<GeneralInfo>> createElement() {
+  FutureProviderElement<List<GeneralInfo>> createElement() {
     return _CachedGeneralInfoOptionsProviderElement(this);
   }
 
@@ -141,14 +141,13 @@ class CachedGeneralInfoOptionsProvider
 
 @Deprecated('Will be removed in 3.0. Use Ref instead')
 // ignore: unused_element
-mixin CachedGeneralInfoOptionsRef
-    on AutoDisposeFutureProviderRef<List<GeneralInfo>> {
+mixin CachedGeneralInfoOptionsRef on FutureProviderRef<List<GeneralInfo>> {
   /// The parameter `parameter` of this provider.
   GeneralInfoParameter get parameter;
 }
 
 class _CachedGeneralInfoOptionsProviderElement
-    extends AutoDisposeFutureProviderElement<List<GeneralInfo>>
+    extends FutureProviderElement<List<GeneralInfo>>
     with CachedGeneralInfoOptionsRef {
   _CachedGeneralInfoOptionsProviderElement(super.provider);
 
@@ -157,5 +156,40 @@ class _CachedGeneralInfoOptionsProviderElement
       (origin as CachedGeneralInfoOptionsProvider).parameter;
 }
 
+String _$connectivityHash() => r'81a359d6c0ef75ae7d0097963d8f9fecfb60040d';
+
+/// See also [connectivity].
+@ProviderFor(connectivity)
+final connectivityProvider =
+    AutoDisposeStreamProvider<List<ConnectivityResult>>.internal(
+      connectivity,
+      name: r'connectivityProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$connectivityHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+@Deprecated('Will be removed in 3.0. Use Ref instead')
+// ignore: unused_element
+typedef ConnectivityRef =
+    AutoDisposeStreamProviderRef<List<ConnectivityResult>>;
+String _$appThemeHash() => r'ef9d6d1aff63e4f28687350b789c8d7a2c4c19a0';
+
+/// See also [AppTheme].
+@ProviderFor(AppTheme)
+final appThemeProvider =
+    AutoDisposeNotifierProvider<AppTheme, ThemeMode>.internal(
+      AppTheme.new,
+      name: r'appThemeProvider',
+      debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
+          ? null
+          : _$appThemeHash,
+      dependencies: null,
+      allTransitiveDependencies: null,
+    );
+
+typedef _$AppTheme = AutoDisposeNotifier<ThemeMode>;
 // ignore_for_file: type=lint
 // ignore_for_file: subtype_of_sealed_class, invalid_use_of_internal_member, invalid_use_of_visible_for_testing_member, deprecated_member_use_from_same_package

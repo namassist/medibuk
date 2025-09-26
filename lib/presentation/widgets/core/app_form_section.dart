@@ -107,13 +107,16 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: const Color(0xfff9f9f9),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.grey.shade300),
+        // PERBAIKAN 1: Gunakan warna surface dari tema
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(8),
+        // PERBAIKAN 2: Gunakan warna outlineVariant dari tema
+        border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
         children: [_buildHeader(), if (_isExpanded) _buildContent()],
@@ -122,16 +125,19 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
   }
 
   Widget _buildHeader() {
+    final colorScheme = Theme.of(context).colorScheme;
+
     final header = Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.secondaryContainer,
-        borderRadius: BorderRadius.circular(5),
+        color: colorScheme.secondaryContainer,
+        borderRadius: BorderRadius.circular(8),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.3),
-            offset: Offset(0, 2),
+            color: colorScheme.shadow.withValues(alpha: 0.15),
+            offset: const Offset(0, 2),
+            blurRadius: 4,
           ),
         ],
       ),
@@ -141,7 +147,7 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
             child: Text(
               widget.title,
               style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                color: Theme.of(context).colorScheme.onPrimaryContainer,
+                color: colorScheme.onPrimaryContainer,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -152,18 +158,15 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
             IconButton(
               onPressed: widget.onDelete,
               tooltip: 'Delete',
-              icon: const Icon(Icons.delete_forever, color: Colors.redAccent),
+              icon: Icon(Icons.delete_forever, color: colorScheme.error),
             ),
           ],
-          Icon(
-            Icons.info_outline,
-            color: Theme.of(context).colorScheme.onSecondaryContainer,
-          ),
+          Icon(Icons.info_outline, color: colorScheme.onSecondaryContainer),
           const SizedBox(width: 8),
           if (widget.collapsible)
             Icon(
-              _isExpanded ? Icons.arrow_right : Icons.arrow_drop_down,
-              color: Theme.of(context).colorScheme.onSecondaryContainer,
+              _isExpanded ? Icons.arrow_drop_down : Icons.arrow_right,
+              color: colorScheme.onSecondaryContainer,
             ),
         ],
       ),
@@ -172,7 +175,7 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
     if (!widget.collapsible) return header;
     return InkWell(
       onTap: () => setState(() => _isExpanded = !_isExpanded),
-      borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(8)),
       child: header,
     );
   }

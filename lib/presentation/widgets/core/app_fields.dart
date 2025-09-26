@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:intl/intl.dart';
+import 'package:medibuk/domain/entities/app_theme_extension.dart';
 import 'package:medibuk/domain/entities/field_config.dart';
 import 'package:medibuk/domain/entities/fields_dictionary.dart';
 import 'package:medibuk/domain/entities/medical_record.dart';
@@ -143,21 +144,22 @@ class _AppFieldsState extends ConsumerState<AppFields>
   }
 
   Widget _buildFieldLabel() {
+    final appColors = Theme.of(context).extension<AppThemeExtension>()!;
     final String labelText =
         fieldLabels[widget.fieldName] ?? _formatFieldName(widget.fieldName);
 
     return Row(
       children: [
         if (_config.icon != null) ...[
-          Icon(_config.icon, size: 16, color: Colors.blue[600]),
+          Icon(_config.icon, size: 16, color: appColors.labelIconColor),
           const SizedBox(width: 8),
         ],
         Expanded(
           child: Text(
             labelText,
-            style: const TextStyle(
+            style: TextStyle(
               fontWeight: FontWeight.w500,
-              color: Color(0xff333333),
+              color: appColors.labelTextColor,
               fontSize: 14,
             ),
             maxLines: 1,
@@ -166,7 +168,10 @@ class _AppFieldsState extends ConsumerState<AppFields>
           ),
         ),
         if (_showErrorState)
-          Text('*', style: TextStyle(color: Colors.red[600])),
+          Text(
+            '*',
+            style: TextStyle(color: Theme.of(context).colorScheme.error),
+          ),
       ],
     );
   }
@@ -242,75 +247,52 @@ class _AppFieldsState extends ConsumerState<AppFields>
         ? widget.value as GeneralInfo
         : null;
 
-    return Consumer(
-      builder: (context, ref, _) {
-        late final GeneralInfoParameter providerParam;
+    return SizedBox(
+      height: 44,
+      child: DropdownSearch<GeneralInfo>(
+        selectedItem: currentValue,
+        asyncItems: (String filter) async {
+          late final GeneralInfoParameter providerParam;
 
-        if (modelName == 'Doctor_ID') {
-          final specialist =
-              widget.allSectionData['M_Specialist_ID'] as GeneralInfo?;
-          providerParam = GeneralInfoParameter(
-            modelName: modelName,
-            dependencies: {'M_Specialist_ID': specialist?.id},
+          if (modelName == 'Doctor_ID') {
+            final specialist =
+                widget.allSectionData['M_Specialist_ID'] as GeneralInfo?;
+            if (specialist == null) return [];
+
+            providerParam = GeneralInfoParameter(
+              modelName: modelName,
+              dependencies: {'M_Specialist_ID': specialist.id},
+            );
+          } else {
+            providerParam = GeneralInfoParameter(modelName: modelName);
+          }
+
+          return await ref.read(
+            cachedGeneralInfoOptionsProvider(providerParam).future,
           );
-        } else {
-          providerParam = GeneralInfoParameter(modelName: modelName);
-        }
-
-        final optionsAsync = ref.watch(
-          cachedGeneralInfoOptionsProvider(providerParam),
-        );
-
-        return optionsAsync.when(
-          data: (options) => SizedBox(
-            height: 44,
-            child: DropdownSearch<GeneralInfo>(
-              compareFn: (item1, item2) => item1.id == item2.id,
-              items: options,
-              selectedItem: currentValue,
-              itemAsString: (item) => item.identifier,
-              onChanged: widget.onChanged,
-              dropdownDecoratorProps: DropDownDecoratorProps(
-                baseStyle: TextStyle(
-                  decorationColor: Theme.of(context).colorScheme.onSurface,
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 14,
-                ),
-                dropdownSearchDecoration: _inputDecoration(false),
-              ),
-              popupProps: const PopupProps.menu(
-                showSelectedItems: true,
-                showSearchBox: true,
-                searchFieldProps: TextFieldProps(
-                  decoration: InputDecoration(
-                    hintText: 'Cari...',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
+        },
+        compareFn: (item1, item2) => item1.id == item2.id,
+        itemAsString: (item) => item.identifier,
+        onChanged: widget.onChanged,
+        dropdownDecoratorProps: DropDownDecoratorProps(
+          baseStyle: TextStyle(
+            decorationColor: Theme.of(context).colorScheme.onSurface,
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 14,
+          ),
+          dropdownSearchDecoration: _inputDecoration(false),
+        ),
+        popupProps: const PopupProps.menu(
+          showSelectedItems: true,
+          showSearchBox: true,
+          searchFieldProps: TextFieldProps(
+            decoration: InputDecoration(
+              hintText: 'Cari...',
+              border: OutlineInputBorder(),
             ),
           ),
-          loading: () => const SizedBox(
-            height: 44,
-            child: Center(child: CircularProgressIndicator()),
-          ),
-          error: (error, stack) => Container(
-            height: 44,
-            padding: const EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.red[300]!),
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.white,
-            ),
-            child: Center(
-              child: Text(
-                'Error: Options not loaded',
-                style: TextStyle(color: Colors.red[600]),
-              ),
-            ),
-          ),
-        );
-      },
+        ),
+      ),
     );
   }
 
@@ -450,12 +432,14 @@ class _AppFieldsState extends ConsumerState<AppFields>
   }
 
   Widget _typeText(String label) {
+    final appColors = Theme.of(context).extension<AppThemeExtension>()!;
+
     return Text(
       label,
       style: TextStyle(
         fontSize: 12,
         fontWeight: FontWeight.w500,
-        color: Colors.grey[500],
+        color: appColors.helperTextColor,
       ),
       overflow: TextOverflow.ellipsis,
       softWrap: false,
@@ -467,28 +451,31 @@ class _AppFieldsState extends ConsumerState<AppFields>
     Widget? suffix,
     Widget? prefix,
   }) {
-    const focusedBorderColor = Color(0xFF006876);
-    const focusedFillColor = Color(0xFFFFFFCC);
-    const enabledBorderColor = Color(0xFFCECECE);
-    final disabledFillColor = Colors.grey[200];
-    final disabledBorderColor = Colors.grey[350];
-    const errorBorderColor = Colors.red;
+    final colorScheme = Theme.of(context).colorScheme;
+    final appColors = Theme.of(context).extension<AppThemeExtension>()!;
+
+    final focusedBorderColor = colorScheme.primary;
+    final focusedFillColor = appColors.focusedFillColor!;
+    final enabledBorderColor = appColors.enabledBorderColor!;
+    final disabledFillColor = appColors.disabledFillColor!;
+    final disabledBorderColor = appColors.disabledBorderColor!;
+    final enabledFillColor = appColors.enabledFillColor!;
 
     return InputDecoration(
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       enabledBorder: OutlineInputBorder(
         borderSide: BorderSide(
-          color: _showErrorState ? errorBorderColor : enabledBorderColor,
+          color: _showErrorState ? colorScheme.error : enabledBorderColor,
         ),
       ),
       focusedBorder: OutlineInputBorder(
         borderSide: BorderSide(
-          color: _showErrorState ? errorBorderColor : focusedBorderColor,
+          color: _showErrorState ? colorScheme.error : focusedBorderColor,
           width: 2,
         ),
       ),
       disabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: disabledBorderColor!),
+        borderSide: BorderSide(color: disabledBorderColor),
       ),
       hoverColor: Colors.transparent,
       suffixIcon: suffix,
@@ -499,7 +486,7 @@ class _AppFieldsState extends ConsumerState<AppFields>
           ? disabledFillColor
           : _isFocused
           ? focusedFillColor
-          : Colors.white,
+          : enabledFillColor,
     );
   }
 
@@ -508,6 +495,7 @@ class _AppFieldsState extends ConsumerState<AppFields>
     bool includeType = false,
     Widget? extra,
   }) {
+    final appColors = Theme.of(context).extension<AppThemeExtension>()!;
     final children = <Widget>[];
 
     if (includeType) {
@@ -519,7 +507,9 @@ class _AppFieldsState extends ConsumerState<AppFields>
 
     if (disabled) {
       if (children.isNotEmpty) children.add(const SizedBox(width: 6));
-      children.add(Icon(Icons.lock, size: 16, color: Colors.grey[600]));
+      children.add(
+        Icon(Icons.lock, size: 16, color: appColors.disabledIconColor),
+      );
     }
 
     if (extra != null) {

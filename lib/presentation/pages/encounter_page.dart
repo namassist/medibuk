@@ -6,7 +6,6 @@ import 'package:medibuk/presentation/providers/form_data_provider.dart';
 import 'package:medibuk/presentation/providers/ui_providers.dart';
 import 'package:medibuk/presentation/utils/json_patcher.dart';
 import 'package:medibuk/presentation/widgets/core/app_form_section.dart';
-// Import layout baru
 import 'package:medibuk/presentation/widgets/core/app_layout.dart';
 import 'package:medibuk/presentation/widgets/shared/dialogs.dart';
 
@@ -81,7 +80,7 @@ class EncounterScreen extends ConsumerWidget {
               ),
             ),
           ],
-          body: _Content(record: record),
+          slivers: [SliverToBoxAdapter(child: _Content(record: record))],
         );
       },
       loading: () =>

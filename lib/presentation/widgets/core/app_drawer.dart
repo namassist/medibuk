@@ -5,52 +5,111 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final itemBackgroundColor = Colors.white.withValues(alpha: 0.1);
+    final itemBorderColor = Colors.white.withValues(alpha: 0.2);
+
+    final itemDecoration = BoxDecoration(
+      color: itemBackgroundColor,
+      borderRadius: BorderRadius.circular(16),
+      border: Border.all(color: itemBorderColor, width: 1),
+    );
+
     return Drawer(
       child: Container(
-        color: const Color(0xFFE0F7FA), // Warna latar belakang sidebar
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              Theme.of(context).colorScheme.primaryContainer,
+              Theme.of(
+                context,
+              ).colorScheme.primaryContainer.withValues(alpha: 0.8),
+            ],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(2, 0),
+            ),
+          ],
+        ),
         child: ListView(
-          padding: EdgeInsets.zero,
+          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           children: <Widget>[
-            const _DrawerHeader(),
+            _DrawerHeader(decoration: itemDecoration),
             const _SearchField(),
             _buildDrawerItem(
-              icon: Icons.dashboard_outlined,
+              icon: Icons.dashboard,
               text: 'Dashboard',
               onTap: () {},
+              decoration: itemDecoration,
             ),
             _buildDrawerItem(
               icon: Icons.tv_outlined,
               text: 'MediTV',
               onTap: () {},
+              decoration: itemDecoration,
             ),
             _buildExpansionTile(
+              context: context,
               icon: Icons.people_outline,
               text: 'Business Partner',
               children: [
-                _buildSubDrawerItem(text: 'Sub Menu 1', onTap: () {}),
-                _buildSubDrawerItem(text: 'Sub Menu 2', onTap: () {}),
+                _buildSubDrawerItem(
+                  text: 'Patient List',
+                  onTap: () {},
+                  decoration: itemDecoration,
+                ),
+                _buildSubDrawerItem(
+                  text: 'Doctor List',
+                  onTap: () {},
+                  decoration: itemDecoration,
+                ),
+                _buildSubDrawerItem(
+                  text: 'Relation Partner',
+                  onTap: () {},
+                  decoration: itemDecoration,
+                ),
+                _buildSubDrawerItem(
+                  text: 'Vendor List',
+                  onTap: () {},
+                  decoration: itemDecoration,
+                ),
               ],
+              decoration: itemDecoration,
             ),
             _buildExpansionTile(
+              context: context,
               icon: Icons.storefront_outlined,
               text: 'Clinic',
+              decoration: itemDecoration,
             ),
             _buildExpansionTile(
+              context: context,
               icon: Icons.shopping_cart_outlined,
+
               text: 'Purchase',
+              decoration: itemDecoration,
             ),
             _buildExpansionTile(
+              context: context,
               icon: Icons.inventory_2_outlined,
               text: 'Product',
+              decoration: itemDecoration,
             ),
-            _buildExpansionTile(
+            _buildDrawerItem(
               icon: Icons.bar_chart_outlined,
               text: 'Reports',
+              onTap: () {},
+              decoration: itemDecoration,
             ),
             _buildDrawerItem(
               icon: Icons.person_outline,
               text: 'User',
               onTap: () {},
+              decoration: itemDecoration,
             ),
           ],
         ),
@@ -62,46 +121,85 @@ class AppDrawer extends StatelessWidget {
     required IconData icon,
     required String text,
     required VoidCallback onTap,
+    required BoxDecoration decoration,
   }) {
-    return ListTile(
-      leading: Icon(icon, color: Colors.grey[700]),
-      title: Text(text),
-      onTap: onTap,
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: decoration,
+      child: ListTile(
+        leading: Icon(icon, size: 18),
+        title: Text(text, style: TextStyle(fontSize: 14)),
+        onTap: onTap,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
     );
   }
 
   Widget _buildSubDrawerItem({
     required String text,
     required VoidCallback onTap,
+    required BoxDecoration decoration,
   }) {
     return Padding(
-      padding: const EdgeInsets.only(left: 24.0),
-      child: ListTile(title: Text(text), onTap: onTap),
+      padding: const EdgeInsets.only(left: 24.0, right: 8.0, bottom: 8.0),
+      child: Container(
+        decoration: decoration,
+        child: ListTile(
+          leading: Container(
+            width: 14,
+            height: 14,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.grey.shade600, width: .5),
+            ),
+          ),
+          contentPadding: const EdgeInsets.only(left: 16.0, right: 16.0),
+          title: Text(text, style: const TextStyle(fontSize: 14)),
+          onTap: onTap,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+      ),
     );
   }
 
   Widget _buildExpansionTile({
+    required BuildContext context,
     required IconData icon,
     required String text,
+    required BoxDecoration decoration,
     List<Widget> children = const [],
   }) {
-    return ExpansionTile(
-      leading: Icon(icon, color: Colors.grey[700]),
-      title: Text(text),
-      children: children,
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: decoration,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16),
+        child: Theme(
+          data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+          child: ExpansionTile(
+            leading: Icon(icon, size: 18),
+            title: Text(text, style: TextStyle(fontSize: 14)),
+            backgroundColor: Colors.white.withValues(alpha: 0.05),
+            collapsedBackgroundColor: Colors.transparent,
+            children: children,
+          ),
+        ),
+      ),
     );
   }
 }
 
 class _DrawerHeader extends StatelessWidget {
-  const _DrawerHeader();
+  final BoxDecoration decoration;
+  const _DrawerHeader({required this.decoration});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 100,
-      padding: const EdgeInsets.all(16.0),
-      alignment: Alignment.centerLeft,
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 24),
+      decoration: decoration,
       child: Row(
         children: [
           Container(
@@ -135,7 +233,7 @@ class _SearchField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
       child: TextField(
         decoration: InputDecoration(
           hintText: 'Search Menu...',

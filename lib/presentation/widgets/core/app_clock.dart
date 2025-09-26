@@ -31,12 +31,17 @@ class AppLiveClockState extends State<AppLiveClock> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            Text(dateStr, style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              dateStr,
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ),
             Text(
               timeStr,
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(color: Colors.grey[700]),
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
             ),
           ],
         );

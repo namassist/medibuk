@@ -6,6 +6,7 @@ import 'package:medibuk/domain/entities/dental_record.dart';
 import 'package:medibuk/domain/entities/laktasi_record.dart';
 import 'package:medibuk/domain/entities/service_record.dart';
 import 'package:medibuk/domain/entities/umum_record.dart';
+import 'package:medibuk/presentation/utils/formatter.dart';
 import 'general_info.dart';
 import 'obstetric_record.dart';
 import 'gynecology_record.dart';
@@ -173,5 +174,22 @@ extension MedicalRecordCopyWith on MedicalRecord {
       services: services ?? this.services,
       prescriptions: prescriptions ?? this.prescriptions,
     );
+  }
+
+  DocumentStatus? get documentStatus {
+    switch (docStatus.id) {
+      case 'DR':
+        return DocumentStatus.drafted;
+      case 'IP':
+        return DocumentStatus.inprogress;
+      case 'CO':
+        return DocumentStatus.complete;
+      case 'IN':
+        return DocumentStatus.invalid;
+      case 'VO':
+        return DocumentStatus.voided;
+      default:
+        return null;
+    }
   }
 }
