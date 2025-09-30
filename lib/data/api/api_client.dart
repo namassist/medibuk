@@ -1,63 +1,86 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:medibuk/config/environment.dart';
 
 class ApiClient {
-  final Dio _dio;
-  final Dio _nodeDio;
+  late final Dio _dio;
+  late final Dio _nodeDio;
+  final _storage = const FlutterSecureStorage();
+  static const _tokenKey = 'auth_token';
 
-  static const String _authToken =
-      'eyJraWQiOiJpZGVtcGllcmUiLCJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJTdXBlckFuYWFtIiwiTV9XYXJlaG91c2VfSUQiOjEwMDAwMDEsIkFEX0xhbmd1YWdlIjoiZW5fVVMiLCJBRF9TZXNzaW9uX0lEIjoyMjMwNzQ0LCJBRF9Vc2VyX0lEIjoxMDk5MDcxLCJBRF9Sb2xlX0lEIjoxMDAwMDE1LCJBRF9PcmdfSUQiOjEwMDAwMDEsImlzcyI6ImlkZW1waWVyZS5vcmciLCJBRF9DbGllbnRfSUQiOjEwMDAwMDAsImV4cCI6MTc1ODg3ODQ0N30.acbXiPAo-3N9mKw8JmikK3fkrXehcPM5HrepCIWgE6_USlTFLAiaSMxyMLI3hmklfb1x6NRF7mzkFPbC7Adj2A';
+  ApiClient() {
+    final baseUrl = EnvManager.instance.config.baseUrl;
+    final nodeUrl = EnvManager.instance.config.nodeUrl;
 
-  ApiClient()
-    : _dio = Dio(
-        BaseOptions(
-          baseUrl: 'https://devkss.idempiereonline.com/api/v1',
-          headers: {
-            'Authorization': 'Bearer $_authToken',
-            'Accept': 'application/json',
-          },
-          connectTimeout: const Duration(seconds: 15),
-          receiveTimeout: const Duration(seconds: 20),
-        ),
+    _dio = Dio(
+      BaseOptions(
+        baseUrl: baseUrl,
+        connectTimeout: const Duration(seconds: 15),
+        receiveTimeout: const Duration(seconds: 20),
       ),
-      _nodeDio = Dio(
-        BaseOptions(
-          baseUrl: 'https://medibook.medital.id/api',
-          headers: {
-            'Authorization': 'Bearer $_authToken', // Asumsi token yang sama
-            'Accept': 'application/json',
-          },
-        ),
-      );
+    );
 
-  Future<Map<String, dynamic>> get(
+    _nodeDio = Dio(BaseOptions(baseUrl: nodeUrl));
+
+    _dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) async {
+          if (!options.headers.containsKey('Authorization')) {
+            final token = await _storage.read(key: _tokenKey);
+            if (token != null) {
+              options.headers['Authorization'] = 'Bearer $token';
+            }
+          }
+          return handler.next(options);
+        },
+      ),
+    );
+  }
+
+  Future<Response> get(
     String path, {
     Map<String, dynamic>? queryParams,
+    String? token,
   }) async {
     try {
-      final response = await _dio.get(path, queryParameters: queryParams);
-      return response.data as Map<String, dynamic>;
-    } on DioException catch (e) {
-      throw Exception(
-        'Failed to load data from $path: ${e.response?.data ?? e.message}',
+      Options? options;
+      if (token != null) {
+        options = Options(headers: {'Authorization': 'Bearer $token'});
+      }
+      return await _dio.get(
+        path,
+        queryParameters: queryParams,
+        options: options,
       );
-    } catch (e) {
-      throw Exception('An unexpected error occurred: $e');
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['detail'] ?? 'An error occurred');
+    }
+  }
+
+  Future<Response> post(
+    String path, {
+    required Map<String, dynamic> data,
+  }) async {
+    try {
+      return await _dio.post(path, data: data);
+    } on DioException catch (e) {
+      throw Exception(e.response?.data['detail'] ?? 'An error occurred');
     }
   }
 
   Future<Response> put(
     String path, {
     required Map<String, dynamic> data,
+    String? token,
   }) async {
     try {
-      final response = await _dio.put(path, data: data);
-      return response;
+      Options? options;
+      if (token != null) {
+        options = Options(headers: {'Authorization': 'Bearer $token'});
+      }
+      return await _dio.put(path, data: data, options: options);
     } on DioException catch (e) {
-      throw Exception(
-        'Failed to update data at $path: ${e.response?.data ?? e.message}',
-      );
-    } catch (e) {
-      throw Exception('An unexpected error occurred: $e');
+      throw Exception(e.response?.data['detail'] ?? 'An error occurred');
     }
   }
 

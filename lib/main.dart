@@ -3,12 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:medibuk/domain/entities/app_theme_extension.dart';
 import 'package:medibuk/domain/entities/color_schemes.g.dart';
-import 'package:medibuk/presentation/pages/dashboard.dart';
 import 'package:medibuk/presentation/providers/shared_providers.dart';
-
-void main() {
-  runApp(const ProviderScope(child: MyApp()));
-}
+import 'package:medibuk/presentation/widgets/auth_wrapper.dart';
 
 class MyApp extends ConsumerWidget {
   const MyApp({super.key});
@@ -66,7 +62,7 @@ class MyApp extends ConsumerWidget {
         extensions: const [darkAppColors],
       ),
       themeMode: themeMode,
-      home: const DashboardScreen(),
+      home: const AuthWrapper(),
     );
   }
 }
