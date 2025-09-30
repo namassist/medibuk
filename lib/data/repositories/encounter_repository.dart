@@ -21,8 +21,8 @@ class EncounterRepositoryImpl implements EncounterRepository {
 
   @override
   Future<EncounterRecord> getEncounterRecord(String id) async {
-    final jsonData = await _apiClient.get('/windows/encounter/$id');
-    return EncounterRecord.fromJson(jsonData);
+    final response = await _apiClient.get('/windows/encounter/$id');
+    return EncounterRecord.fromJson(response.data);
   }
 
   @override

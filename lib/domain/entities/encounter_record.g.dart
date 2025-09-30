@@ -64,7 +64,9 @@ EncounterRecord _$EncounterRecordFromJson(
   laborSC: (json['LaborSC'] as num?)?.toInt(),
   laborSpontanForcep: (json['LaborSpontanForcep'] as num?)?.toInt(),
   laborSpontanVacuum: (json['LaborSpontanVacuum'] as num?)?.toInt(),
-  docStatus: GeneralInfo.fromJson(json['DocStatus'] as Map<String, dynamic>),
+  docStatus: json['DocStatus'] == null
+      ? null
+      : GeneralInfo.fromJson(json['DocStatus'] as Map<String, dynamic>),
   amount: json['Amount'] as num?,
   lila: json['LILA'] as num?,
   isActive: json['IsActive'] as bool,

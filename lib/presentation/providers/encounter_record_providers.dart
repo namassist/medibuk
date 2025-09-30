@@ -8,6 +8,10 @@ part 'encounter_record_providers.g.dart';
 class EncounterNotifier extends _$EncounterNotifier {
   @override
   Future<EncounterRecord?> build(String encounterId) async {
+    if (encounterId == 'NEW') {
+      return EncounterRecord.empty();
+    }
+
     if (encounterId.isEmpty) return null;
 
     final repository = ref.read(encounterRepositoryProvider);

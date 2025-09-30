@@ -37,15 +37,21 @@ class EncounterScreen extends ConsumerWidget {
                   const Center(child: CircularProgressIndicator()),
             );
 
-            ref.invalidate(EncounterNotifierProvider(record.id.toString()));
+            ref.invalidate(EncounterNotifierProvider(encounterId));
+
+            // Selalu reset perubahan form yang belum disimpan
+            ref.read(formDataProvider.notifier).clear();
+            ref.read(formModificationNotifierProvider.notifier).reset();
 
             if (!context.mounted) return;
             navigator.pop();
-            await showSuccessDialog(
-              context: context,
-              title: 'Sukses',
-              message: 'Data encounter berhasil diperbarui.',
-            );
+            if (encounterId != 'NEW') {
+              await showSuccessDialog(
+                context: context,
+                title: 'Sukses',
+                message: 'Data encounter berhasil diperbarui.',
+              );
+            }
           },
           pageActions: [
             SizedBox(
@@ -155,7 +161,12 @@ class _Content extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final bool isEditable =
-        record.docStatus.id != 'CO' && record.docStatus.id != 'VO';
+        record.docStatus?.id != 'CO' && record.docStatus?.id != 'VO';
+
+    final bool isPatientInfoEditable =
+        record.docStatus?.id == 'DR' ||
+        record.docStatus?.id == 'IP' ||
+        record.docStatus?.id == 'IN';
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
@@ -173,7 +184,7 @@ class _Content extends ConsumerWidget {
           AppFormSection(
             title: 'Patient Medical Information',
             data: record.toJson(),
-            isEditable: isEditable,
+            isEditable: isPatientInfoEditable,
             sectionType: 'encounter_patient_medical',
             sectionIndex: 1,
             recordId: record.uid,

@@ -1,3 +1,4 @@
+import 'package:intl/intl.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:medibuk/domain/entities/general_info.dart';
 import 'package:medibuk/domain/entities/record.dart';
@@ -68,7 +69,7 @@ class EncounterRecord extends Record {
   @JsonKey(name: 'LaborSpontanVacuum')
   final int? laborSpontanVacuum;
   @JsonKey(name: 'DocStatus')
-  final GeneralInfo docStatus;
+  final GeneralInfo? docStatus;
   @JsonKey(name: 'Amount')
   final num? amount;
   @JsonKey(name: 'LILA')
@@ -122,7 +123,7 @@ class EncounterRecord extends Record {
     this.laborSC,
     this.laborSpontanForcep,
     this.laborSpontanVacuum,
-    required this.docStatus,
+    this.docStatus,
     this.amount,
     this.lila,
     required this.isActive,
@@ -141,8 +142,41 @@ class EncounterRecord extends Record {
 
   Map<String, dynamic> toJson() => _$EncounterRecordToJson(this);
 
+  factory EncounterRecord.empty() {
+    final now = DateTime.now();
+    return EncounterRecord(
+      id: 0,
+      uid: 'new-${now.millisecondsSinceEpoch}',
+      documentNo: 'NEW',
+      dateTrx: DateFormat('yyyy-MM-dd').format(now),
+      docStatus: null, // Status dibuat null saat create new
+      isActive: true,
+      processed: false,
+      isPaid: false,
+      // Inisialisasi semua field numerik dengan 0
+      systolicPressure: 0,
+      diastolicPressure: 0,
+      bodyWeight: 0,
+      bodyHeight: 0,
+      bodyTemperature: 0,
+      birthWeight: 0,
+      headCircumference: 0,
+      pregnancyNo: 0,
+      miscarriage: 0,
+      laborSpontanNormal: 0,
+      laborSC: 0,
+      laborSpontanForcep: 0,
+      laborSpontanVacuum: 0,
+      amount: 0,
+      lila: 0,
+      discountAmt: 0,
+      amtBeforeDisc: 0,
+    );
+  }
+
   DocumentStatus? get documentStatus {
-    switch (docStatus.id) {
+    if (docStatus == null) return null;
+    switch (docStatus!.id) {
       case 'DR':
         return DocumentStatus.drafted;
       case 'IP':
