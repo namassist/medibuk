@@ -85,23 +85,43 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
     }
   }
 
-  void _onFieldChanged(String fieldName, dynamic value) {
+  void _onFieldChanged(String fieldName, dynamic newValue) {
     setState(() {
-      _localData[fieldName] = value;
+      _localData[fieldName] = newValue;
+
+      if (fieldName == 'C_SalesRegion_ID') {
+        _localData['M_Specialist_ID'] = null;
+        _localData['Doctor_ID'] = null;
+      } else if (fieldName == 'M_Specialist_ID') {
+        _localData['Doctor_ID'] = null;
+      }
     });
 
     ref.read(formModificationNotifierProvider.notifier).setModified(true);
 
-    ref
-        .read(formDataProvider.notifier)
-        .updateField(
-          recordId: widget.recordId,
-          sectionType: widget.sectionType,
-          sectionIndex: widget.sectionIndex,
-          fieldName: fieldName,
-          originalValue: _originalData[fieldName],
-          newValue: value,
-        );
+    _updateFormData(fieldName, newValue);
+
+    if (fieldName == 'C_SalesRegion_ID') {
+      _updateFormData('M_Specialist_ID', null);
+      _updateFormData('Doctor_ID', null);
+    } else if (fieldName == 'M_Specialist_ID') {
+      _updateFormData('Doctor_ID', null);
+    }
+  }
+
+  void _updateFormData(String fieldName, dynamic newValue) {
+    if (_originalData.containsKey(fieldName)) {
+      ref
+          .read(formDataProvider.notifier)
+          .updateField(
+            recordId: widget.recordId,
+            sectionType: widget.sectionType,
+            sectionIndex: widget.sectionIndex,
+            fieldName: fieldName,
+            originalValue: _originalData[fieldName],
+            newValue: newValue,
+          );
+    }
   }
 
   @override
@@ -112,10 +132,8 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        // PERBAIKAN 1: Gunakan warna surface dari tema
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(8),
-        // PERBAIKAN 2: Gunakan warna outlineVariant dari tema
         border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(

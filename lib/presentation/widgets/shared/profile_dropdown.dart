@@ -1,18 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:medibuk/presentation/providers/auth_provider.dart';
 
-class ProfileDropdown extends StatefulWidget {
+class ProfileDropdown extends ConsumerStatefulWidget {
   const ProfileDropdown({super.key});
 
   @override
-  State<ProfileDropdown> createState() => _ProfileDropdownState();
+  ConsumerState<ProfileDropdown> createState() => _ProfileDropdownState();
 }
 
-class _ProfileDropdownState extends State<ProfileDropdown> {
+class _ProfileDropdownState extends ConsumerState<ProfileDropdown> {
   bool _isOpen = false;
 
   @override
   Widget build(BuildContext context) {
+    final userProfile = ref.watch(authProvider).userProfile;
+    final username = userProfile?.username ?? 'Guest';
+    final warehouseName = userProfile?.warehouse.name ?? '';
+
     return PopupMenuButton(
       offset: const Offset(0, 50),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.0)),
@@ -21,7 +27,6 @@ class _ProfileDropdownState extends State<ProfileDropdown> {
       onOpened: () => setState(() => _isOpen = true),
       onCanceled: () => setState(() => _isOpen = false),
       onSelected: (_) => setState(() => _isOpen = false),
-
       itemBuilder: (context) => [
         PopupMenuItem(
           enabled: false,
@@ -29,13 +34,18 @@ class _ProfileDropdownState extends State<ProfileDropdown> {
           child: _buildDropdownContent(context),
         ),
       ],
-      child: _ProfileChip(name: 'SuperAnaam', isOpen: _isOpen),
+      child: _ProfileChip(
+        name: username,
+        warehouseName: warehouseName,
+        isOpen: _isOpen,
+      ),
     );
   }
 
   Widget _buildDropdownContent(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final userProfile = ref.watch(authProvider).userProfile;
 
     return Container(
       width: 280,
@@ -63,7 +73,8 @@ class _ProfileDropdownState extends State<ProfileDropdown> {
                   context,
                   icon: Icons.swap_horiz_rounded,
                   text: 'Change Role',
-                  subtitle: 'Switch to different role',
+                  subtitle:
+                      userProfile?.role.name ?? 'Switch to different role',
                   color: colorScheme.primary,
                   backgroundColor: colorScheme.primaryContainer.withValues(
                     alpha: 0.3,
@@ -71,7 +82,7 @@ class _ProfileDropdownState extends State<ProfileDropdown> {
                   onTap: () {
                     HapticFeedback.lightImpact();
                     Navigator.pop(context);
-                    // TODO: Implementasi logika ganti role
+                    ref.read(authProvider.notifier).changeRole();
                   },
                 ),
                 const SizedBox(height: 8),
@@ -87,7 +98,7 @@ class _ProfileDropdownState extends State<ProfileDropdown> {
                   onTap: () {
                     HapticFeedback.mediumImpact();
                     Navigator.pop(context);
-                    // TODO: Implementasi logika logout
+                    ref.read(authProvider.notifier).logout();
                   },
                 ),
               ],
@@ -101,6 +112,8 @@ class _ProfileDropdownState extends State<ProfileDropdown> {
   Widget _buildDropdownHeader(BuildContext context) {
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
+    final userProfile = ref.watch(authProvider).userProfile;
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -129,14 +142,11 @@ class _ProfileDropdownState extends State<ProfileDropdown> {
                 ),
               ],
             ),
-            child: const CircleAvatar(
-              radius: 32,
-              // backgroundImage: AssetImage('assets/doctor.png'),
-            ),
+            child: const CircleAvatar(radius: 32),
           ),
           const SizedBox(height: 16),
           Text(
-            'SuperAnaam',
+            userProfile?.username ?? 'Guest',
             style: theme.textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
             ),
@@ -161,7 +171,7 @@ class _ProfileDropdownState extends State<ProfileDropdown> {
                 ),
                 const SizedBox(width: 6),
                 Text(
-                  'Key User',
+                  userProfile?.role.name ?? 'No Role',
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: colorScheme.primary,
                     fontWeight: FontWeight.w600,
@@ -228,8 +238,13 @@ class _ProfileDropdownState extends State<ProfileDropdown> {
 
 class _ProfileChip extends StatelessWidget {
   final String name;
+  final String warehouseName;
   final bool isOpen;
-  const _ProfileChip({required this.name, required this.isOpen});
+  const _ProfileChip({
+    required this.name,
+    required this.warehouseName,
+    required this.isOpen,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -256,7 +271,7 @@ class _ProfileChip extends StatelessWidget {
             children: [
               const CircleAvatar(
                 radius: 16,
-                // backgroundImage: AssetImage('assets/doctor.png'),
+                backgroundImage: AssetImage('assets/doctor.png'),
               ),
               Positioned(
                 right: 0,
@@ -277,10 +292,28 @@ class _ProfileChip extends StatelessWidget {
             ],
           ),
           const SizedBox(width: 12),
-          Text(
-            name,
-            style: theme.textTheme.labelLarge?.copyWith(
-              fontWeight: FontWeight.w600,
+          Flexible(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  name,
+                  style: theme.textTheme.labelLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  warehouseName,
+                  style: theme.textTheme.labelSmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
             ),
           ),
           const SizedBox(width: 8),

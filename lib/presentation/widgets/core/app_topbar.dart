@@ -7,7 +7,6 @@ class AppTopBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Left: menu + branding
         Row(
           children: [
             Icon(Icons.menu, color: Colors.black87),
@@ -21,7 +20,6 @@ class AppTopBar extends StatelessWidget {
           ],
         ),
         const Spacer(),
-        // Right: quick actions (placeholders)
         _RoundedIcon(icon: Icons.wifi),
         const SizedBox(width: 8),
         _RoundedIcon(icon: Icons.dark_mode, muted: true),

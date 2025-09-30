@@ -21,7 +21,7 @@ class AppLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double toolbarHeight = (pageActions != null) ? 245 : 180;
+    final double toolbarHeight = (pageActions != null) ? 250 : 185;
 
     return Scaffold(
       drawer: const AppDrawer(),

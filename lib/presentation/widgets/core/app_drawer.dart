@@ -209,7 +209,7 @@ class _DrawerHeader extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
-              Icons.add_circle, // Placeholder icon
+              Icons.add_circle,
               color: Theme.of(context).primaryColor,
               size: 24,
             ),

@@ -473,7 +473,6 @@ class _DocumentStatusChip extends StatelessWidget {
   }
 
   IconData _getStatusIcon(DocumentStatus status) {
-    // ... (logika getStatusIcon)
     switch (status) {
       case DocumentStatus.drafted:
         return Icons.drafts;

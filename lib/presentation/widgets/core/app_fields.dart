@@ -200,6 +200,15 @@ class _AppFieldsState extends ConsumerState<AppFields>
       }
     }
 
+    if (widget.fieldName == 'M_Specialist_ID') {
+      final salesRegion = widget.allSectionData['C_SalesRegion_ID'];
+      if (salesRegion == null) return true;
+    }
+    if (widget.fieldName == 'Doctor_ID') {
+      final specialist = widget.allSectionData['M_Specialist_ID'];
+      if (specialist == null) return true;
+    }
+
     return !widget.isEditable || !_config.editable;
   }
 
@@ -247,57 +256,104 @@ class _AppFieldsState extends ConsumerState<AppFields>
         ? widget.value as GeneralInfo
         : null;
 
-    return SizedBox(
-      height: 44,
-      child: DropdownSearch<GeneralInfo>(
-        selectedItem: currentValue,
-        asyncItems: (String filter) async {
-          late final GeneralInfoParameter providerParam;
+    return Consumer(
+      builder: (context, ref, _) {
+        late final GeneralInfoParameter providerParam;
 
-          if (modelName == 'Doctor_ID') {
-            final specialist =
-                widget.allSectionData['M_Specialist_ID'] as GeneralInfo?;
-            if (specialist == null) return [];
-
-            providerParam = GeneralInfoParameter(
-              modelName: modelName,
-              dependencies: {'M_Specialist_ID': specialist.id},
-            );
-          } else {
-            providerParam = GeneralInfoParameter(modelName: modelName);
-          }
-
-          return await ref.read(
-            cachedGeneralInfoOptionsProvider(providerParam).future,
+        if (modelName == 'Doctor_ID') {
+          final specialist =
+              widget.allSectionData['M_Specialist_ID'] as GeneralInfo?;
+          providerParam = GeneralInfoParameter(
+            modelName: modelName,
+            dependencies: {'M_Specialist_ID': specialist?.id},
           );
-        },
-        compareFn: (item1, item2) => item1.id == item2.id,
-        itemAsString: (item) => item.identifier,
-        onChanged: widget.onChanged,
-        dropdownDecoratorProps: DropDownDecoratorProps(
-          baseStyle: TextStyle(
-            decorationColor: Theme.of(context).colorScheme.onSurface,
-            color: Theme.of(context).colorScheme.onSurface,
-            fontSize: 14,
-          ),
-          dropdownSearchDecoration: _inputDecoration(false),
-        ),
-        popupProps: const PopupProps.menu(
-          showSelectedItems: true,
-          showSearchBox: true,
-          searchFieldProps: TextFieldProps(
-            decoration: InputDecoration(
-              hintText: 'Cari...',
-              border: OutlineInputBorder(),
+        } else if (modelName == 'm_specialist') {
+          final salesRegion =
+              widget.allSectionData['C_SalesRegion_ID'] as GeneralInfo?;
+          providerParam = GeneralInfoParameter(
+            modelName: modelName,
+            dependencies: {'C_SalesRegion_ID': salesRegion?.id},
+          );
+        } else {
+          providerParam = GeneralInfoParameter(modelName: modelName);
+        }
+
+        final optionsAsync = ref.watch(
+          cachedGeneralInfoOptionsProvider(providerParam),
+        );
+
+        return optionsAsync.when(
+          data: (options) => SizedBox(
+            height: 44,
+            child: DropdownSearch<GeneralInfo>(
+              items: const [],
+              selectedItem: currentValue,
+              asyncItems: (String filter) async {
+                if (modelName == 'Doctor_ID') {
+                  final specialist =
+                      widget.allSectionData['M_Specialist_ID'] as GeneralInfo?;
+                  if (specialist == null) return [];
+                } else if (modelName == 'm_specialist') {
+                  final salesRegion =
+                      widget.allSectionData['C_SalesRegion_ID'] as GeneralInfo?;
+                  if (salesRegion == null) return [];
+                }
+
+                return await ref.read(
+                  cachedGeneralInfoOptionsProvider(providerParam).future,
+                );
+              },
+              compareFn: (item1, item2) => item1.id == item2.id,
+              itemAsString: (item) => item.identifier,
+              onChanged: widget.onChanged,
+              dropdownDecoratorProps: DropDownDecoratorProps(
+                baseStyle: TextStyle(
+                  decorationColor: Theme.of(context).colorScheme.onSurface,
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 14,
+                ),
+                dropdownSearchDecoration: _inputDecoration(false),
+              ),
+              popupProps: const PopupProps.menu(
+                showSelectedItems: true,
+                showSearchBox: true,
+                searchFieldProps: TextFieldProps(
+                  decoration: InputDecoration(
+                    hintText: 'Cari...',
+                    border: OutlineInputBorder(),
+                  ),
+                ),
+              ),
             ),
           ),
-        ),
-      ),
+          loading: () => const SizedBox(
+            height: 44,
+            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
+          ),
+          error: (error, stack) => Container(
+            height: 44,
+            padding: const EdgeInsets.all(8.0),
+            decoration: BoxDecoration(
+              border: Border.all(color: Colors.red[300]!),
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+            ),
+            child: Center(
+              child: Text(
+                'Error: Options not loaded',
+                style: TextStyle(color: Colors.red[600]),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
   String _resolveModelNameFromFieldName(String fieldName) {
     switch (fieldName) {
+      case 'C_DocType_ID':
+        return 'c_doctype_id';
       case 'ICD_10':
         return 'icd_10';
       case 'Doctor_ID':
