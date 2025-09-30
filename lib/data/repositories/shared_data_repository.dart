@@ -3,7 +3,6 @@ import 'package:medibuk/data/api/api_client.dart';
 import 'package:medibuk/domain/entities/general_info.dart';
 import 'package:medibuk/domain/entities/product_info.dart';
 import 'package:medibuk/presentation/providers/api_client_provider.dart';
-// Import the parameter class
 import 'package:medibuk/presentation/providers/shared_providers.dart';
 
 abstract class SharedDataRepository {
@@ -24,7 +23,6 @@ class SharedDataRepositoryImpl implements SharedDataRepository {
   SharedDataRepositoryImpl(this._apiClient);
 
   @override
-  // *** PERBAIKAN 2: Ubah tipe parameter di sini juga ***
   Future<List<GeneralInfo>> getGeneralInfoOptions(
     GeneralInfoParameter parameter,
   ) async {
@@ -32,6 +30,21 @@ class SharedDataRepositoryImpl implements SharedDataRepository {
     final dependencies = parameter.dependencies;
 
     switch (modelName) {
+      case 'c_doctype_id':
+        return [
+          const GeneralInfo(
+            propertyLabel: 'DocType',
+            id: 1000049,
+            identifier: 'Poli',
+            modelName: 'c_doctype',
+          ),
+          const GeneralInfo(
+            propertyLabel: 'DocType',
+            id: 1000047,
+            identifier: 'Pharmacy',
+            modelName: 'c_doctype',
+          ),
+        ];
       case 'c_salesregion':
         return _fetchFromApi(
           modelName: 'C_SalesRegion',
@@ -42,10 +55,12 @@ class SharedDataRepositoryImpl implements SharedDataRepository {
           identifierKey: 'Name',
         );
       case 'm_specialist':
+        final salesRegionId = dependencies['C_SalesRegion_ID'];
+        if (salesRegionId == null) return [];
         return _fetchFromApi(
           modelName: 'M_Specialist',
           payload: {
-            r'$context': 'C_SalesRegion_ID:1000017',
+            r'$context': 'C_SalesRegion_ID:$salesRegionId',
             r'$valrule': '1000014',
           },
           identifierKey: 'Name',
@@ -86,8 +101,8 @@ class SharedDataRepositoryImpl implements SharedDataRepository {
         queryParams: payload,
       );
 
-      if (response['records'] is List) {
-        final records = response['records'] as List;
+      if (response.data != null && response.data['records'] is List) {
+        final records = response.data['records'] as List;
         return records.map((json) {
           return GeneralInfo(
             propertyLabel: modelName,

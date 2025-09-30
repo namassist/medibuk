@@ -55,7 +55,6 @@ Stream<List<ConnectivityResult>> connectivity(ConnectivityRef ref) async* {
   }
 }
 
-// *** TAMBAHKAN PROVIDER BARU DI SINI ***
 @riverpod
 class AppTheme extends _$AppTheme {
   @override

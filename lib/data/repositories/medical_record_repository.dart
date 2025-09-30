@@ -26,11 +26,11 @@ class MedicalRecordRepositoryImpl implements MedicalRecordRepository {
     const String expandQuery =
         'gynecology,obstetric,medical-record-anak,prescriptions,services,icd-codes,dental,laktasi,medical-record-umum,andrologi';
 
-    final jsonData = await _apiClient.get(
+    final response = await _apiClient.get(
       '/windows/medical-record/$id',
       queryParams: {r'$expand': expandQuery},
     );
-    return MedicalRecord.fromJson(jsonData);
+    return MedicalRecord.fromJson(response.data);
   }
 
   @override

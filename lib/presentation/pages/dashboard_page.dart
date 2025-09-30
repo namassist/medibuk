@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medibuk/presentation/pages/encounter_page.dart';
 import 'package:medibuk/presentation/widgets/core/app_layout.dart';
 import 'package:medibuk/presentation/widgets/dashboard/dashboard_header.dart';
 
@@ -29,6 +30,28 @@ class DashboardScreen extends StatelessWidget {
                   icon: Icons.calendar_today_outlined,
                   title: 'Online Booking',
                   count: '0',
+                ),
+                const SizedBox(width: 16),
+                ElevatedButton.icon(
+                  icon: const Icon(Icons.open_in_new),
+                  label: const Text('Open Encounter'),
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            const EncounterScreen(encounterId: '1305723'),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
