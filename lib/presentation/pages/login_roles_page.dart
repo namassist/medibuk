@@ -4,18 +4,23 @@ import 'package:medibuk/data/repositories/auth_repository.dart';
 import 'package:medibuk/domain/entities/auth_models.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:medibuk/presentation/providers/auth_provider.dart';
+import 'package:medibuk/presentation/widgets/shared/custom_dialogs.dart'; // Import dialog kustom
 
-class LoginRoleScreen extends ConsumerStatefulWidget {
-  final InitialLoginData loginData;
-  const LoginRoleScreen({super.key, required this.loginData});
+class LoginRolesScreen extends ConsumerWidget {
+  const LoginRolesScreen({super.key});
 
   @override
-  ConsumerState<LoginRoleScreen> createState() => LoginRoleScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final loginData = ref.watch(
+      authProvider.select((s) => s.roleSelectionData),
+    );
 
-class LoginRoleScreenState extends ConsumerState<LoginRoleScreen> {
-  @override
-  Widget build(BuildContext context) {
+    if (loginData == null) {
+      return const Scaffold(
+        body: Center(child: Text("Sesi tidak valid, silahkan login kembali.")),
+      );
+    }
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: LayoutBuilder(
@@ -27,14 +32,11 @@ class LoginRoleScreenState extends ConsumerState<LoginRoleScreen> {
                     const Expanded(flex: 1, child: _RoleSelectionImagePanel()),
                     Expanded(
                       flex: 2,
-                      child: _RoleSelectionForm(loginData: widget.loginData),
+                      child: _RoleSelectionForm(loginData: loginData),
                     ),
                   ],
                 )
-              : Center(
-                  // Ditambahkan untuk menengahkan form di mode mobile/tablet
-                  child: _RoleSelectionForm(loginData: widget.loginData),
-                );
+              : Center(child: _RoleSelectionForm(loginData: loginData));
         },
       ),
     );
@@ -76,114 +78,175 @@ class _RoleSelectionForm extends ConsumerStatefulWidget {
 class _RoleSelectionFormState extends ConsumerState<_RoleSelectionForm> {
   final _formKey = GlobalKey<FormState>();
 
-  // State untuk menyimpan item yang terpilih
   RoleSelectionItem? _selectedClient;
   RoleSelectionItem? _selectedRole;
   RoleSelectionItem? _selectedOrg;
   RoleSelectionItem? _selectedWarehouse;
 
-  // State untuk menyimpan daftar item dropdown
   List<RoleSelectionItem> _roles = [];
   List<RoleSelectionItem> _orgs = [];
   List<RoleSelectionItem> _warehouses = [];
 
-  // State untuk status loading
-  bool _isRolesLoading = false;
-  bool _isOrgsLoading = false;
-  bool _isWarehousesLoading = false;
+  bool _isChainLoading = false;
 
   @override
   void initState() {
     super.initState();
     if (widget.loginData.clients.isNotEmpty) {
       _selectedClient = widget.loginData.clients.first;
-      _fetchRoles();
+      _fetchInitialChain();
     }
   }
 
-  Future<void> _fetchRoles() async {
-    if (_selectedClient == null) return;
-    setState(() => _isRolesLoading = true);
+  void _showErrorDialog(String message) {
+    if (!mounted) return;
+    showStatusDialog(
+      context: context,
+      type: DialogType.error,
+      title: 'Gagal Memuat Data',
+      message: message,
+      buttonText: 'Oke',
+    );
+  }
 
-    final authRepo = ref.read(authRepositoryProvider);
-    final token = ref.read(authProvider).initialToken!;
+  Future<void> _fetchInitialChain() async {
+    if (_selectedClient == null) return;
+
+    setState(() => _isChainLoading = true);
 
     try {
+      final authRepo = ref.read(authRepositoryProvider);
+      final token = ref.read(authProvider).initialToken!;
+
       final roles = await authRepo.getRoles(_selectedClient!.id, token);
+      final firstRole = roles.isNotEmpty ? roles.first : null;
+
+      List<RoleSelectionItem> orgs = [];
+      RoleSelectionItem? firstOrg;
+      if (firstRole != null) {
+        orgs = await authRepo.getOrganizations(
+          _selectedClient!.id,
+          firstRole.id,
+          token,
+        );
+        firstOrg = orgs.isNotEmpty ? orgs.last : null;
+      }
+
+      List<RoleSelectionItem> warehouses = [];
+      RoleSelectionItem? firstWarehouse;
+      if (firstOrg != null) {
+        warehouses = await authRepo.getWarehouses(
+          _selectedClient!.id,
+          firstRole!.id,
+          firstOrg.id,
+          token,
+        );
+        firstWarehouse = warehouses.isNotEmpty ? warehouses.first : null;
+      }
+
       setState(() {
         _roles = roles;
-        if (roles.isNotEmpty) {
-          _selectedRole = roles.first;
-        }
-        _isRolesLoading = false;
+        _selectedRole = firstRole;
+        _orgs = orgs;
+        _selectedOrg = firstOrg;
+        _warehouses = warehouses;
+        _selectedWarehouse = firstWarehouse;
+        _isChainLoading = false;
       });
-      if (_selectedRole != null) {
-        _fetchOrganizations();
-      }
     } catch (e) {
-      setState(() => _isRolesLoading = false);
-      // Handle error
+      setState(() => _isChainLoading = false);
+      _showErrorDialog(e.toString());
     }
   }
 
-  Future<void> _fetchOrganizations() async {
-    if (_selectedRole == null) return;
-    setState(() => _isOrgsLoading = true);
+  Future<void> _onClientChanged(RoleSelectionItem? client) async {
+    if (client == null) return;
+    setState(() {
+      _selectedClient = client;
+      _roles = [];
+      _orgs = [];
+      _warehouses = [];
+      _selectedRole = null;
+      _selectedOrg = null;
+      _selectedWarehouse = null;
+    });
+    await _fetchInitialChain();
+  }
 
-    final authRepo = ref.read(authRepositoryProvider);
-    final token = ref.read(authProvider).initialToken!;
+  Future<void> _onRoleChanged(RoleSelectionItem? role) async {
+    if (role == null) return;
+    setState(() {
+      _selectedRole = role;
+      _orgs = [];
+      _warehouses = [];
+      _selectedOrg = null;
+      _selectedWarehouse = null;
+      _isChainLoading = true;
+    });
 
     try {
+      final authRepo = ref.read(authRepositoryProvider);
+      final token = ref.read(authProvider).initialToken!;
       final orgs = await authRepo.getOrganizations(
         _selectedClient!.id,
-        _selectedRole!.id,
+        role.id,
         token,
       );
+      final firstOrg = orgs.isNotEmpty ? orgs.last : null;
+
+      List<RoleSelectionItem> warehouses = [];
+      RoleSelectionItem? firstWarehouse;
+      if (firstOrg != null) {
+        warehouses = await authRepo.getWarehouses(
+          _selectedClient!.id,
+          role.id,
+          firstOrg.id,
+          token,
+        );
+        firstWarehouse = warehouses.isNotEmpty ? warehouses.first : null;
+      }
+
       setState(() {
         _orgs = orgs;
-        if (orgs.length > 1) {
-          _selectedOrg = orgs[1];
-        } else if (orgs.isNotEmpty) {
-          _selectedOrg = orgs.first;
-        }
-        _isOrgsLoading = false;
+        _selectedOrg = firstOrg;
+        _warehouses = warehouses;
+        _selectedWarehouse = firstWarehouse;
+        _isChainLoading = false;
       });
-
-      if (_selectedOrg != null) {
-        _fetchWarehouses();
-      }
     } catch (e) {
-      setState(() => _isOrgsLoading = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to fetch organizations: $e')),
-      );
+      setState(() => _isChainLoading = false);
+      _showErrorDialog(e.toString());
     }
   }
 
-  Future<void> _fetchWarehouses() async {
-    if (_selectedOrg == null) return;
-    setState(() => _isWarehousesLoading = true);
-
-    final authRepo = ref.read(authRepositoryProvider);
-    final token = ref.read(authProvider).initialToken!;
+  // (Sama untuk _onOrgChanged)
+  Future<void> _onOrgChanged(RoleSelectionItem? org) async {
+    if (org == null) return;
+    setState(() {
+      _selectedOrg = org;
+      _warehouses = [];
+      _selectedWarehouse = null;
+      _isChainLoading = true;
+    });
 
     try {
+      final authRepo = ref.read(authRepositoryProvider);
+      final token = ref.read(authProvider).initialToken!;
       final warehouses = await authRepo.getWarehouses(
         _selectedClient!.id,
         _selectedRole!.id,
-        _selectedOrg!.id,
+        org.id,
         token,
       );
+      final firstWarehouse = warehouses.isNotEmpty ? warehouses.first : null;
       setState(() {
         _warehouses = warehouses;
-        if (warehouses.isNotEmpty) {
-          _selectedWarehouse = warehouses.first;
-        }
-        _isWarehousesLoading = false;
+        _selectedWarehouse = firstWarehouse;
+        _isChainLoading = false;
       });
     } catch (e) {
-      setState(() => _isWarehousesLoading = false);
-      // Handle error
+      setState(() => _isChainLoading = false);
+      _showErrorDialog(e.toString());
     }
   }
 
@@ -203,9 +266,13 @@ class _RoleSelectionFormState extends ConsumerState<_RoleSelectionForm> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final isLoading = authState.status == AuthStatus.loading;
+    final isLoading = _isChainLoading || authState.status == AuthStatus.loading;
 
-    ref.listen<AuthState>(authProvider, (previous, next) {});
+    ref.listen(authProvider, (previous, next) {
+      if (previous?.status == AuthStatus.loading && next.errorMessage != null) {
+        _showErrorDialog(next.errorMessage!);
+      }
+    });
 
     return SingleChildScrollView(
       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 24),
@@ -219,57 +286,27 @@ class _RoleSelectionFormState extends ConsumerState<_RoleSelectionForm> {
               label: "Client",
               selectedItem: _selectedClient,
               items: widget.loginData.clients,
-              onChanged: (value) {
-                setState(() {
-                  _selectedClient = value;
-                  _selectedRole = null;
-                  _selectedOrg = null;
-                  _selectedWarehouse = null;
-                  _roles = [];
-                  _orgs = [];
-                  _warehouses = [];
-                });
-                _fetchRoles();
-              },
+              onChanged: _onClientChanged,
             ),
             const SizedBox(height: 16),
             _buildDropdown(
               label: "Role",
               selectedItem: _selectedRole,
               items: _roles,
-              isLoading: _isRolesLoading,
-              onChanged: (value) {
-                setState(() {
-                  _selectedRole = value;
-                  _selectedOrg = null;
-                  _selectedWarehouse = null;
-                  _orgs = [];
-                  _warehouses = [];
-                });
-                _fetchOrganizations();
-              },
+              onChanged: _onRoleChanged,
             ),
             const SizedBox(height: 16),
             _buildDropdown(
               label: "Organization",
               selectedItem: _selectedOrg,
               items: _orgs,
-              isLoading: _isOrgsLoading,
-              onChanged: (value) {
-                setState(() {
-                  _selectedOrg = value;
-                  _selectedWarehouse = null;
-                  _warehouses = [];
-                });
-                _fetchWarehouses();
-              },
+              onChanged: _onOrgChanged,
             ),
             const SizedBox(height: 16),
             _buildDropdown(
               label: "Warehouse",
               selectedItem: _selectedWarehouse,
               items: _warehouses,
-              isLoading: _isWarehousesLoading,
               onChanged: (value) {
                 setState(() => _selectedWarehouse = value);
               },
@@ -301,19 +338,22 @@ class _RoleSelectionFormState extends ConsumerState<_RoleSelectionForm> {
     RoleSelectionItem? selectedItem,
     List<RoleSelectionItem> items = const [],
     required ValueChanged<RoleSelectionItem?> onChanged,
-    bool isLoading = false,
   }) {
+    final showLoading =
+        _isChainLoading && items.isEmpty && selectedItem == null;
+
     return DropdownSearch<RoleSelectionItem>(
       items: items,
       selectedItem: selectedItem,
       onChanged: onChanged,
       itemAsString: (item) => item.name,
       validator: (item) => item == null ? "$label is required" : null,
+      enabled: !_isChainLoading, // Nonaktifkan dropdown saat loading
       dropdownDecoratorProps: DropDownDecoratorProps(
         dropdownSearchDecoration: InputDecoration(
           labelText: label,
           border: const OutlineInputBorder(),
-          suffixIcon: isLoading
+          suffixIcon: showLoading
               ? const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: CircularProgressIndicator(strokeWidth: 2),

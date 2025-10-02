@@ -46,7 +46,7 @@ Future<List<GeneralInfo>> cachedGeneralInfoOptions(
 }
 
 @riverpod
-Stream<List<ConnectivityResult>> connectivity(ConnectivityRef ref) async* {
+Stream<List<ConnectivityResult>> connectivity(Ref ref) async* {
   final initialStatus = await Connectivity().checkConnectivity();
   yield initialStatus;
 

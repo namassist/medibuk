@@ -49,7 +49,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  // *** PERBAIKAN 2: Ubah total logika login ***
   Future<void> login(String username, String password) async {
     state = AuthState(status: AuthStatus.loading);
     try {
@@ -90,7 +89,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
         }
       }
 
-      // Langkah 4B: Jika tidak ada profil atau role tidak valid, tampilkan halaman pilih peran
       state = AuthState(
         status: AuthStatus.requiresRoleSelection,
         roleSelectionData: initialLoginData,
@@ -98,9 +96,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
         initialToken: initialToken,
       );
     } catch (e) {
+      final message = e.toString().replaceFirst('Exception: ', '');
       state = AuthState(
         status: AuthStatus.unauthenticated,
-        errorMessage: e.toString(),
+        errorMessage: message,
       );
     }
   }
@@ -130,12 +129,13 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final profile = await _authRepository.getUserProfile();
       state = AuthState(status: AuthStatus.authenticated, userProfile: profile);
     } catch (e) {
+      final message = e.toString().replaceFirst('Exception: ', '');
       state = AuthState(
         status: AuthStatus.requiresRoleSelection,
         roleSelectionData: state.roleSelectionData,
         username: state.username,
         initialToken: state.initialToken,
-        errorMessage: e.toString(),
+        errorMessage: message,
       );
     }
   }
@@ -162,8 +162,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> logout() async {
-    await _authRepository.logout();
+  Future<void> logout({bool withUserProfile = false}) async {
+    await _authRepository.logout(withUserProfile: withUserProfile);
     state = AuthState(status: AuthStatus.unauthenticated);
   }
 }

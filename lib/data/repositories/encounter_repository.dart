@@ -1,12 +1,23 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
 import 'package:medibuk/data/api/api_client.dart';
 import 'package:medibuk/domain/entities/encounter_record.dart';
+import 'package:medibuk/domain/entities/paginated.dart';
 import 'package:medibuk/presentation/providers/api_client_provider.dart';
 import 'package:medibuk/presentation/utils/formatter.dart';
 
 abstract class EncounterRepository {
   Future<EncounterRecord> getEncounterRecord(String id);
   Future<void> updateEncounterRecord(EncounterRecord record);
+  Future<Paginated<EncounterRecord>> getTodayEncounters({
+    required int salesRegionId,
+    int pageNumber = 0,
+    int pageSize = 20,
+  });
+  Future<Paginated<EncounterRecord>> getTodayBidanEncounters({
+    required int salesRegionId,
+    String? date,
+  });
 }
 
 final encounterRepositoryProvider = Provider<EncounterRepository>((ref) {
@@ -31,5 +42,55 @@ class EncounterRepositoryImpl implements EncounterRepository {
     final cleanedJson = removeNullValues(rawJson);
 
     await _apiClient.put('/windows/encounter/${record.id}', data: cleanedJson);
+  }
+
+  @override
+  Future<Paginated<EncounterRecord>> getTodayEncounters({
+    required int salesRegionId,
+    int pageNumber = 0,
+    int pageSize = 20,
+  }) async {
+    try {
+      final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final filter =
+          "C_SalesRegion_ID = $salesRegionId AND DateTrx = '$today' and DocStatus != 'VO'";
+
+      final response = await _apiClient.get(
+        '/windows/encounter',
+        queryParams: {'\$filter': filter},
+      );
+
+      return Paginated.fromJson(
+        response.data,
+        (json) => EncounterRecord.fromJson(json as Map<String, dynamic>),
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<Paginated<EncounterRecord>> getTodayBidanEncounters({
+    required int salesRegionId,
+    String? date,
+  }) async {
+    try {
+      final dateString =
+          date ?? DateFormat('yyyy-MM-dd').format(DateTime.now());
+      final filter =
+          "C_SalesRegion_ID = $salesRegionId AND DateTrx = '$dateString' and DocStatus != 'VO'";
+
+      final response = await _apiClient.get(
+        '/windows/encounter-bidan',
+        queryParams: {'\$filter': filter},
+      );
+
+      return Paginated.fromJson(
+        response.data,
+        (json) => EncounterRecord.fromJson(json as Map<String, dynamic>),
+      );
+    } catch (e) {
+      rethrow;
+    }
   }
 }

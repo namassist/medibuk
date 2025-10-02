@@ -156,7 +156,7 @@ class _CachedGeneralInfoOptionsProviderElement
       (origin as CachedGeneralInfoOptionsProvider).parameter;
 }
 
-String _$connectivityHash() => r'81a359d6c0ef75ae7d0097963d8f9fecfb60040d';
+String _$connectivityHash() => r'df2abc0d3c073e5d8b4aacf3097aade88d45f784';
 
 /// See also [connectivity].
 @ProviderFor(connectivity)

@@ -1,48 +1,73 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:data_table_2/data_table_2.dart';
+import 'package:medibuk/domain/entities/general_info.dart';
 import 'package:medibuk/domain/entities/medical_record.dart';
 import '../../providers/table_data_provider.dart';
 
 class TableColumn {
   final String label;
-  final String key;
+  final String? key;
   final bool isNumeric;
   final ColumnSize size;
+  final Widget Function(dynamic data)? cellBuilder;
 
   const TableColumn({
     required this.label,
-    required this.key,
+    this.key,
     this.isNumeric = false,
     this.size = ColumnSize.M,
-  });
+    this.cellBuilder,
+  }) : assert(
+         key != null || cellBuilder != null,
+         'Either key or cellBuilder must be provided.',
+       );
 }
 
 class AppTable extends ConsumerWidget {
   final String title;
   final List<dynamic> initialData;
   final List<TableColumn> columns;
-  final VoidCallback onAdd;
-  final Function(dynamic) onEdit;
+  final VoidCallback? onAdd;
+  final Function(dynamic)? onEdit;
+  final bool showAddButton;
+  final bool showEditColumn;
+  final bool enableMultiSelect;
+  final Function(dynamic)? onRowTap;
+  final bool showVerticalBorder;
+  final int? sortColumnIndex;
+  final bool sortAscending;
+  final Function(int, bool)? onSort;
 
   const AppTable({
     super.key,
     required this.title,
     required this.initialData,
     required this.columns,
-    required this.onAdd,
-    required this.onEdit,
+    this.onAdd,
+    this.onEdit,
+    this.showAddButton = true,
+    this.showEditColumn = true,
+    this.enableMultiSelect = true,
+    this.onRowTap,
+    this.showVerticalBorder = true,
+    this.sortColumnIndex,
+    this.sortAscending = true,
+    this.onSort,
   });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tableState = ref.watch(tableDataProvider(initialData));
-    final notifier = ref.read(tableDataProvider(initialData).notifier);
-    final bool hasSelection = tableState.selectedUids.isNotEmpty;
+    final tableState = enableMultiSelect
+        ? ref.watch(tableDataProvider(initialData))
+        : null;
+    final notifier = enableMultiSelect
+        ? ref.read(tableDataProvider(initialData).notifier)
+        : null;
+    final hasSelection = tableState?.selectedUids.isNotEmpty ?? false;
 
     return Card(
       elevation: 0,
-      color: Colors.white,
       clipBehavior: Clip.antiAlias,
       margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
@@ -51,7 +76,7 @@ class AppTable extends ConsumerWidget {
       child: Column(
         children: [
           Container(
-            color: Colors.grey.shade50,
+            color: Theme.of(context).colorScheme.secondaryContainer,
             padding: const EdgeInsets.symmetric(
               horizontal: 16.0,
               vertical: 8.0,
@@ -60,8 +85,9 @@ class AppTable extends ConsumerWidget {
               children: [
                 Expanded(
                   child: Text(
+                    textAlign: TextAlign.center,
                     hasSelection
-                        ? '${tableState.selectedUids.length} item(s) selected'
+                        ? '${tableState!.selectedUids.length} item(s) selected'
                         : title,
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
@@ -81,7 +107,7 @@ class AppTable extends ConsumerWidget {
                         builder: (ctx) => AlertDialog(
                           title: const Text('Confirm Deletion'),
                           content: Text(
-                            'Are you sure you want to delete ${tableState.selectedUids.length} selected item(s)?',
+                            'Are you sure you want to delete ${tableState?.selectedUids.length} selected item(s)?',
                           ),
                           actions: [
                             TextButton(
@@ -99,11 +125,11 @@ class AppTable extends ConsumerWidget {
                         ),
                       );
                       if (confirmed == true) {
-                        notifier.deleteSelected();
+                        notifier?.deleteSelected();
                       }
                     },
                   )
-                else
+                else if (showAddButton && onAdd != null)
                   IconButton(
                     icon: Icon(
                       Icons.add_circle,
@@ -120,13 +146,12 @@ class AppTable extends ConsumerWidget {
               columnSpacing: 16,
               horizontalMargin: 16,
               minWidth: 600,
-              showCheckboxColumn: true,
+              showCheckboxColumn: enableMultiSelect,
+              sortColumnIndex: sortColumnIndex,
+              sortAscending: sortAscending,
               dataRowColor: WidgetStateProperty.resolveWith<Color?>((
                 Set<WidgetState> states,
               ) {
-                if (states.contains(WidgetState.selected)) {
-                  return Theme.of(context).primaryColor.withValues(alpha: 0.08);
-                }
                 return null;
               }),
               columns: [
@@ -138,47 +163,71 @@ class AppTable extends ConsumerWidget {
                     ),
                     numeric: col.isNumeric,
                     size: col.size,
+                    onSort: col.key != null && onSort != null
+                        ? (columnIndex, ascending) =>
+                              onSort!(columnIndex, ascending)
+                        : null,
                   ),
                 ),
-                const DataColumn2(label: Text(''), size: ColumnSize.S),
+                if (showEditColumn)
+                  const DataColumn2(label: Text(''), size: ColumnSize.S),
               ],
-              rows: List<DataRow>.generate(tableState.data.length, (index) {
-                final item = tableState.data[index];
+              border: showVerticalBorder
+                  ? TableBorder.symmetric(
+                      outside: BorderSide(
+                        color: Colors.grey.shade300,
+                        width: 1,
+                      ),
+                      inside: BorderSide(color: Colors.grey.shade200, width: 1),
+                    )
+                  : null,
+              dividerThickness: 1,
+              rows: List<DataRow>.generate(initialData.length, (index) {
+                final item = initialData[index];
                 final itemMap = (item.toJson() as Map<String, dynamic>);
-                final isSelected = tableState.selectedUids.contains(item.uid);
+                final isSelected =
+                    tableState?.selectedUids.contains(item.uid) ?? false;
 
                 return DataRow2(
                   selected: isSelected,
                   onSelectChanged: (bool? selected) {
-                    notifier.selectRow(item.uid, selected ?? false);
+                    if (enableMultiSelect && notifier != null) {
+                      notifier.selectRow(item.uid, selected ?? false);
+                    }
                   },
+                  onTap: onRowTap != null ? () => onRowTap!(item) : null,
                   cells: [
                     ...columns.map((col) {
-                      dynamic cellValue = itemMap[col.key];
+                      if (col.cellBuilder != null) {
+                        return DataCell(col.cellBuilder!(item));
+                      }
+
+                      dynamic cellValue = itemMap[col.key!];
                       String displayText = '';
                       if (cellValue is GeneralInfo) {
                         displayText = cellValue.identifier.toString();
                       } else {
-                        displayText = cellValue?.toString() ?? '';
+                        displayText = cellValue?.toString() ?? '-';
                       }
 
                       return DataCell(Text(displayText));
                     }),
-                    DataCell(
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            icon: Icon(
-                              Icons.edit_outlined,
-                              size: 20,
-                              color: Colors.grey.shade700,
+                    if (showEditColumn && onEdit != null)
+                      DataCell(
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            IconButton(
+                              icon: Icon(
+                                Icons.edit_outlined,
+                                size: 20,
+                                color: Colors.grey.shade700,
+                              ),
+                              onPressed: () => onEdit!(item),
                             ),
-                            onPressed: () => onEdit(item),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                    ),
                   ],
                 );
               }),

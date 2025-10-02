@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medibuk/config/environment.dart';
 import 'package:medibuk/presentation/providers/auth_provider.dart';
+import 'package:medibuk/presentation/widgets/shared/custom_dialogs.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -24,11 +25,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _login() async {
     FocusScope.of(context).unfocus();
     if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Username and password cannot be empty')),
+      if (!mounted) return;
+      showStatusDialog(
+        context: context,
+        type: DialogType.error,
+        title: 'Input Tidak Lengkap',
+        message: 'Username dan password tidak boleh kosong.',
+        buttonText: 'Oke',
       );
       return;
     }
+
     await ref
         .read(authProvider.notifier)
         .login(
@@ -39,11 +46,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<AuthState>(authProvider, (previous, next) {
-      if (next.status == AuthStatus.unauthenticated &&
+    ref.listen(authProvider, (previous, next) {
+      if (previous == null) return;
+
+      final wasLoading = previous.status == AuthStatus.loading;
+
+      // Kondisi GAGAL
+      if (wasLoading &&
+          next.status == AuthStatus.unauthenticated &&
           next.errorMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Login Failed: ${next.errorMessage}')),
+        if (!mounted) return;
+        showStatusDialog(
+          context: context,
+          type: DialogType.error,
+          title: 'Login Gagal',
+          message: next.errorMessage!,
+          buttonText: 'Coba Lagi',
         );
       }
     });
@@ -80,6 +98,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
+// ... Widget _LoginImagePanel dan _LoginForm tidak perlu diubah ...
 class _LoginImagePanel extends StatelessWidget {
   const _LoginImagePanel();
 
@@ -133,7 +152,6 @@ class _LoginForm extends ConsumerWidget {
               children: [
                 SizedBox(height: 80, child: Image.asset(logoPath)),
                 const SizedBox(height: 24),
-
                 Text(
                   "Selamat Datang di Medibook",
                   textAlign: TextAlign.center,
@@ -142,7 +160,6 @@ class _LoginForm extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 8),
-
                 Text(
                   "Masuk dengan data yang Anda masukkan saat pendaftaran.",
                   style: theme.textTheme.titleMedium!.copyWith(
@@ -151,7 +168,6 @@ class _LoginForm extends ConsumerWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
-
                 TextField(
                   controller: usernameController,
                   autofillHints: const [AutofillHints.username],
@@ -178,7 +194,6 @@ class _LoginForm extends ConsumerWidget {
                   ),
                 ),
                 const SizedBox(height: 32),
-
                 isLoading
                     ? const CircularProgressIndicator()
                     : SizedBox(
@@ -190,12 +205,6 @@ class _LoginForm extends ConsumerWidget {
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
-                            backgroundColor: Theme.of(
-                              context,
-                            ).colorScheme.primary,
-                            foregroundColor: Theme.of(
-                              context,
-                            ).colorScheme.onPrimary,
                           ),
                           child: const Text('Login'),
                         ),

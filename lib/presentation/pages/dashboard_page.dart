@@ -1,64 +1,46 @@
 import 'package:flutter/material.dart';
-import 'package:medibuk/presentation/pages/encounter_page.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:medibuk/presentation/providers/auth_provider.dart';
+import 'package:medibuk/presentation/utils/roles.dart';
+import 'package:medibuk/presentation/widgets/auth_interceptor.dart';
 import 'package:medibuk/presentation/widgets/core/app_layout.dart';
+import 'package:medibuk/presentation/widgets/dashboard/dashboard_admin.dart';
+import 'package:medibuk/presentation/widgets/dashboard/dashboard_bidan.dart';
 import 'package:medibuk/presentation/widgets/dashboard/dashboard_header.dart';
 
-class DashboardScreen extends StatelessWidget {
+class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return AppLayout(
-      pageTitle: 'Dashboard',
-      onRefresh: () {},
-      slivers: [
-        SliverPersistentHeader(pinned: true, delegate: _SearchBarDelegate()),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 16.0,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userRole = ref.watch(currentUserRoleProvider);
+
+    return AuthInterceptor(
+      child: AppLayout(
+        pageTitle: 'Dashboard',
+        onRefresh: () async {},
+        slivers: [
+          if (userRole == Role.admin || userRole == Role.key)
+            SliverPersistentHeader(
+              pinned: true,
+              delegate: _SearchBarDelegate(),
             ),
-            child: Row(
-              children: [
-                const StatCard(
-                  icon: Icons.calendar_today_outlined,
-                  title: 'Total Registrations',
-                  count: '0',
-                ),
-                const StatCard(
-                  icon: Icons.calendar_today_outlined,
-                  title: 'Online Booking',
-                  count: '0',
-                ),
-                const SizedBox(width: 16),
-                ElevatedButton.icon(
-                  icon: const Icon(Icons.open_in_new),
-                  label: const Text('Open Encounter'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            const EncounterScreen(encounterId: '1305723'),
-                      ),
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+          _buildDashboardByRole(userRole),
+        ],
+      ),
     );
+  }
+
+  Widget _buildDashboardByRole(Role role) {
+    switch (role) {
+      case Role.key:
+      case Role.admin:
+        return const SliverToBoxAdapter(child: DashboardAdmin());
+      case Role.bidan:
+        return const SliverToBoxAdapter(child: DashboardBidan());
+      default:
+        return const SliverToBoxAdapter(child: EmptyDashboard());
+    }
   }
 }
 
@@ -74,12 +56,50 @@ class _SearchBarDelegate extends SliverPersistentHeaderDelegate {
 
   @override
   double get maxExtent => 44;
-
   @override
   double get minExtent => 44;
+  @override
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) =>
+      false;
+}
+
+class EmptyDashboard extends StatelessWidget {
+  const EmptyDashboard({super.key});
 
   @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) {
-    return false;
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        children: [
+          const SizedBox(height: 16),
+          Text(
+            "New Day, New Service",
+            style: Theme.of(context).textTheme.headlineMedium!.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Container(
+            height: 400,
+            padding: const EdgeInsets.all(32),
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primary,
+              image: const DecorationImage(
+                image: AssetImage("assets/ornamentbg.png"),
+                fit: BoxFit.cover,
+              ),
+            ),
+            child: Align(
+              alignment: Alignment.center,
+              child: Image.asset(
+                "assets/pictlogo.png",
+                width: MediaQuery.of(context).size.width * .3,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

@@ -134,9 +134,10 @@ class AuthRepository {
     return null;
   }
 
-  Future<void> logout() async {
+  Future<void> logout({bool withUserProfile = false}) async {
     await _storage.delete(key: _tokenKey);
     await _storage.delete(key: _initialTokenKey);
+    if (withUserProfile) await _storage.delete(key: _userProfileKey);
   }
 
   Future<void> clearUserProfile() async {

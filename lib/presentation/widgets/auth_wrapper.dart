@@ -5,23 +5,41 @@ import 'package:medibuk/presentation/pages/login_page.dart';
 import 'package:medibuk/presentation/pages/login_roles_page.dart';
 import 'package:medibuk/presentation/providers/auth_provider.dart';
 
-class AuthWrapper extends ConsumerWidget {
+class AuthWrapper extends ConsumerStatefulWidget {
   const AuthWrapper({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<AuthWrapper> createState() => _AuthWrapperState();
+}
+
+class _AuthWrapperState extends ConsumerState<AuthWrapper> {
+  Widget? _currentPage;
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
 
     switch (authState.status) {
       case AuthStatus.authenticated:
-        return const DashboardScreen();
+        _currentPage = const DashboardScreen();
+        break;
       case AuthStatus.requiresRoleSelection:
-        return LoginRoleScreen(loginData: authState.roleSelectionData!);
+        _currentPage = LoginRolesScreen();
+        break;
       case AuthStatus.unauthenticated:
-        return const LoginScreen();
-      case AuthStatus.loading:
       case AuthStatus.initial:
-        return const Scaffold(body: Center(child: CircularProgressIndicator()));
+        _currentPage = const LoginScreen();
+        break;
+      case AuthStatus.loading:
+        _currentPage ??= const Scaffold(
+          body: Center(child: CircularProgressIndicator()),
+        );
+        break;
     }
+
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 250),
+      child: _currentPage,
+    );
   }
 }

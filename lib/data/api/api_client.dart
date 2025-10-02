@@ -90,4 +90,27 @@ class ApiClient {
   ) async {
     return [];
   }
+
+  Future<Response> postNode(
+    String path, {
+    Map<String, dynamic>? queryParams,
+  }) async {
+    try {
+      final token = await _storage.read(key: _tokenKey);
+      Options? options;
+      if (token != null) {
+        options = Options(headers: {'Authorization': 'Bearer $token'});
+      }
+
+      return await _nodeDio.post(
+        path,
+        queryParameters: queryParams,
+        options: options,
+      );
+    } on DioException catch (e) {
+      throw Exception(
+        e.response?.data['detail'] ?? 'An error occurred on Node API',
+      );
+    }
+  }
 }

@@ -5,12 +5,14 @@ class Environment {
   final String baseUrl;
   final String nodeUrl;
   final String logoPath;
+  final String node;
 
   Environment._({
     required this.envType,
     required this.baseUrl,
     required this.nodeUrl,
     required this.logoPath,
+    required this.node,
   });
 
   factory Environment.staging() {
@@ -19,6 +21,7 @@ class Environment {
       baseUrl: 'https://devkss.idempiereonline.com/api/v1',
       nodeUrl: 'https://medibook.medital.id/api',
       logoPath: 'assets/logo-kehamilan-sehat-website.png',
+      node: 'dev',
     );
   }
 
@@ -28,6 +31,7 @@ class Environment {
       baseUrl: 'https://ksslive.idempiereonline.com/api/v1',
       nodeUrl: 'https://medibook.medital.id/api',
       logoPath: 'assets/logo-kehamilan-sehat-website.png',
+      node: 'live',
     );
   }
 }
