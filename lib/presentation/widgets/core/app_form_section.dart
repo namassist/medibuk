@@ -151,13 +151,9 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
       decoration: BoxDecoration(
         color: colorScheme.secondaryContainer,
         borderRadius: BorderRadius.circular(8),
-        boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.15),
-            offset: const Offset(0, 2),
-            blurRadius: 4,
-          ),
-        ],
+        border: Border(
+          bottom: BorderSide(color: colorScheme.outlineVariant, width: 3),
+        ),
       ),
       child: Row(
         children: [

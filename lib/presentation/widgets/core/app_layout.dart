@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:medibuk/presentation/widgets/core/action_buttons.dart';
 import 'package:medibuk/presentation/widgets/core/app_drawer.dart';
 import 'package:medibuk/presentation/widgets/core/app_toolbar.dart';
 import 'package:medibuk/presentation/utils/formatter.dart';
@@ -8,7 +9,7 @@ class AppLayout extends StatelessWidget {
   final String? pageTitle;
   final DocumentStatus? pageStatus;
   final Function? onRefresh;
-  final List<Widget>? pageActions;
+  final List<ActionDefinition>? pageActions;
 
   const AppLayout({
     super.key,
@@ -21,7 +22,8 @@ class AppLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double toolbarHeight = (pageActions != null) ? 250 : 185;
+    final double toolbarHeight =
+        (pageActions != null && pageActions!.isNotEmpty) ? 250 : 185;
 
     return Scaffold(
       drawer: const AppDrawer(),

@@ -1,6 +1,7 @@
 import 'package:data_table_2/data_table_2.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:medibuk/domain/entities/encounter_record.dart';
 import 'package:medibuk/domain/entities/general_info.dart';
 import 'package:medibuk/presentation/pages/dashboard_page.dart';
 import 'package:medibuk/presentation/pages/encounter_page.dart';
@@ -9,6 +10,7 @@ import 'package:medibuk/presentation/utils/date_formatted.dart';
 import 'package:medibuk/presentation/widgets/core/app_table.dart';
 import 'package:medibuk/presentation/widgets/dashboard/dashboard_header.dart';
 import 'package:medibuk/presentation/widgets/dashboard/doctor_schedule_card.dart';
+import 'package:medibuk/presentation/widgets/shared/dialogs.dart';
 
 class DashboardAdmin extends ConsumerStatefulWidget {
   const DashboardAdmin({super.key});
@@ -33,7 +35,7 @@ class DashboardStateAdmin extends ConsumerState<DashboardAdmin> {
             StatCard(
               icon: Icons.calendar_today_outlined,
               title: 'Total Registrations',
-              count: window.rowCount.toString(),
+              count: window.rowCount?.toString() ?? '0',
             ),
             StatCard(
               icon: Icons.calendar_today_outlined,
@@ -43,7 +45,7 @@ class DashboardStateAdmin extends ConsumerState<DashboardAdmin> {
           ],
         );
 
-        if (window.windowRecords.isEmpty) {
+        if (window.windowRecords?.isEmpty ?? true) {
           return Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(children: [statsCardRow, const EmptyDashboard()]),
@@ -53,7 +55,7 @@ class DashboardStateAdmin extends ConsumerState<DashboardAdmin> {
         const double rowHeight = 48.0;
         const double headerHeight = 56.0;
         const double toolbarHeight = 50.0;
-        final int recordCount = window.windowRecords.length;
+        final int recordCount = window.windowRecords!.length;
 
         final double calculatedHeight =
             (recordCount * rowHeight) + headerHeight + toolbarHeight;
@@ -65,21 +67,27 @@ class DashboardStateAdmin extends ConsumerState<DashboardAdmin> {
         final List<TableColumn> encounterColumns = [
           TableColumn(
             label: 'Status',
-            size: ColumnSize.M,
+            size: ColumnSize.S,
             cellBuilder: (item) {
               final status = item.docStatus?.identifier;
 
               if (status == 'Completed') {
-                return const Icon(Icons.check, color: Colors.green);
+                return Center(
+                  child: const Icon(Icons.check, color: Colors.green),
+                );
               } else if (status == 'Drafted' || status == 'In Progress') {
-                return Icon(
-                  Icons.sentiment_neutral_outlined,
-                  color: Theme.of(context).colorScheme.secondary,
+                return Center(
+                  child: Icon(
+                    Icons.sentiment_neutral_outlined,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
                 );
               } else {
-                return Icon(
-                  Icons.do_not_disturb_alt_rounded,
-                  color: Theme.of(context).colorScheme.secondary,
+                return Center(
+                  child: Icon(
+                    Icons.do_not_disturb_alt_rounded,
+                    color: Theme.of(context).colorScheme.secondary,
+                  ),
                 );
               }
             },
@@ -87,19 +95,23 @@ class DashboardStateAdmin extends ConsumerState<DashboardAdmin> {
           const TableColumn(
             label: 'Document Status',
             key: 'DocStatus',
-            size: ColumnSize.L,
+            size: ColumnSize.M,
           ),
           const TableColumn(
             label: 'Document Type',
             key: 'C_DocType_ID',
-            size: ColumnSize.L,
+            size: ColumnSize.M,
           ),
           const TableColumn(
             label: 'Name',
             key: 'C_BPartner_ID',
             size: ColumnSize.L,
           ),
-          const TableColumn(label: 'Antrian', key: 'Antrian'),
+          const TableColumn(
+            label: 'Antrian',
+            key: 'Antrian',
+            size: ColumnSize.S,
+          ),
           const TableColumn(
             label: 'Dokter',
             key: 'Doctor_ID',
@@ -111,14 +123,9 @@ class DashboardStateAdmin extends ConsumerState<DashboardAdmin> {
             key: 'M_Specialist_ID',
             size: ColumnSize.L,
           ),
-          const TableColumn(
-            label: 'Encounter Schedules',
-            key: 'C_EncounterSchedule_ID',
-            size: ColumnSize.L,
-          ),
         ];
 
-        final sortedData = List.of(window.windowRecords);
+        final sortedData = List.of(window.windowRecords!);
         if (_sortColumnIndex != null) {
           final column = encounterColumns[_sortColumnIndex!];
           sortedData.sort((a, b) {
@@ -148,6 +155,7 @@ class DashboardStateAdmin extends ConsumerState<DashboardAdmin> {
         return Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
@@ -164,6 +172,21 @@ class DashboardStateAdmin extends ConsumerState<DashboardAdmin> {
                 ],
               ),
               const SizedBox(height: 16),
+              if (dashboardState.selectedBPartnerId != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 16.0),
+                  child: Chip(
+                    label: Text(
+                      'Filter: ${dashboardState.selectedBPartnerName ?? ''}',
+                    ),
+                    onDeleted: () {
+                      ref
+                          .read(dashboardProvider.notifier)
+                          .clearBPartnerFilter();
+                    },
+                    deleteIcon: const Icon(Icons.close, size: 18),
+                  ),
+                ),
               _buildDoctorCards(context, dashboardState),
               const SizedBox(height: 16),
               SizedBox(
@@ -173,8 +196,75 @@ class DashboardStateAdmin extends ConsumerState<DashboardAdmin> {
                   columns: encounterColumns,
                   initialData: sortedData,
                   showAddButton: false,
-                  showEditColumn: false,
+                  showActionColumn: true,
                   enableMultiSelect: false,
+                  onDelete: (item) async {
+                    if (item is! EncounterRecord) return;
+
+                    final bool? confirmed = await showDialog<bool>(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Konfirmasi Hapus'),
+                          content: Text(
+                            'Anda yakin ingin menghapus pertemuan dengan pasien "${item.cBPartnerId?.identifier ?? 'N/A'}"?',
+                          ),
+                          actions: <Widget>[
+                            TextButton(
+                              child: const Text('Batal'),
+                              onPressed: () => Navigator.of(context).pop(false),
+                            ),
+                            TextButton(
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.red,
+                              ),
+                              child: const Text('Hapus'),
+                              onPressed: () => Navigator.of(context).pop(true),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+
+                    if (confirmed == true) {
+                      try {
+                        await ref
+                            .read(dashboardProvider.notifier)
+                            .deleteEncounter(item.id);
+
+                        // Gunakan showSuccessDialog
+                        if (mounted) {
+                          await showSuccessDialog(
+                            context: context,
+                            title: 'Berhasil',
+                            message: 'Pertemuan berhasil dihapus.',
+                          );
+                        }
+                      } catch (e) {
+                        // Gunakan showErrorDialog
+                        if (mounted) {
+                          await showErrorDialog(
+                            context: context,
+                            title: 'Gagal',
+                            // Ambil pesan error yang lebih bersih
+                            message: e.toString().replaceFirst(
+                              'Exception: ',
+                              '',
+                            ),
+                          );
+                        }
+                      }
+                    }
+                  },
+                  onLate: (item) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(
+                          'Delete action for: ${item.cBPartnerId?.identifier}',
+                        ),
+                      ),
+                    );
+                  },
                   onRowTap: (item) {
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -193,6 +283,7 @@ class DashboardStateAdmin extends ConsumerState<DashboardAdmin> {
                   },
                 ),
               ),
+              const SizedBox(height: 32),
             ],
           ),
         );

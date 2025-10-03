@@ -1,31 +1,46 @@
 import 'package:json_annotation/json_annotation.dart';
-// Hapus import EncounterRecord dari sini agar file ini tetap generik
 
 part 'paginated.g.dart';
 
 @JsonSerializable(genericArgumentFactories: true)
 class Paginated<T> {
   @JsonKey(name: 'page-count')
-  final int pageCount;
+  final int? pageCount;
 
   @JsonKey(name: 'page-size')
-  final int pageSize;
+  final int? pageSize;
 
   @JsonKey(name: 'page-number')
-  final int pageNumber;
+  final int? pageNumber;
 
   @JsonKey(name: 'row-count')
-  final int rowCount;
+  final int? rowCount;
+
+  @JsonKey(name: 'array-count')
+  final int? arrayCount;
 
   @JsonKey(name: 'window-records')
-  final List<T> windowRecords;
+  final List<T>? windowRecords;
+
+  @JsonKey(name: 'records')
+  final List<T>? records;
+
+  @JsonKey(name: 'childtab-records')
+  final List<T>? childTabRecords;
+
+  @JsonKey(name: 'infowindow-records')
+  final List<T>? infoWindowRecords;
 
   Paginated({
-    required this.pageCount,
-    required this.pageSize,
-    required this.pageNumber,
-    required this.rowCount,
-    required this.windowRecords,
+    this.pageCount,
+    this.pageSize,
+    this.pageNumber,
+    this.rowCount,
+    this.arrayCount,
+    this.windowRecords,
+    this.records,
+    this.childTabRecords,
+    this.infoWindowRecords,
   });
 
   factory Paginated.fromJson(

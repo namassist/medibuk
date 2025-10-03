@@ -66,53 +66,53 @@ class _Content extends ConsumerWidget {
             child: AppToolbar(
               title: 'Medical Record - ${record.documentNo}',
               actions: [
-                IconButton(
-                  icon: const Icon(Icons.refresh),
-                  tooltip: 'Reload Data',
-                  onPressed: () {
-                    ref.invalidate(
-                      MedicalRecordNotifierProvider(medicalRecordId),
-                    );
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Data reloaded.')),
-                    );
-                  },
-                ),
-                const SizedBox(width: 12),
-                ElevatedButton.icon(
-                  onPressed: isModified ? () => _save(ref, context) : null,
-                  icon: const Icon(Icons.save),
-                  label: const Text('Save'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.teal[800],
-                    foregroundColor: Colors.white,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                OutlinedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            const EncounterScreen(encounterId: '1305660'),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.badge_outlined),
-                  label: const Text('Encounter'),
-                ),
-                const Spacer(),
-                if (isEditable)
-                  ElevatedButton.icon(
-                    onPressed: () => _markAsComplete(context, ref),
-                    icon: const Icon(Icons.check),
-                    label: const Text('Complete'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.green[600],
-                      foregroundColor: Colors.white,
-                    ),
-                  ),
+                // IconButton(
+                //   icon: const Icon(Icons.refresh),
+                //   tooltip: 'Reload Data',
+                //   onPressed: () {
+                //     ref.invalidate(
+                //       MedicalRecordNotifierProvider(medicalRecordId),
+                //     );
+                //     ScaffoldMessenger.of(context).showSnackBar(
+                //       const SnackBar(content: Text('Data reloaded.')),
+                //     );
+                //   },
+                // ),
+                // const SizedBox(width: 12),
+                // ElevatedButton.icon(
+                //   onPressed: isModified ? () => _save(ref, context) : null,
+                //   icon: const Icon(Icons.save),
+                //   label: const Text('Save'),
+                //   style: ElevatedButton.styleFrom(
+                //     backgroundColor: Colors.teal[800],
+                //     foregroundColor: Colors.white,
+                //   ),
+                // ),
+                // const SizedBox(width: 12),
+                // OutlinedButton.icon(
+                //   onPressed: () {
+                //     Navigator.push(
+                //       context,
+                //       MaterialPageRoute(
+                //         builder: (context) =>
+                //             const EncounterScreen(encounterId: '1305660'),
+                //       ),
+                //     );
+                //   },
+                //   icon: const Icon(Icons.badge_outlined),
+                //   label: const Text('Encounter'),
+                // ),
+                // const Spacer(),
+                // if (isEditable)
+                //   ElevatedButton.icon(
+                //     onPressed: () => _markAsComplete(context, ref),
+                //     icon: const Icon(Icons.check),
+                //     label: const Text('Complete'),
+                //     style: ElevatedButton.styleFrom(
+                //       backgroundColor: Colors.green[600],
+                //       foregroundColor: Colors.white,
+                //     ),
+                //   ),
               ],
             ),
           ),

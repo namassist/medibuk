@@ -25,35 +25,43 @@ class TableColumn {
 }
 
 class AppTable extends ConsumerWidget {
-  final String title;
+  final String? title;
   final List<dynamic> initialData;
   final List<TableColumn> columns;
   final VoidCallback? onAdd;
   final Function(dynamic)? onEdit;
   final bool showAddButton;
-  final bool showEditColumn;
+  final Function(dynamic)? onDelete;
+  final Function(dynamic)? onLate;
+  final bool showActionColumn;
   final bool enableMultiSelect;
   final Function(dynamic)? onRowTap;
   final bool showVerticalBorder;
   final int? sortColumnIndex;
   final bool sortAscending;
   final Function(int, bool)? onSort;
+  final Function(Map<String, dynamic>)? initialDataParser;
+  final dynamic Function(dynamic item, String columnKey)? cellValueBuilder;
 
   const AppTable({
     super.key,
-    required this.title,
+    this.title,
     required this.initialData,
     required this.columns,
     this.onAdd,
     this.onEdit,
     this.showAddButton = true,
-    this.showEditColumn = true,
+    this.onDelete,
+    this.onLate,
+    this.showActionColumn = true,
     this.enableMultiSelect = true,
     this.onRowTap,
     this.showVerticalBorder = true,
     this.sortColumnIndex,
     this.sortAscending = true,
     this.onSort,
+    this.initialDataParser,
+    this.cellValueBuilder,
   });
 
   @override
@@ -65,6 +73,14 @@ class AppTable extends ConsumerWidget {
         ? ref.read(tableDataProvider(initialData).notifier)
         : null;
     final hasSelection = tableState?.selectedUids.isNotEmpty ?? false;
+    final bool hasActions =
+        onEdit != null || onDelete != null || onLate != null;
+
+    final List<dynamic> processedData = initialDataParser != null
+        ? initialData
+              .map((e) => initialDataParser!(e as Map<String, dynamic>))
+              .toList()
+        : initialData;
 
     return Card(
       elevation: 0,
@@ -75,72 +91,73 @@ class AppTable extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          Container(
-            color: Theme.of(context).colorScheme.secondaryContainer,
-            padding: const EdgeInsets.symmetric(
-              horizontal: 16.0,
-              vertical: 8.0,
-            ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    textAlign: TextAlign.center,
-                    hasSelection
-                        ? '${tableState!.selectedUids.length} item(s) selected'
-                        : title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                      color: hasSelection
-                          ? Theme.of(context).primaryColor
-                          : Colors.black87,
+          if (title != null)
+            Container(
+              color: Theme.of(context).colorScheme.secondaryContainer,
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 8.0,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      textAlign: TextAlign.center,
+                      hasSelection
+                          ? '${tableState!.selectedUids.length} item(s) selected'
+                          : title!,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: hasSelection
+                            ? Theme.of(context).primaryColor
+                            : Colors.black87,
+                      ),
                     ),
                   ),
-                ),
-                if (hasSelection)
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline, color: Colors.red),
-                    tooltip: 'Delete Selected',
-                    onPressed: () async {
-                      final confirmed = await showDialog<bool>(
-                        context: context,
-                        builder: (ctx) => AlertDialog(
-                          title: const Text('Confirm Deletion'),
-                          content: Text(
-                            'Are you sure you want to delete ${tableState?.selectedUids.length} selected item(s)?',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () => Navigator.pop(ctx, false),
-                              child: const Text('Cancel'),
+                  if (hasSelection)
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      tooltip: 'Delete Selected',
+                      onPressed: () async {
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (ctx) => AlertDialog(
+                            title: const Text('Confirm Deletion'),
+                            content: Text(
+                              'Are you sure you want to delete ${tableState?.selectedUids.length} selected item(s)?',
                             ),
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.red,
+                            actions: [
+                              TextButton(
+                                onPressed: () => Navigator.pop(ctx, false),
+                                child: const Text('Cancel'),
                               ),
-                              onPressed: () => Navigator.pop(ctx, true),
-                              child: const Text('Delete'),
-                            ),
-                          ],
-                        ),
-                      );
-                      if (confirmed == true) {
-                        notifier?.deleteSelected();
-                      }
-                    },
-                  )
-                else if (showAddButton && onAdd != null)
-                  IconButton(
-                    icon: Icon(
-                      Icons.add_circle,
-                      color: Theme.of(context).primaryColor,
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.red,
+                                ),
+                                onPressed: () => Navigator.pop(ctx, true),
+                                child: const Text('Delete'),
+                              ),
+                            ],
+                          ),
+                        );
+                        if (confirmed == true) {
+                          notifier?.deleteSelected();
+                        }
+                      },
+                    )
+                  else if (showAddButton && onAdd != null)
+                    IconButton(
+                      icon: Icon(
+                        Icons.add_circle,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                      tooltip: 'Add New',
+                      onPressed: onAdd,
                     ),
-                    tooltip: 'Add New',
-                    onPressed: onAdd,
-                  ),
-              ],
+                ],
+              ),
             ),
-          ),
           Expanded(
             child: DataTable2(
               columnSpacing: 16,
@@ -164,13 +181,23 @@ class AppTable extends ConsumerWidget {
                     numeric: col.isNumeric,
                     size: col.size,
                     onSort: col.key != null && onSort != null
-                        ? (columnIndex, ascending) =>
-                              onSort!(columnIndex, ascending)
+                        ? (columnIndex, ascending) => onSort!(
+                            showActionColumn && hasActions
+                                ? columnIndex - 1
+                                : columnIndex,
+                            ascending,
+                          )
                         : null,
                   ),
                 ),
-                if (showEditColumn)
-                  const DataColumn2(label: Text(''), size: ColumnSize.S),
+                if (showActionColumn && hasActions)
+                  const DataColumn2(
+                    label: Text(
+                      'Aksi',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    size: ColumnSize.S,
+                  ),
               ],
               border: showVerticalBorder
                   ? TableBorder.symmetric(
@@ -182,9 +209,8 @@ class AppTable extends ConsumerWidget {
                     )
                   : null,
               dividerThickness: 1,
-              rows: List<DataRow>.generate(initialData.length, (index) {
-                final item = initialData[index];
-                final itemMap = (item.toJson() as Map<String, dynamic>);
+              rows: List<DataRow>.generate(processedData.length, (index) {
+                final item = processedData[index];
                 final isSelected =
                     tableState?.selectedUids.contains(item.uid) ?? false;
 
@@ -202,7 +228,14 @@ class AppTable extends ConsumerWidget {
                         return DataCell(col.cellBuilder!(item));
                       }
 
-                      dynamic cellValue = itemMap[col.key!];
+                      dynamic cellValue;
+                      if (cellValueBuilder != null && col.key != null) {
+                        cellValue = cellValueBuilder!(item, col.key!);
+                      } else {
+                        final itemMap = (item.toJson() as Map<String, dynamic>);
+                        cellValue = itemMap[col.key!];
+                      }
+
                       String displayText = '';
                       if (cellValue is GeneralInfo) {
                         displayText = cellValue.identifier.toString();
@@ -212,19 +245,45 @@ class AppTable extends ConsumerWidget {
 
                       return DataCell(Text(displayText));
                     }),
-                    if (showEditColumn && onEdit != null)
+                    if (showActionColumn && hasActions)
                       DataCell(
                         Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            IconButton(
-                              icon: Icon(
-                                Icons.edit_outlined,
-                                size: 20,
-                                color: Colors.grey.shade700,
+                            if (onEdit != null)
+                              IconButton(
+                                icon: Icon(
+                                  Icons.edit_outlined,
+                                  size: 20,
+                                  color: Colors.grey.shade700,
+                                ),
+                                tooltip: 'Edit',
+                                onPressed: () => onEdit!(item),
                               ),
-                              onPressed: () => onEdit!(item),
-                            ),
+                            // Tombol Hapus
+                            if (onDelete != null)
+                              IconButton(
+                                icon: Icon(
+                                  Icons.delete_outline,
+                                  size: 20,
+                                  color: Theme.of(context).colorScheme.error,
+                                ),
+                                tooltip: 'Delete',
+                                onPressed: () => onDelete!(item),
+                              ),
+                            // Tombol Late
+                            if (onLate != null)
+                              IconButton(
+                                icon: Icon(
+                                  Icons.more_time,
+                                  size: 20,
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.secondary,
+                                ),
+                                tooltip: 'Late',
+                                onPressed: () => onLate!(item),
+                              ),
                           ],
                         ),
                       ),

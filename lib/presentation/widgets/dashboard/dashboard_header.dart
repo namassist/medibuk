@@ -1,14 +1,47 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:medibuk/presentation/providers/dashboard_provider.dart';
+import 'package:medibuk/presentation/widgets/shared/bpartner_search_dialog.dart';
 
-class SearchBarField extends StatelessWidget {
+class SearchBarField extends ConsumerStatefulWidget {
   const SearchBarField({super.key});
+
+  @override
+  ConsumerState<SearchBarField> createState() => _SearchBarFieldState();
+}
+
+class _SearchBarFieldState extends ConsumerState<SearchBarField> {
+  // 2. Buat TextEditingController sebagai state
+  late final TextEditingController _searchController;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController = TextEditingController();
+
+    ref.listenManual(dashboardProvider, (previous, next) {
+      final wasFiltered = previous?.selectedBPartnerId != null;
+      final isNowCleared = next.selectedBPartnerId == null;
+
+      if (wasFiltered && isNowCleared) {
+        _searchController.clear();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    // 4. Jangan lupa dispose controller
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
       decoration: BoxDecoration(
         border: Border(
           top: BorderSide(
@@ -29,6 +62,7 @@ class SearchBarField extends StatelessWidget {
       ),
       height: 44,
       child: TextField(
+        controller: _searchController, // Gunakan controller dari state
         style: TextStyle(color: theme.colorScheme.onSecondaryContainer),
         decoration: InputDecoration(
           hintText: 'Search by Name or Phone Number',
@@ -36,6 +70,15 @@ class SearchBarField extends StatelessWidget {
           prefixIcon: const Icon(Icons.search_outlined),
           border: InputBorder.none,
         ),
+        onSubmitted: (query) {
+          if (query.isNotEmpty) {
+            showDialog(
+              context: context,
+              builder: (context) => BPartnerSearchDialog(initialQuery: query),
+            );
+            // 5. HAPUS baris searchController.clear() dari sini
+          }
+        },
       ),
     );
   }

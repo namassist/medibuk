@@ -53,7 +53,9 @@ class ApiClient {
         options: options,
       );
     } on DioException catch (e) {
-      throw Exception(e.response?.data['detail'] ?? 'An error occurred');
+      throw _handleDioError(e);
+    } catch (e) {
+      throw Exception('An unexpected error occurred: $e');
     }
   }
 
@@ -64,7 +66,9 @@ class ApiClient {
     try {
       return await _dio.post(path, data: data);
     } on DioException catch (e) {
-      throw Exception(e.response?.data['detail'] ?? 'An error occurred');
+      throw _handleDioError(e);
+    } catch (e) {
+      throw Exception('An unexpected error occurred: $e');
     }
   }
 
@@ -80,7 +84,39 @@ class ApiClient {
       }
       return await _dio.put(path, data: data, options: options);
     } on DioException catch (e) {
-      throw Exception(e.response?.data['detail'] ?? 'An error occurred');
+      throw _handleDioError(e);
+    } catch (e) {
+      throw Exception('An unexpected error occurred: $e');
+    }
+  }
+
+  Future<Response> delete(String path) async {
+    try {
+      return await _dio.delete(path);
+    } on DioException catch (e) {
+      throw _handleDioError(e);
+    } catch (e) {
+      throw Exception('An unexpected error occurred: $e');
+    }
+  }
+
+  Exception _handleDioError(DioException e) {
+    if (e.response != null) {
+      // Server responded with an error code (4xx, 5xx)
+      final statusCode = e.response!.statusCode;
+      final responseData = e.response!.data;
+      String errorMessage = "An error occurred";
+
+      if (responseData is Map && responseData.containsKey('error')) {
+        errorMessage =
+            responseData['error']['message'] ?? 'Unknown server error';
+      } else {
+        errorMessage = 'Server error: $statusCode';
+      }
+      return Exception(errorMessage);
+    } else {
+      // Error without a response (e.g., connection timeout, network error)
+      return Exception('Connection error: ${e.message}');
     }
   }
 

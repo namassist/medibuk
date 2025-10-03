@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medibuk/presentation/providers/shared_providers.dart';
 import 'package:medibuk/presentation/utils/formatter.dart';
+import 'package:medibuk/presentation/widgets/core/action_buttons.dart';
 import 'package:medibuk/presentation/widgets/core/app_buttons.dart';
 import 'package:medibuk/presentation/widgets/core/app_clock.dart';
 import 'package:medibuk/presentation/widgets/shared/create_new_dialog.dart';
@@ -12,7 +13,7 @@ class AppToolbar extends StatelessWidget {
   final String? title;
   final DocumentStatus? status;
   final Function? onRefresh;
-  final List<Widget>? actions;
+  final List<ActionDefinition>? actions;
 
   const AppToolbar({
     super.key,
@@ -24,6 +25,53 @@ class AppToolbar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Inisialisasi list untuk setiap bagian
+    ActionDefinition? completeAction;
+    final List<Widget> leftWidgets = [];
+    final List<ActionDefinition> allLeftActions = [];
+
+    if (actions != null && actions!.isNotEmpty) {
+      // Pisahkan tombol 'complete'
+      try {
+        completeAction = actions!.firstWhere(
+          (def) => def.type == ActionButtonType.completed,
+        );
+      } catch (e) {
+        completeAction = null; // Tidak ada tombol complete
+      }
+
+      // Ambil semua tombol selain 'complete' dan urutkan berdasarkan prioritas
+      allLeftActions.addAll(
+        actions!.where((def) => def.type != ActionButtonType.completed),
+      );
+      allLeftActions.sort(
+        (a, b) => getPriority(a.type).compareTo(getPriority(b.type)),
+      );
+    }
+
+    // 2. Tentukan tombol yang akan ditampilkan dan yang masuk ke dropdown
+    const int maxVisibleButtons = 2;
+    final List<ActionDefinition> visibleActions = [];
+    final List<ActionDefinition> overflowActions = [];
+
+    if (allLeftActions.length > maxVisibleButtons) {
+      visibleActions.addAll(allLeftActions.take(maxVisibleButtons));
+      overflowActions.addAll(allLeftActions.skip(maxVisibleButtons));
+    } else {
+      visibleActions.addAll(allLeftActions);
+    }
+
+    // 3. Bangun list widget untuk sisi kiri
+    // Tambahkan tombol yang terlihat satu per satu
+    leftWidgets.addAll(
+      visibleActions.map((def) => ActionButton(definition: def)),
+    );
+
+    // Jika ada tombol di overflow, tambahkan dropdown "Lainnya"
+    if (overflowActions.isNotEmpty) {
+      leftWidgets.add(MoreActionsDropdown(actions: overflowActions));
+    }
+
     return Container(
       color: Theme.of(context).colorScheme.surface,
       child: Column(
@@ -42,7 +90,17 @@ class AppToolbar extends StatelessWidget {
                 horizontal: 16.0,
                 vertical: 12.0,
               ),
-              child: Row(children: actions!),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Sisi Kiri
+                  Wrap(spacing: 8.0, runSpacing: 8.0, children: leftWidgets),
+
+                  // Sisi Kanan (hanya jika ada tombol complete)
+                  if (completeAction != null)
+                    ActionButton(definition: completeAction),
+                ],
+              ),
             ),
         ],
       ),

@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medibuk/domain/entities/encounter_record.dart';
+import 'package:medibuk/presentation/providers/auth_provider.dart';
 import 'package:medibuk/presentation/providers/encounter_record_providers.dart';
 import 'package:medibuk/presentation/providers/form_data_provider.dart';
 import 'package:medibuk/presentation/providers/ui_providers.dart';
 import 'package:medibuk/presentation/utils/json_patcher.dart';
+import 'package:medibuk/presentation/utils/roles.dart';
+import 'package:medibuk/presentation/widgets/core/action_buttons.dart';
 import 'package:medibuk/presentation/widgets/core/app_form_section.dart';
 import 'package:medibuk/presentation/widgets/core/app_layout.dart';
 import 'package:medibuk/presentation/widgets/shared/dialogs.dart';
@@ -17,6 +20,7 @@ class EncounterScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final encounterAsync = ref.watch(EncounterNotifierProvider(encounterId));
+    final userRole = ref.watch(currentUserRoleProvider);
 
     return encounterAsync.when(
       data: (record) {
@@ -54,36 +58,35 @@ class EncounterScreen extends ConsumerWidget {
             }
           },
           pageActions: [
-            SizedBox(
-              height: 40,
-              child: Consumer(
-                builder: (context, ref, _) {
-                  final isModified = ref.watch(
-                    formModificationNotifierProvider,
-                  );
-                  return FilledButton.icon(
-                    icon: const Icon(Icons.save, size: 18),
-                    label: const Text(
-                      "Save",
-                      style: TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    style: FilledButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 10,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
-                    ),
-                    onPressed: isModified
-                        ? () => _save(context, ref, record)
-                        : null,
-                  );
-                },
+            if (userRole == Role.admin || userRole == Role.key)
+              ActionDefinition(
+                type: ActionButtonType.save,
+                onPressed: () => _save(context, ref, record),
               ),
+
+            ActionDefinition(
+              type: ActionButtonType.medicalRecord,
+              onPressed: () {
+                // print('Tombol Delete ditekan!');
+              },
+            ),
+            ActionDefinition(
+              type: ActionButtonType.completed,
+              onPressed: () {
+                // print('Tombol Delete ditekan!');
+              },
+            ),
+            ActionDefinition(
+              type: ActionButtonType.order,
+              onPressed: () {
+                // print('Tombol Delete ditekan!');
+              },
+            ),
+            ActionDefinition(
+              type: ActionButtonType.printGeneral,
+              onPressed: () {
+                // print('Tombol Print ditekan!');
+              },
             ),
           ],
           slivers: [SliverToBoxAdapter(child: _Content(record: record))],

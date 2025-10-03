@@ -9,10 +9,10 @@ import 'package:medibuk/presentation/utils/formatter.dart';
 abstract class EncounterRepository {
   Future<EncounterRecord> getEncounterRecord(String id);
   Future<void> updateEncounterRecord(EncounterRecord record);
+  Future<void> deleteEncounterRecord(String id);
   Future<Paginated<EncounterRecord>> getTodayEncounters({
     required int salesRegionId,
-    int pageNumber = 0,
-    int pageSize = 20,
+    int? bPartnerId,
   });
   Future<Paginated<EncounterRecord>> getTodayBidanEncounters({
     required int salesRegionId,
@@ -45,15 +45,29 @@ class EncounterRepositoryImpl implements EncounterRepository {
   }
 
   @override
+  Future<void> deleteEncounterRecord(String id) async {
+    try {
+      await _apiClient.delete('/windows/encounter/$id');
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
   Future<Paginated<EncounterRecord>> getTodayEncounters({
     required int salesRegionId,
-    int pageNumber = 0,
-    int pageSize = 20,
+    int? bPartnerId,
   }) async {
     try {
-      final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
-      final filter =
-          "C_SalesRegion_ID = $salesRegionId AND DateTrx = '$today' and DocStatus != 'VO'";
+      String filter;
+
+      if (bPartnerId != null) {
+        filter = "C_BPartner_ID = $bPartnerId";
+      } else {
+        final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+        filter =
+            "C_SalesRegion_ID = $salesRegionId AND DateTrx = '$today' and DocStatus != 'VO'";
+      }
 
       final response = await _apiClient.get(
         '/windows/encounter',

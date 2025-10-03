@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medibuk/presentation/providers/auth_provider.dart';
+import 'package:medibuk/presentation/providers/dashboard_bidan_provider.dart';
+import 'package:medibuk/presentation/providers/dashboard_provider.dart';
 import 'package:medibuk/presentation/utils/roles.dart';
 import 'package:medibuk/presentation/widgets/auth_interceptor.dart';
 import 'package:medibuk/presentation/widgets/core/app_layout.dart';
@@ -8,17 +10,48 @@ import 'package:medibuk/presentation/widgets/dashboard/dashboard_admin.dart';
 import 'package:medibuk/presentation/widgets/dashboard/dashboard_bidan.dart';
 import 'package:medibuk/presentation/widgets/dashboard/dashboard_header.dart';
 
-class DashboardScreen extends ConsumerWidget {
+class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<DashboardScreen> createState() => _DashboardScreenState();
+}
+
+class _DashboardScreenState extends ConsumerState<DashboardScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _fetchInitialData();
+    });
+  }
+
+  void _fetchInitialData() {
+    final userRole = ref.read(currentUserRoleProvider);
+    if (userRole == Role.admin || userRole == Role.key) {
+      ref.read(dashboardProvider.notifier).fetchEncounters();
+    } else if (userRole == Role.bidan) {
+      ref.read(bidanDashboardProvider.notifier).fetchBidanEncounters();
+    }
+  }
+
+  Future<void> _refreshData() async {
+    final userRole = ref.read(currentUserRoleProvider);
+    if (userRole == Role.admin || userRole == Role.key) {
+      await ref.read(dashboardProvider.notifier).fetchEncounters();
+    } else if (userRole == Role.bidan) {
+      await ref.read(bidanDashboardProvider.notifier).fetchBidanEncounters();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userRole = ref.watch(currentUserRoleProvider);
 
     return AuthInterceptor(
       child: AppLayout(
         pageTitle: 'Dashboard',
-        onRefresh: () async {},
+        onRefresh: _refreshData,
         slivers: [
           if (userRole == Role.admin || userRole == Role.key)
             SliverPersistentHeader(
@@ -39,7 +72,9 @@ class DashboardScreen extends ConsumerWidget {
       case Role.bidan:
         return const SliverToBoxAdapter(child: DashboardBidan());
       default:
-        return const SliverToBoxAdapter(child: EmptyDashboard());
+        return const SliverFillRemaining(
+          child: Center(child: CircularProgressIndicator()),
+        );
     }
   }
 }
