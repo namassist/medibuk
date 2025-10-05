@@ -41,10 +41,10 @@ class BidanDashboardNotifier extends StateNotifier<BidanDashboardState> {
     state = state.copyWith(encounters: const AsyncValue.loading());
     try {
       final repo = ref.read(encounterRepositoryProvider);
-      final salesRegionId = await ref.read(salesRegionIdProvider.future);
+      final salesRegionId = await ref.read(salesRegionProvider.future);
 
       final result = await repo.getTodayBidanEncounters(
-        salesRegionId: salesRegionId,
+        salesRegionId: salesRegionId?.id,
         date: date,
       );
 

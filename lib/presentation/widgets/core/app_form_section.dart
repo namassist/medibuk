@@ -88,8 +88,6 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
     }
   }
 
-  // lib/presentation/widgets/core/app_form_section.dart
-
   void _onFieldChanged(String fieldName, dynamic newValue) {
     setState(() {
       if (newValue is GeneralInfo) {
@@ -98,7 +96,6 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
         _localData[fieldName] = newValue;
       }
 
-      // Logika reset field dependen
       if (fieldName == 'C_SalesRegion_ID') {
         _localData['M_Specialist_ID'] = null;
         _localData['Doctor_ID'] = null;
@@ -108,7 +105,6 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
     });
 
     ref.read(formModificationNotifierProvider.notifier).setModified(true);
-
     _updateFormData(fieldName, newValue);
 
     if (fieldName == 'C_SalesRegion_ID') {

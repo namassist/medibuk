@@ -1,3 +1,4 @@
+import 'package:medibuk/presentation/providers/warehouse_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:medibuk/data/repositories/encounter_repository.dart';
 import 'package:medibuk/domain/entities/encounter_record.dart';
@@ -9,7 +10,11 @@ class EncounterNotifier extends _$EncounterNotifier {
   @override
   Future<EncounterRecord?> build(String encounterId) async {
     if (encounterId == 'NEW') {
-      return EncounterRecord.empty();
+      final defaultSalesRegion = await ref.watch(salesRegionProvider.future);
+
+      final emptyRecord = EncounterRecord.empty();
+
+      return emptyRecord.copyWith(cSalesRegionId: defaultSalesRegion);
     }
 
     if (encounterId.isEmpty) return null;

@@ -17,7 +17,6 @@ class AppFields extends ConsumerStatefulWidget {
   final String? sectionType;
   final Map<String, dynamic> allSectionData;
 
-  // Properti dinamis dari AppFormSection
   final bool? isEditable;
   final bool? isMandatory;
 
@@ -63,7 +62,8 @@ class _AppFieldsState extends ConsumerState<AppFields>
     if (value is String && value.isEmpty) return true;
     if (value is GeneralInfo && (value.identifier.isEmpty)) return true;
     if (value is Map &&
-        (value['identifier'] == null || value['identifier'].isEmpty)) {
+        (value['identifier'] == null ||
+            (value['identifier'] as String).isEmpty)) {
       return true;
     }
     return false;
@@ -119,7 +119,6 @@ class _AppFieldsState extends ConsumerState<AppFields>
   String _getDisplayValue(dynamic value) {
     if (value == null) return '';
     if (value is GeneralInfo) return value.identifier;
-    // Jika data masih dalam bentuk Map dari JSON
     if (value is Map) return value['identifier']?.toString() ?? '';
     if (value is DateTime) return DateFormat('dd/MM/yyyy').format(value);
     if (value is String && _isDateString(value)) {
@@ -160,7 +159,9 @@ class _AppFieldsState extends ConsumerState<AppFields>
   }
 
   Widget _buildFieldWidget() {
-    if (_isDisabled) {
+    final bool isFieldDisabled = !(widget.isEditable ?? _config.editable);
+
+    if (isFieldDisabled) {
       return _buildReadOnlyField();
     }
     return _buildFieldByType(_config.fieldType ?? FieldType.text);
@@ -181,11 +182,9 @@ class _AppFieldsState extends ConsumerState<AppFields>
     }
   }
 
-  // --- WIDGET DROPDOWN DENGAN PERBAIKAN ---
   Widget _buildGeneralInfoDropdown() {
     final modelName = _resolveModelNameFromFieldName(widget.fieldName);
 
-    // Konversi Map ke GeneralInfo JIKA diperlukan.
     GeneralInfo? currentValue;
     if (widget.value is GeneralInfo) {
       currentValue = widget.value as GeneralInfo;
@@ -193,17 +192,33 @@ class _AppFieldsState extends ConsumerState<AppFields>
       currentValue = GeneralInfo.fromJson(widget.value);
     }
 
+    bool isDropdownEnabled = !(widget.isEditable == false);
+
+    if (widget.fieldName == 'M_Specialist_ID') {
+      final salesRegionValue = widget.allSectionData['C_SalesRegion_ID'];
+      if (salesRegionValue == null) {
+        isDropdownEnabled = false;
+      }
+    }
+
+    if (widget.fieldName == 'Doctor_ID' &&
+        widget.allSectionData['M_Specialist_ID'] == null) {
+      isDropdownEnabled = false;
+    }
+
     return SizedBox(
       height: 44,
       child: DropdownSearch<GeneralInfo>(
+        enabled: isDropdownEnabled,
         selectedItem: currentValue,
         asyncItems: (String filter) {
+          String filterString = _buildFilterFor(widget.fieldName);
           return ref
               .read(sharedDataRepositoryProvider)
               .searchModelData(
                 modelName: modelName,
                 query: filter,
-                filter: _buildFilterFor(widget.fieldName),
+                filter: filterString,
               );
         },
         compareFn: (item1, item2) => item1.id == item2.id,
@@ -214,7 +229,10 @@ class _AppFieldsState extends ConsumerState<AppFields>
             fontSize: 14,
             color: Theme.of(context).colorScheme.onSurface,
           ),
-          dropdownSearchDecoration: _inputDecoration(false),
+          dropdownSearchDecoration: _inputDecoration(
+            false,
+            isDisabled: !isDropdownEnabled,
+          ),
         ),
         popupProps: const PopupProps.menu(
           showSelectedItems: true,
@@ -236,34 +254,77 @@ class _AppFieldsState extends ConsumerState<AppFields>
     );
   }
 
-  // --- LOGIKA FILTER DEPENDENSI YANG DIPERBAIKI ---
+  InputDecoration _inputDecoration(
+    bool disabled, {
+    Widget? suffix,
+    Widget? prefix,
+    bool isDisabled = false,
+  }) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final appColors = Theme.of(context).extension<AppThemeExtension>()!;
+
+    final focusedBorderColor = colorScheme.primary;
+    final focusedFillColor = appColors.focusedFillColor!;
+    final enabledBorderColor = appColors.enabledBorderColor!;
+    final disabledFillColor = appColors.disabledFillColor!;
+    final disabledBorderColor = appColors.disabledBorderColor!;
+    final enabledFillColor = appColors.enabledFillColor!;
+
+    return InputDecoration(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      enabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: _showErrorState ? colorScheme.error : enabledBorderColor,
+        ),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderSide: BorderSide(
+          color: _showErrorState ? colorScheme.error : focusedBorderColor,
+          width: 2,
+        ),
+      ),
+      disabledBorder: OutlineInputBorder(
+        borderSide: BorderSide(color: disabledBorderColor),
+      ),
+      hoverColor: Colors.transparent,
+      suffixIcon: suffix,
+      prefixIcon: prefix,
+      prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+      filled: true,
+      fillColor: (disabled || isDisabled)
+          ? disabledFillColor
+          : _isFocused
+          ? focusedFillColor
+          : enabledFillColor,
+    );
+  }
+
   String _buildFilterFor(String fieldName) {
-    // Helper untuk mendapatkan ID dari dependensi, baik itu Map atau Object
     dynamic getDependencyId(String key) {
       final value = widget.allSectionData[key];
+      if (value == null) return null;
       if (value is GeneralInfo) return value.id;
       if (value is Map) return value['id'];
       return null;
     }
 
     switch (fieldName) {
-      case 'm_specialist':
+      case 'M_Specialist_ID':
         final salesRegionId = getDependencyId('C_SalesRegion_ID');
         return 'C_SalesRegion_ID=${salesRegionId ?? 0}';
-      case 'doctor':
+
+      case 'Doctor_ID':
         final specialistId = getDependencyId('M_Specialist_ID');
         return 'M_Specialist_ID=${specialistId ?? 0}';
-      case 'assistant':
-        // Asumsi asisten bergantung pada sales region juga
+
+      case 'Assistant_ID':
         final salesRegionId = getDependencyId('C_SalesRegion_ID');
         return 'C_SalesRegion_ID=${salesRegionId ?? 0}';
+
       default:
         return '';
     }
   }
-
-  // --- SISA KODE DI BAWAH INI TETAP SAMA SEPERTI VERSI ASLI ANDA ---
-  // (Saya sertakan lagi untuk kelengkapan)
 
   Widget _buildFieldLabel() {
     final appColors = Theme.of(context).extension<AppThemeExtension>()!;
@@ -459,50 +520,6 @@ class _AppFieldsState extends ConsumerState<AppFields>
       ),
       overflow: TextOverflow.ellipsis,
       softWrap: false,
-    );
-  }
-
-  InputDecoration _inputDecoration(
-    bool disabled, {
-    Widget? suffix,
-    Widget? prefix,
-  }) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final appColors = Theme.of(context).extension<AppThemeExtension>()!;
-
-    final focusedBorderColor = colorScheme.primary;
-    final focusedFillColor = appColors.focusedFillColor!;
-    final enabledBorderColor = appColors.enabledBorderColor!;
-    final disabledFillColor = appColors.disabledFillColor!;
-    final disabledBorderColor = appColors.disabledBorderColor!;
-    final enabledFillColor = appColors.enabledFillColor!;
-
-    return InputDecoration(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      enabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(
-          color: _showErrorState ? colorScheme.error : enabledBorderColor,
-        ),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderSide: BorderSide(
-          color: _showErrorState ? colorScheme.error : focusedBorderColor,
-          width: 2,
-        ),
-      ),
-      disabledBorder: OutlineInputBorder(
-        borderSide: BorderSide(color: disabledBorderColor),
-      ),
-      hoverColor: Colors.transparent,
-      suffixIcon: suffix,
-      prefixIcon: prefix,
-      prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-      filled: true,
-      fillColor: disabled
-          ? disabledFillColor
-          : _isFocused
-          ? focusedFillColor
-          : enabledFillColor,
     );
   }
 

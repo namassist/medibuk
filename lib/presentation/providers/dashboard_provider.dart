@@ -69,11 +69,11 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
 
     state = state.copyWith(encounters: const AsyncValue.loading());
     try {
-      final salesRegionId = await ref.read(salesRegionIdProvider.future);
+      final salesRegionId = await ref.read(salesRegionProvider.future);
       final encounterRepo = ref.read(encounterRepositoryProvider);
 
       final result = await encounterRepo.getTodayEncounters(
-        salesRegionId: salesRegionId,
+        salesRegionId: salesRegionId?.id,
         bPartnerId: state.selectedBPartnerId,
       );
 

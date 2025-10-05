@@ -43,7 +43,6 @@ class EncounterScreen extends ConsumerWidget {
 
             ref.invalidate(EncounterNotifierProvider(encounterId));
 
-            // Selalu reset perubahan form yang belum disimpan
             ref.read(formDataProvider.notifier).clear();
             ref.read(formModificationNotifierProvider.notifier).reset();
 

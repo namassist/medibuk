@@ -12,13 +12,13 @@ class WarehouseRepository {
 
   WarehouseRepository(this._apiClient);
 
-  Future<int> getSalesRegion(int warehouseId) async {
+  Future<GeneralInfo?> getSalesRegion(int warehouseId) async {
     try {
       final response = await _apiClient.get('/models/M_Warehouse/$warehouseId');
 
       final warehouseRecord = WarehouseRecord.fromJson(response.data);
 
-      return warehouseRecord.cSalesRegion?.id;
+      return warehouseRecord.cSalesRegion;
     } catch (e) {
       rethrow;
     }

@@ -26,6 +26,7 @@ class SharedDataRepositoryImpl implements SharedDataRepository {
 
   SharedDataRepositoryImpl(this._apiClient, this._ref);
 
+
   @override
   Future<List<GeneralInfo>> searchModelData({
     required String modelName,
@@ -35,6 +36,8 @@ class SharedDataRepositoryImpl implements SharedDataRepository {
     final userProfile = _ref.read(authProvider).userProfile;
     final adUserId = userProfile?.userId ?? 0;
     final adOrgId = userProfile?.organization.id ?? 0;
+
+    
 
     if (modelName == 'c_doctype') {
       const doctypes = [
@@ -62,6 +65,7 @@ class SharedDataRepositoryImpl implements SharedDataRepository {
     String apiModelName = '';
     String valRule = '';
     String identifierKey = 'Name';
+
     Map<String, dynamic> contextMap = {};
 
     switch (modelName) {
@@ -74,32 +78,26 @@ class SharedDataRepositoryImpl implements SharedDataRepository {
       case 'm_specialist':
         apiModelName = 'M_Specialist';
         valRule = '1000014';
-        if (filter.isNotEmpty) {
-          final parts = filter.split('=');
-          contextMap[parts[0]] = parts[1];
-        } else {
-          return []; // Jangan fetch jika dependensi (filter) tidak ada
-        }
+        final parts = filter.isNotEmpty
+            ? filter.split('=')
+            : ['C_SalesRegion_ID', '0'];
+        contextMap[parts[0]] = parts[1];
         break;
       case 'doctor':
         apiModelName = 'C_BPartner';
         valRule = '1000017';
-        if (filter.isNotEmpty) {
-          final parts = filter.split('=');
-          contextMap[parts[0]] = parts[1];
-        } else {
-          return [];
-        }
+        final parts = filter.isNotEmpty
+            ? filter.split('=')
+            : ['M_Specialist_ID', '0'];
+        contextMap[parts[0]] = parts[1];
         break;
       case 'assistant':
         apiModelName = 'C_BPartner';
         valRule = '1000021';
-        if (filter.isNotEmpty) {
-          final parts = filter.split('=');
-          contextMap[parts[0]] = parts[1];
-        } else {
-          return [];
-        }
+        final parts = filter.isNotEmpty
+            ? filter.split('=')
+            : ['C_SalesRegion_ID', '0'];
+        contextMap[parts[0]] = parts[1];
         break;
       case 'c_bpartner':
         apiModelName = 'C_BPartner';
@@ -122,6 +120,8 @@ class SharedDataRepositoryImpl implements SharedDataRepository {
       if (query.isNotEmpty) r'$filter': "$identifierKey ilike '%$query%'",
       if (context.isNotEmpty) r'$context': context,
     };
+
+    
 
     return _fetchFromApi(
       modelName: apiModelName,
