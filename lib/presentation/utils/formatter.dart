@@ -40,8 +40,6 @@ List _cleanList(List list) {
 
 enum DocumentTypeEnum { bookingOnline, poli, pharmacy }
 
-enum DocumentStatus { drafted, inprogress, complete, invalid, voided }
-
 int getDocumentTypeID(DocumentTypeEnum dt) {
   if (dt == DocumentTypeEnum.bookingOnline) {
     return 1000056;
@@ -53,6 +51,8 @@ int getDocumentTypeID(DocumentTypeEnum dt) {
 
   return -1;
 }
+
+enum DocumentStatus { drafted, inprogress, complete, invalid, voided }
 
 String? getDocumentStatusID(DocumentStatus dStat) {
   if (dStat == DocumentStatus.drafted) {

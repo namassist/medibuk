@@ -3,29 +3,33 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:intl/intl.dart';
+import 'package:medibuk/data/repositories/shared_data_repository.dart';
 import 'package:medibuk/domain/entities/app_theme_extension.dart';
 import 'package:medibuk/domain/entities/field_config.dart';
 import 'package:medibuk/domain/entities/fields_dictionary.dart';
-import 'package:medibuk/domain/entities/medical_record.dart';
+import 'package:medibuk/domain/entities/general_info.dart';
 import 'package:medibuk/domain/entities/format_definition.dart';
-import 'package:medibuk/presentation/providers/shared_providers.dart';
 
 class AppFields extends ConsumerStatefulWidget {
   final String fieldName;
   final dynamic value;
-  final bool isEditable;
   final ValueChanged<dynamic> onChanged;
   final String? sectionType;
   final Map<String, dynamic> allSectionData;
+
+  // Properti dinamis dari AppFormSection
+  final bool? isEditable;
+  final bool? isMandatory;
 
   const AppFields({
     super.key,
     required this.fieldName,
     required this.value,
-    required this.isEditable,
     required this.onChanged,
     this.sectionType,
     required this.allSectionData,
+    this.isEditable,
+    this.isMandatory,
   });
 
   @override
@@ -43,8 +47,11 @@ class _AppFieldsState extends ConsumerState<AppFields>
   bool _isFocused = false;
   bool _hasBeenTouched = false;
 
+  bool get _isDisabled => !(widget.isEditable ?? _config.editable);
+  bool get _isMandatory => widget.isMandatory ?? _config.isMandatory;
+
   bool get _showErrorState {
-    if (_isDisabled || !_config.isMandatory) {
+    if (_isDisabled || !_isMandatory) {
       return false;
     }
     return (_hasBeenTouched || _isFocused) && _isValueEmpty();
@@ -54,7 +61,9 @@ class _AppFieldsState extends ConsumerState<AppFields>
     final value = widget.value;
     if (value == null) return true;
     if (value is String && value.isEmpty) return true;
-    if (value is num && value == 0) {
+    if (value is GeneralInfo && (value.identifier.isEmpty)) return true;
+    if (value is Map &&
+        (value['identifier'] == null || value['identifier'].isEmpty)) {
       return true;
     }
     return false;
@@ -63,13 +72,13 @@ class _AppFieldsState extends ConsumerState<AppFields>
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: _getDisplayValue(widget.value));
+    _controller = TextEditingController();
     _config = FieldConfig.getConfig(
       widget.fieldName,
       section: widget.sectionType ?? '',
     );
 
-    if (_config.isMandatory) {
+    if (_isMandatory) {
       _hasBeenTouched = true;
     }
 
@@ -81,6 +90,8 @@ class _AppFieldsState extends ConsumerState<AppFields>
         }
       });
     });
+
+    _updateController(widget.value);
   }
 
   @override
@@ -94,16 +105,23 @@ class _AppFieldsState extends ConsumerState<AppFields>
   void didUpdateWidget(covariant AppFields oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.value != oldWidget.value) {
-      final newText = _getDisplayValue(widget.value);
-      if (_controller.text != newText) {
-        _controller.text = newText;
-      }
+      _updateController(widget.value);
+    }
+  }
+
+  void _updateController(dynamic value) {
+    final newText = _getDisplayValue(value);
+    if (_controller.text != newText) {
+      _controller.text = newText;
     }
   }
 
   String _getDisplayValue(dynamic value) {
     if (value == null) return '';
     if (value is GeneralInfo) return value.identifier;
+    // Jika data masih dalam bentuk Map dari JSON
+    if (value is Map) return value['identifier']?.toString() ?? '';
+    if (value is DateTime) return DateFormat('dd/MM/yyyy').format(value);
     if (value is String && _isDateString(value)) {
       try {
         return DateFormat('dd/MM/yyyy').format(DateTime.parse(value));
@@ -128,8 +146,6 @@ class _AppFieldsState extends ConsumerState<AppFields>
   Widget build(BuildContext context) {
     super.build(context);
 
-    if (_config.isHidden == true) return const SizedBox.shrink();
-
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
       child: Column(
@@ -142,6 +158,112 @@ class _AppFieldsState extends ConsumerState<AppFields>
       ),
     );
   }
+
+  Widget _buildFieldWidget() {
+    if (_isDisabled) {
+      return _buildReadOnlyField();
+    }
+    return _buildFieldByType(_config.fieldType ?? FieldType.text);
+  }
+
+  Widget _buildFieldByType(FieldType fieldType) {
+    switch (fieldType) {
+      case FieldType.generalInfo:
+        return _buildGeneralInfoDropdown();
+      case FieldType.date:
+        return _buildDatePicker();
+      case FieldType.boolean:
+        return _buildCheckbox();
+      case FieldType.number:
+        return _buildNumberField();
+      case FieldType.text:
+        return _buildTextField();
+    }
+  }
+
+  // --- WIDGET DROPDOWN DENGAN PERBAIKAN ---
+  Widget _buildGeneralInfoDropdown() {
+    final modelName = _resolveModelNameFromFieldName(widget.fieldName);
+
+    // Konversi Map ke GeneralInfo JIKA diperlukan.
+    GeneralInfo? currentValue;
+    if (widget.value is GeneralInfo) {
+      currentValue = widget.value as GeneralInfo;
+    } else if (widget.value is Map<String, dynamic>) {
+      currentValue = GeneralInfo.fromJson(widget.value);
+    }
+
+    return SizedBox(
+      height: 44,
+      child: DropdownSearch<GeneralInfo>(
+        selectedItem: currentValue,
+        asyncItems: (String filter) {
+          return ref
+              .read(sharedDataRepositoryProvider)
+              .searchModelData(
+                modelName: modelName,
+                query: filter,
+                filter: _buildFilterFor(widget.fieldName),
+              );
+        },
+        compareFn: (item1, item2) => item1.id == item2.id,
+        itemAsString: (item) => item.identifier,
+        onChanged: widget.onChanged,
+        dropdownDecoratorProps: DropDownDecoratorProps(
+          baseStyle: TextStyle(
+            fontSize: 14,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          dropdownSearchDecoration: _inputDecoration(false),
+        ),
+        popupProps: const PopupProps.menu(
+          showSelectedItems: true,
+          showSearchBox: true,
+          searchFieldProps: TextFieldProps(
+            decoration: InputDecoration(
+              hintText: 'Cari...',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+        validator: (item) {
+          if (_isMandatory && item == null) {
+            return 'Wajib diisi';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  // --- LOGIKA FILTER DEPENDENSI YANG DIPERBAIKI ---
+  String _buildFilterFor(String fieldName) {
+    // Helper untuk mendapatkan ID dari dependensi, baik itu Map atau Object
+    dynamic getDependencyId(String key) {
+      final value = widget.allSectionData[key];
+      if (value is GeneralInfo) return value.id;
+      if (value is Map) return value['id'];
+      return null;
+    }
+
+    switch (fieldName) {
+      case 'm_specialist':
+        final salesRegionId = getDependencyId('C_SalesRegion_ID');
+        return 'C_SalesRegion_ID=${salesRegionId ?? 0}';
+      case 'doctor':
+        final specialistId = getDependencyId('M_Specialist_ID');
+        return 'M_Specialist_ID=${specialistId ?? 0}';
+      case 'assistant':
+        // Asumsi asisten bergantung pada sales region juga
+        final salesRegionId = getDependencyId('C_SalesRegion_ID');
+        return 'C_SalesRegion_ID=${salesRegionId ?? 0}';
+      default:
+        return '';
+    }
+  }
+
+  // --- SISA KODE DI BAWAH INI TETAP SAMA SEPERTI VERSI ASLI ANDA ---
+  // (Saya sertakan lagi untuk kelengkapan)
 
   Widget _buildFieldLabel() {
     final appColors = Theme.of(context).extension<AppThemeExtension>()!;
@@ -188,52 +310,6 @@ class _AppFieldsState extends ConsumerState<AppFields>
         .join(' ');
   }
 
-  bool get _isDisabled {
-    if (widget.fieldName == 'C_BPartnerRelation_ID') {
-      final specialist = widget.allSectionData['M_Specialist_ID'];
-
-      if (specialist is GeneralInfo &&
-          specialist.identifier.toLowerCase().contains('laktasi')) {
-        return !widget.isEditable;
-      } else {
-        return true;
-      }
-    }
-
-    if (widget.fieldName == 'M_Specialist_ID') {
-      final salesRegion = widget.allSectionData['C_SalesRegion_ID'];
-      if (salesRegion == null) return true;
-    }
-    if (widget.fieldName == 'Doctor_ID') {
-      final specialist = widget.allSectionData['M_Specialist_ID'];
-      if (specialist == null) return true;
-    }
-
-    return !widget.isEditable || !_config.editable;
-  }
-
-  Widget _buildFieldWidget() {
-    if (_isDisabled) {
-      return _buildReadOnlyField();
-    }
-    return _buildFieldByType(_config.fieldType ?? FieldType.text);
-  }
-
-  Widget _buildFieldByType(FieldType fieldType) {
-    switch (fieldType) {
-      case FieldType.generalInfo:
-        return _buildGeneralInfoDropdown();
-      case FieldType.date:
-        return _buildDatePicker();
-      case FieldType.boolean:
-        return _buildCheckbox();
-      case FieldType.number:
-        return _buildNumberField();
-      case FieldType.text:
-        return _buildTextField();
-    }
-  }
-
   Widget _buildReadOnlyField() {
     return SizedBox(
       height: _config.multiLine == true ? null : 44,
@@ -250,127 +326,11 @@ class _AppFieldsState extends ConsumerState<AppFields>
     );
   }
 
-  Widget _buildGeneralInfoDropdown() {
-    final modelName = _resolveModelNameFromFieldName(widget.fieldName);
-    final currentValue = widget.value is GeneralInfo
-        ? widget.value as GeneralInfo
-        : null;
-
-    return Consumer(
-      builder: (context, ref, _) {
-        late final GeneralInfoParameter providerParam;
-
-        if (modelName == 'Doctor_ID') {
-          final specialist =
-              widget.allSectionData['M_Specialist_ID'] as GeneralInfo?;
-          providerParam = GeneralInfoParameter(
-            modelName: modelName,
-            dependencies: {'M_Specialist_ID': specialist?.id},
-          );
-        } else if (modelName == 'm_specialist') {
-          final salesRegion =
-              widget.allSectionData['C_SalesRegion_ID'] as GeneralInfo?;
-          providerParam = GeneralInfoParameter(
-            modelName: modelName,
-            dependencies: {'C_SalesRegion_ID': salesRegion?.id},
-          );
-        } else {
-          providerParam = GeneralInfoParameter(modelName: modelName);
-        }
-
-        final optionsAsync = ref.watch(
-          cachedGeneralInfoOptionsProvider(providerParam),
-        );
-
-        return optionsAsync.when(
-          data: (options) => SizedBox(
-            height: 44,
-            child: DropdownSearch<GeneralInfo>(
-              items: const [],
-              selectedItem: currentValue,
-              asyncItems: (String filter) async {
-                if (modelName == 'Doctor_ID') {
-                  final specialist =
-                      widget.allSectionData['M_Specialist_ID'] as GeneralInfo?;
-                  if (specialist == null) return [];
-                } else if (modelName == 'm_specialist') {
-                  final salesRegion =
-                      widget.allSectionData['C_SalesRegion_ID'] as GeneralInfo?;
-                  if (salesRegion == null) return [];
-                }
-
-                return await ref.read(
-                  cachedGeneralInfoOptionsProvider(providerParam).future,
-                );
-              },
-              compareFn: (item1, item2) => item1.id == item2.id,
-              itemAsString: (item) => item.identifier,
-              onChanged: widget.onChanged,
-              dropdownDecoratorProps: DropDownDecoratorProps(
-                baseStyle: TextStyle(
-                  decorationColor: Theme.of(context).colorScheme.onSurface,
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 14,
-                ),
-                dropdownSearchDecoration: _inputDecoration(false),
-              ),
-              popupProps: const PopupProps.menu(
-                showSelectedItems: true,
-                showSearchBox: true,
-                searchFieldProps: TextFieldProps(
-                  decoration: InputDecoration(
-                    hintText: 'Cari...',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-              ),
-            ),
-          ),
-          loading: () => const SizedBox(
-            height: 44,
-            child: Center(child: CircularProgressIndicator(strokeWidth: 2)),
-          ),
-          error: (error, stack) => Container(
-            height: 44,
-            padding: const EdgeInsets.all(8.0),
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.red[300]!),
-              borderRadius: BorderRadius.circular(8),
-              color: Colors.white,
-            ),
-            child: Center(
-              child: Text(
-                'Error: Options not loaded',
-                style: TextStyle(color: Colors.red[600]),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
   String _resolveModelNameFromFieldName(String fieldName) {
-    switch (fieldName) {
-      case 'C_DocType_ID':
-        return 'c_doctype_id';
-      case 'ICD_10':
-        return 'icd_10';
-      case 'Doctor_ID':
-        return 'Doctor_ID';
-      case 'Assistant_ID':
-        return 'Assistant_ID';
-      case 'C_BPartner_ID':
-        return 'c_bpartner';
-      case 'M_Specialist_ID':
-        return 'm_specialist';
-      case 'C_SalesRegion_ID':
-        return 'c_salesregion';
-      case 'OrderType_ID':
-        return 'ordertype';
-      default:
-        return 'ad_ref_list:${fieldName.toLowerCase()}';
+    if (fieldName.contains('_ID')) {
+      return fieldName.replaceAll('_ID', '').toLowerCase();
     }
+    return fieldName.toLowerCase();
   }
 
   Widget _buildDatePicker() {

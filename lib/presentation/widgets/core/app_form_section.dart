@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medibuk/domain/entities/field_config.dart';
+import 'package:medibuk/domain/entities/general_info.dart';
 import 'package:medibuk/presentation/providers/ui_providers.dart';
 import 'package:medibuk/presentation/widgets/core/app_fields.dart';
 import 'package:medibuk/presentation/widgets/core/responsive_grid.dart';
@@ -70,6 +71,8 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
     if (oldWidget.recordId != widget.recordId ||
         oldWidget.sectionIndex != widget.sectionIndex ||
         oldWidget.sectionType != widget.sectionType) {
+      _localData = Map<String, dynamic>.from(widget.data);
+      _originalData = Map<String, dynamic>.from(widget.data);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         final entries = _getFilteredEntries();
         final initMap = {for (final e in entries) e.key: e.value};
@@ -85,10 +88,17 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
     }
   }
 
+  // lib/presentation/widgets/core/app_form_section.dart
+
   void _onFieldChanged(String fieldName, dynamic newValue) {
     setState(() {
-      _localData[fieldName] = newValue;
+      if (newValue is GeneralInfo) {
+        _localData[fieldName] = newValue.toJson();
+      } else {
+        _localData[fieldName] = newValue;
+      }
 
+      // Logika reset field dependen
       if (fieldName == 'C_SalesRegion_ID') {
         _localData['M_Specialist_ID'] = null;
         _localData['Doctor_ID'] = null;
@@ -224,6 +234,7 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
     );
   }
 
+  // --- PERUBAHAN UTAMA ADA DI FUNGSI INI ---
   List<Widget> _buildFormFieldsFromEntries(
     List<MapEntry<String, dynamic>> entries,
   ) {
@@ -233,6 +244,28 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
       final fieldName = entry.key;
       final value = entry.value;
 
+      // Ambil konfigurasi untuk dievaluasi
+      final config = FieldConfig.getConfig(
+        fieldName,
+        section: widget.sectionType,
+      );
+
+      // --- EVALUASI ATURAN DINAMIS DI SINI ---
+      bool? isEditable;
+      // Gabungkan aturan widget.isEditable global dengan aturan field spesifik
+      if (config.isEditableRule != null) {
+        isEditable = widget.isEditable && config.isEditableRule!(_localData);
+      } else {
+        isEditable = widget.isEditable && config.editable;
+      }
+
+      bool? isMandatory;
+      if (config.isMandatoryRule != null) {
+        isMandatory = config.isMandatoryRule!(_localData);
+      }
+      // Kita tidak mengevaluasi isHidden di sini karena sudah ditangani
+      // oleh _getFilteredEntries
+
       fields.add(
         AppFields(
           key: ValueKey(
@@ -240,7 +273,9 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
           ),
           fieldName: fieldName,
           value: value,
-          isEditable: widget.isEditable,
+          // --- KIRIM HASIL EVALUASI KE AppFields ---
+          isEditable: isEditable,
+          isMandatory: isMandatory,
           sectionType: widget.sectionType,
           onChanged: (newValue) => _onFieldChanged(fieldName, newValue),
           allSectionData: _localData,
@@ -251,6 +286,7 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
     return fields;
   }
 
+  // --- DAN SEDIKIT PERUBAHAN DI SINI ---
   List<MapEntry<String, dynamic>> _getFilteredEntries() {
     final allowedKeys = FieldConfig.orderedKeysForSection(widget.sectionType);
     if (allowedKeys.isEmpty) return const <MapEntry<String, dynamic>>[];
@@ -258,8 +294,17 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
     final result = <MapEntry<String, dynamic>>[];
     for (final key in allowedKeys) {
       if (!_localData.containsKey(key)) continue;
+
       final cfg = FieldConfig.getConfig(key, section: widget.sectionType);
-      if (cfg.isHidden == true) continue;
+
+      // --- EVALUASI ATURAN isHidden DI SINI ---
+      bool isHidden = cfg.isHidden ?? false; // Default ke false jika null
+      if (cfg.isHiddenRule != null) {
+        isHidden = cfg.isHiddenRule!(_localData);
+      }
+
+      if (isHidden) continue; // Jika true, lewati field ini
+
       result.add(MapEntry(key, _localData[key]));
     }
     return result;

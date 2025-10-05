@@ -3,8 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:medibuk/data/repositories/shared_data_repository.dart';
-import 'package:medibuk/domain/entities/general_info.dart';
 
 part 'shared_providers.g.dart';
 
@@ -29,20 +27,6 @@ class GeneralInfoParameter {
   String toString() {
     return 'GeneralInfoParameter(modelName: $modelName, dependencies: $dependencies)';
   }
-}
-
-@Riverpod(keepAlive: true)
-Future<List<GeneralInfo>> cachedGeneralInfoOptions(
-  Ref ref,
-  GeneralInfoParameter parameter,
-) async {
-  if (parameter.modelName == 'Doctor_ID' &&
-      parameter.dependencies['M_Specialist_ID'] == null) {
-    return [];
-  }
-
-  final repository = ref.watch(sharedDataRepositoryProvider);
-  return repository.getGeneralInfoOptions(parameter);
 }
 
 @riverpod

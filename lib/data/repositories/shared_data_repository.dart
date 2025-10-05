@@ -3,91 +3,131 @@ import 'package:medibuk/data/api/api_client.dart';
 import 'package:medibuk/domain/entities/general_info.dart';
 import 'package:medibuk/domain/entities/product_info.dart';
 import 'package:medibuk/presentation/providers/api_client_provider.dart';
-import 'package:medibuk/presentation/providers/shared_providers.dart';
+import 'package:medibuk/presentation/providers/auth_provider.dart';
 
 abstract class SharedDataRepository {
-  Future<List<GeneralInfo>> getGeneralInfoOptions(
-    GeneralInfoParameter parameter,
-  );
+  Future<List<GeneralInfo>> searchModelData({
+    required String modelName,
+    required String query,
+    required String filter,
+  });
+
   Future<List<ProductInfo>> searchProducts(String query);
 }
 
 final sharedDataRepositoryProvider = Provider<SharedDataRepository>((ref) {
   final apiClient = ref.watch(apiClientProvider);
-  return SharedDataRepositoryImpl(apiClient);
+  return SharedDataRepositoryImpl(apiClient, ref);
 });
 
 class SharedDataRepositoryImpl implements SharedDataRepository {
   final ApiClient _apiClient;
+  final Ref _ref;
 
-  SharedDataRepositoryImpl(this._apiClient);
+  SharedDataRepositoryImpl(this._apiClient, this._ref);
 
   @override
-  Future<List<GeneralInfo>> getGeneralInfoOptions(
-    GeneralInfoParameter parameter,
-  ) async {
-    final modelName = parameter.modelName;
-    final dependencies = parameter.dependencies;
+  Future<List<GeneralInfo>> searchModelData({
+    required String modelName,
+    required String query,
+    required String filter,
+  }) async {
+    final userProfile = _ref.read(authProvider).userProfile;
+    final adUserId = userProfile?.userId ?? 0;
+    final adOrgId = userProfile?.organization.id ?? 0;
+
+    if (modelName == 'c_doctype') {
+      const doctypes = [
+        GeneralInfo(
+          propertyLabel: 'DocType',
+          id: 1000049,
+          identifier: 'Poli',
+          modelName: 'c_doctype',
+        ),
+        GeneralInfo(
+          propertyLabel: 'DocType',
+          id: 1000047,
+          identifier: 'Pharmacy',
+          modelName: 'c_doctype',
+        ),
+      ];
+      if (query.isEmpty) return doctypes;
+      return doctypes
+          .where(
+            (dt) => dt.identifier.toLowerCase().contains(query.toLowerCase()),
+          )
+          .toList();
+    }
+
+    String apiModelName = '';
+    String valRule = '';
+    String identifierKey = 'Name';
+    Map<String, dynamic> contextMap = {};
 
     switch (modelName) {
-      case 'c_doctype_id':
-        return [
-          const GeneralInfo(
-            propertyLabel: 'DocType',
-            id: 1000049,
-            identifier: 'Poli',
-            modelName: 'c_doctype',
-          ),
-          const GeneralInfo(
-            propertyLabel: 'DocType',
-            id: 1000047,
-            identifier: 'Pharmacy',
-            modelName: 'c_doctype',
-          ),
-        ];
       case 'c_salesregion':
-        return _fetchFromApi(
-          modelName: 'C_SalesRegion',
-          payload: {
-            r'$context': 'AD_User_ID:1099071,AD_Org_ID:1000001',
-            r'$valrule': '1000031',
-          },
-          identifierKey: 'Name',
-        );
+        apiModelName = 'C_SalesRegion';
+        valRule = '1000031';
+        contextMap['AD_User_ID'] = adUserId;
+        contextMap['AD_Org_ID'] = adOrgId;
+        break;
       case 'm_specialist':
-        final salesRegionId = dependencies['C_SalesRegion_ID'];
-        if (salesRegionId == null) return [];
-        return _fetchFromApi(
-          modelName: 'M_Specialist',
-          payload: {
-            r'$context': 'C_SalesRegion_ID:$salesRegionId',
-            r'$valrule': '1000014',
-          },
-          identifierKey: 'Name',
-        );
-      case 'Doctor_ID':
-        final specialistId = dependencies['M_Specialist_ID'];
-        if (specialistId == null) return [];
-        return _fetchFromApi(
-          modelName: 'C_BPartner',
-          payload: {
-            r'$context': 'M_Specialist_ID:$specialistId',
-            r'$valrule': '1000017',
-          },
-          identifierKey: 'Name',
-        );
-      case 'Assistant_ID':
-        return _fetchFromApi(
-          modelName: 'C_BPartner',
-          payload: {
-            r'$context': 'C_SalesRegion_ID:1000017',
-            r'$valrule': '1000021',
-          },
-          identifierKey: 'Name',
-        );
+        apiModelName = 'M_Specialist';
+        valRule = '1000014';
+        if (filter.isNotEmpty) {
+          final parts = filter.split('=');
+          contextMap[parts[0]] = parts[1];
+        } else {
+          return []; // Jangan fetch jika dependensi (filter) tidak ada
+        }
+        break;
+      case 'doctor':
+        apiModelName = 'C_BPartner';
+        valRule = '1000017';
+        if (filter.isNotEmpty) {
+          final parts = filter.split('=');
+          contextMap[parts[0]] = parts[1];
+        } else {
+          return [];
+        }
+        break;
+      case 'assistant':
+        apiModelName = 'C_BPartner';
+        valRule = '1000021';
+        if (filter.isNotEmpty) {
+          final parts = filter.split('=');
+          contextMap[parts[0]] = parts[1];
+        } else {
+          return [];
+        }
+        break;
+      case 'c_bpartner':
+        apiModelName = 'C_BPartner';
+        valRule = '1000020';
+        break;
+      case 'c_bpartnerrelation':
+        apiModelName = 'C_BPartner';
+        valRule = '1000020';
+        break;
       default:
         return [];
     }
+
+    String context = contextMap.entries
+        .map((e) => '${e.key}:${e.value}')
+        .join(',');
+
+    final payload = <String, dynamic>{
+      r'$valrule': valRule,
+      if (query.isNotEmpty) r'$filter': "$identifierKey ilike '%$query%'",
+      if (context.isNotEmpty) r'$context': context,
+    };
+
+    return _fetchFromApi(
+      modelName: apiModelName,
+      payload: payload,
+      identifierKey: identifierKey,
+    );
   }
 
   Future<List<GeneralInfo>> _fetchFromApi({

@@ -145,7 +145,7 @@ class EncounterRecord extends Record {
   factory EncounterRecord.empty() {
     final now = DateTime.now();
     return EncounterRecord(
-      id: 0,
+      id: -1,
       uid: 'new-${now.millisecondsSinceEpoch}',
       documentNo: 'NEW',
       dateTrx: DateFormat('yyyy-MM-dd').format(now),

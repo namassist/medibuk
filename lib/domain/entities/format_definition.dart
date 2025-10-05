@@ -12,6 +12,9 @@ class FormatDefinition {
   final bool? multiLine;
   final IconData? icon;
   final FieldType? fieldType;
+  final bool Function(Map<String, dynamic> data)? isEditableRule;
+  final bool Function(Map<String, dynamic> data)? isHiddenRule;
+  final bool Function(Map<String, dynamic> data)? isMandatoryRule;
 
   const FormatDefinition({
     this.maxLines,
@@ -23,5 +26,8 @@ class FormatDefinition {
     this.isMandatory = false,
     this.icon,
     this.fieldType,
+    this.isEditableRule,
+    this.isHiddenRule,
+    this.isMandatoryRule,
   });
 }

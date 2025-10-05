@@ -1,9 +1,49 @@
 import 'package:flutter/material.dart';
 import 'package:medibuk/domain/entities/format_definition.dart';
+import 'package:medibuk/domain/entities/general_info.dart';
+
+dynamic _getProp(Map<String, dynamic> data, String fieldKey, String propKey) {
+  final value = data[fieldKey];
+  if (value is GeneralInfo) {
+    if (propKey == 'id') return value.id;
+    if (propKey == 'identifier') return value.identifier;
+  }
+  if (value is Map) {
+    return value[propKey];
+  }
+  return null;
+}
+
+// Pengecekan status
+bool _isReadOnlyStatus(Map<String, dynamic> data) {
+  final docStatus = data['DocStatus']?['id'] as String?;
+  return docStatus == 'VO' || docStatus == 'CO';
+}
+
+// Pengecekan status yang memperbolehkan edit
+bool _isEditableStatus(Map<String, dynamic> data) {
+  final docStatus = data['DocStatus']?['id'] as String?;
+  final id = data['id'] as int?;
+  final docNo = data['DocumentNo'] as String?;
+
+  // Kondisi "Buat Baru"
+  if (id == -1 && docNo == 'NEW') return true;
+
+  // Kondisi status lainnya
+  return ['DR', 'IP', 'IN'].contains(docStatus);
+}
+
+// Pengecekan tipe spesialis
+bool _isSpecialist(Map<String, dynamic> data, String keyword) {
+  final specialistIdentifier =
+      _getProp(data, 'M_Specialist_ID', 'identifier') as String?;
+  if (specialistIdentifier == null) return false;
+  return specialistIdentifier.toUpperCase().contains(keyword.toUpperCase());
+}
 
 class FieldConfig {
-  static const Map<String, Map<String, FormatDefinition>>
-  sectionConfigurations = {
+  static final Map<String, Map<String, FormatDefinition>>
+  _sectionConfigurations = {
     'main': {
       'DateTrx': FormatDefinition(
         wideCount: 2,
@@ -550,150 +590,237 @@ class FieldConfig {
         fieldType: FieldType.number,
       ),
     },
-    'encounter_information': {
+    'encounter_main': {
       'DocumentNo': FormatDefinition(
         wideCount: 2,
-        editable: false,
-        fieldType: FieldType.text,
+        editable: false, // Selalu read-only
       ),
       'Antrian': FormatDefinition(
-        wideCount: 2,
-        editable: false,
-        fieldType: FieldType.text,
+        wideCount: 1,
+        editable: false, // Selalu read-only
       ),
       'DateTrx': FormatDefinition(
         wideCount: 2,
-        editable: true,
         fieldType: FieldType.date,
+        isEditableRule: (data) {
+          final id = data['id'] as int?;
+          final docNo = data['DocumentNo'] as String?;
+          // Hanya enable saat buat baru
+          return id == -1 && docNo == 'NEW';
+        },
       ),
       'C_DocType_ID': FormatDefinition(
         wideCount: 2,
-        editable: true,
         fieldType: FieldType.generalInfo,
+        isMandatory: true,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
+      ),
+      'C_EncounterSchedule_ID': FormatDefinition(
+        wideCount: 4,
+        fieldType: FieldType.generalInfo,
+        editable: false,
+        isHiddenRule: (data) {
+          final docTypeId = _getProp(data, 'C_DocType_ID', 'id');
+          final docTypeIdentifier = _getProp(
+            data,
+            'C_DocType_ID',
+            'identifier',
+          );
+          return !(docTypeId == 1000056 ||
+              docTypeIdentifier == 'Booking Online');
+        },
       ),
       'C_BPartner_ID': FormatDefinition(
         wideCount: 2,
-        editable: true,
-        newLine: true,
         fieldType: FieldType.generalInfo,
+        isMandatory: true,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
       ),
       'C_BPartnerRelation_ID': FormatDefinition(
         wideCount: 2,
-        editable: false,
         fieldType: FieldType.generalInfo,
+        isEditableRule: (data) {
+          return _isSpecialist(data, 'LAKTASI') &&
+              !_isReadOnlyStatus(data) &&
+              _isEditableStatus(data);
+        },
       ),
       'QA_Sources_ID': FormatDefinition(
         wideCount: 2,
-        editable: true,
         fieldType: FieldType.generalInfo,
+        editable: false, // Selalu read-only
       ),
       'C_SalesRegion_ID': FormatDefinition(
         wideCount: 2,
-        editable: true,
         newLine: true,
         fieldType: FieldType.generalInfo,
+        isMandatory: true,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
       ),
       'M_Specialist_ID': FormatDefinition(
         wideCount: 2,
-        editable: true,
         fieldType: FieldType.generalInfo,
+        isMandatory: true,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
       ),
       'Doctor_ID': FormatDefinition(
         wideCount: 2,
-        editable: true,
         fieldType: FieldType.generalInfo,
+        isMandatory: true,
+        isEditableRule: (data) {
+          final specialist = data['M_Specialist_ID'];
+          return specialist != null &&
+              !_isReadOnlyStatus(data) &&
+              _isEditableStatus(data);
+        },
       ),
       'Assistant_ID': FormatDefinition(
         wideCount: 2,
-        editable: true,
         fieldType: FieldType.generalInfo,
+        isMandatory: true,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
+        isHiddenRule: (data) => _getProp(data, 'C_DocType_ID', 'id') == 1000047,
       ),
       'Info': FormatDefinition(
         wideCount: 8,
-        maxLines: 6,
-        editable: true,
-        newLine: true,
         multiLine: true,
-        fieldType: FieldType.text,
+        maxLines: 4,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
       ),
     },
-    'encounter_patient_medical': {
+    'encounter_medical': {
       'SystolicPressure': FormatDefinition(
         wideCount: 1,
-        editable: true,
         fieldType: FieldType.number,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
+        isHiddenRule: (data) =>
+            _getProp(data, 'M_Specialist_ID', 'id') != null &&
+            _isSpecialist(data, 'ANAK'),
       ),
       'DiastolicPressure': FormatDefinition(
         wideCount: 1,
-        editable: true,
         fieldType: FieldType.number,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
+        isHiddenRule: (data) =>
+            _getProp(data, 'M_Specialist_ID', 'id') != null &&
+            _isSpecialist(data, 'ANAK'),
       ),
       'BodyWeight': FormatDefinition(
         wideCount: 1,
-        editable: true,
         fieldType: FieldType.number,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
       ),
       'BodyHeight': FormatDefinition(
         wideCount: 1,
-        editable: true,
         fieldType: FieldType.number,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
       ),
       'PregnancyNo': FormatDefinition(
         wideCount: 1,
-        editable: true,
         fieldType: FieldType.number,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
+        isHiddenRule: (data) =>
+            _getProp(data, 'M_Specialist_ID', 'id') != null &&
+            !(_isSpecialist(data, 'LAKTASI') ||
+                _isSpecialist(data, 'KANDUNGAN')),
       ),
       'Miscarriage': FormatDefinition(
         wideCount: 1,
-        editable: true,
         fieldType: FieldType.number,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
+        isHiddenRule: (data) =>
+            _getProp(data, 'M_Specialist_ID', 'id') != null &&
+            !_isSpecialist(data, 'KANDUNGAN'),
       ),
       'FirstDayOfMenstrualPeriod': FormatDefinition(
         wideCount: 2,
-        editable: true,
-        newLine: true,
         fieldType: FieldType.date,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
+        isHiddenRule: (data) =>
+            _getProp(data, 'M_Specialist_ID', 'id') != null &&
+            !_isSpecialist(data, 'KANDUNGAN'),
       ),
       'BodyTemperature': FormatDefinition(
         wideCount: 1,
-        editable: true,
         fieldType: FieldType.number,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
       ),
       'BirthWeight': FormatDefinition(
         wideCount: 1,
-        editable: true,
         fieldType: FieldType.number,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
+        isHiddenRule: (data) =>
+            _getProp(data, 'M_Specialist_ID', 'id') != null &&
+            _isSpecialist(data, 'UMUM'),
       ),
       'head_circumference': FormatDefinition(
         wideCount: 1,
-        editable: true,
         fieldType: FieldType.number,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
+        isHiddenRule: (data) =>
+            _getProp(data, 'M_Specialist_ID', 'id') != null &&
+            _isSpecialist(data, 'UMUM'),
       ),
       'LaborSpontanNormal': FormatDefinition(
         wideCount: 1,
-        editable: true,
-        newLine: true,
         fieldType: FieldType.number,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
+        isHiddenRule: (data) =>
+            _getProp(data, 'M_Specialist_ID', 'id') != null &&
+            !_isSpecialist(data, 'KANDUNGAN'),
       ),
       'LaborSC': FormatDefinition(
         wideCount: 1,
-        editable: true,
         fieldType: FieldType.number,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
+        isHiddenRule: (data) =>
+            _getProp(data, 'M_Specialist_ID', 'id') != null &&
+            !_isSpecialist(data, 'KANDUNGAN'),
       ),
       'LaborSpontanForcep': FormatDefinition(
         wideCount: 1,
-        editable: true,
         fieldType: FieldType.number,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
+        isHiddenRule: (data) =>
+            _getProp(data, 'M_Specialist_ID', 'id') != null &&
+            !_isSpecialist(data, 'KANDUNGAN'),
       ),
       'LaborSpontanVacuum': FormatDefinition(
         wideCount: 1,
-        editable: true,
         fieldType: FieldType.number,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
+        isHiddenRule: (data) =>
+            _getProp(data, 'M_Specialist_ID', 'id') != null &&
+            !_isSpecialist(data, 'KANDUNGAN'),
       ),
       'LILA': FormatDefinition(
         wideCount: 1,
-        editable: true,
         fieldType: FieldType.number,
+        isEditableRule: (data) =>
+            !_isReadOnlyStatus(data) && _isEditableStatus(data),
+        isHiddenRule: (data) =>
+            _getProp(data, 'M_Specialist_ID', 'id') != null &&
+            !_isSpecialist(data, 'KANDUNGAN'),
       ),
     },
   };
@@ -702,10 +829,12 @@ class FieldConfig {
     String fieldName, {
     required String section,
   }) {
-    final sectionMap = sectionConfigurations[section];
+    // Akses variabel static _sectionConfigurations
+    final sectionMap = _sectionConfigurations[section];
     if (sectionMap != null && sectionMap.containsKey(fieldName)) {
       return sectionMap[fieldName]!;
     }
+    // Default fallback
     return const FormatDefinition(
       wideCount: 2,
       editable: true,
@@ -714,7 +843,8 @@ class FieldConfig {
   }
 
   static List<String> orderedKeysForSection(String section) {
-    final sectionMap = sectionConfigurations[section];
+    // Akses variabel static _sectionConfigurations
+    final sectionMap = _sectionConfigurations[section];
     if (sectionMap != null && sectionMap.isNotEmpty) {
       return sectionMap.keys.toList();
     }
