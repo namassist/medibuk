@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-enum FieldType { text, number, boolean, date, generalInfo }
+enum FieldType { text, number, boolean, date, generalInfo, bpartnerSearch }
 
 class FormatDefinition {
   final int wideCount;

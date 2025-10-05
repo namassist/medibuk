@@ -26,7 +26,6 @@ class SharedDataRepositoryImpl implements SharedDataRepository {
 
   SharedDataRepositoryImpl(this._apiClient, this._ref);
 
-
   @override
   Future<List<GeneralInfo>> searchModelData({
     required String modelName,
@@ -36,8 +35,6 @@ class SharedDataRepositoryImpl implements SharedDataRepository {
     final userProfile = _ref.read(authProvider).userProfile;
     final adUserId = userProfile?.userId ?? 0;
     final adOrgId = userProfile?.organization.id ?? 0;
-
-    
 
     if (modelName == 'c_doctype') {
       const doctypes = [
@@ -107,6 +104,10 @@ class SharedDataRepositoryImpl implements SharedDataRepository {
         apiModelName = 'C_BPartner';
         valRule = '1000020';
         break;
+      case 'qa_sources':
+        apiModelName = 'qa_sources';
+        identifierKey = 'Name';
+        break;
       default:
         return [];
     }
@@ -116,12 +117,11 @@ class SharedDataRepositoryImpl implements SharedDataRepository {
         .join(',');
 
     final payload = <String, dynamic>{
-      r'$valrule': valRule,
+      if (valRule.isNotEmpty) r'$valrule': valRule,
       if (query.isNotEmpty) r'$filter': "$identifierKey ilike '%$query%'",
       if (context.isNotEmpty) r'$context': context,
+      if (apiModelName == 'qa_sources') r'$select': 'Name',
     };
-
-    
 
     return _fetchFromApi(
       modelName: apiModelName,

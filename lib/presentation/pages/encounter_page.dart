@@ -65,27 +65,16 @@ class EncounterScreen extends ConsumerWidget {
 
             ActionDefinition(
               type: ActionButtonType.medicalRecord,
-              onPressed: () {
-                // print('Tombol Delete ditekan!');
-              },
+              onPressed: () {},
             ),
             ActionDefinition(
               type: ActionButtonType.completed,
-              onPressed: () {
-                // print('Tombol Delete ditekan!');
-              },
+              onPressed: () {},
             ),
-            ActionDefinition(
-              type: ActionButtonType.order,
-              onPressed: () {
-                // print('Tombol Delete ditekan!');
-              },
-            ),
+            ActionDefinition(type: ActionButtonType.order, onPressed: () {}),
             ActionDefinition(
               type: ActionButtonType.printGeneral,
-              onPressed: () {
-                // print('Tombol Print ditekan!');
-              },
+              onPressed: () {},
             ),
           ],
           slivers: [SliverToBoxAdapter(child: _Content(record: record))],

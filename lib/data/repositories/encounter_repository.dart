@@ -18,6 +18,7 @@ abstract class EncounterRepository {
     required int salesRegionId,
     String? date,
   });
+  Future<bool> isNewPatientForQaSource(int bpartnerId);
 }
 
 final encounterRepositoryProvider = Provider<EncounterRepository>((ref) {
@@ -105,6 +106,25 @@ class EncounterRepositoryImpl implements EncounterRepository {
       );
     } catch (e) {
       rethrow;
+    }
+  }
+
+  @override
+  Future<bool> isNewPatientForQaSource(int bpartnerId) async {
+    try {
+      final response = await _apiClient.get(
+        '/models/c_encounter',
+        queryParams: {
+          r'$filter': 'C_BPartner_ID eq $bpartnerId AND QA_Sources_ID neq 0',
+        },
+      );
+
+      if (response.data != null && response.data['row-count'] == 0) {
+        return true;
+      }
+      return false;
+    } catch (e) {
+      return false;
     }
   }
 }

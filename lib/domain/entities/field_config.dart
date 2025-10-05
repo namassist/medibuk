@@ -633,14 +633,14 @@ class FieldConfig {
       ),
       'C_BPartner_ID': FormatDefinition(
         wideCount: 2,
-        fieldType: FieldType.generalInfo,
+        fieldType: FieldType.bpartnerSearch,
         isMandatory: true,
         isEditableRule: (data) =>
             !_isReadOnlyStatus(data) && _isEditableStatus(data),
       ),
       'C_BPartnerRelation_ID': FormatDefinition(
         wideCount: 2,
-        fieldType: FieldType.generalInfo,
+        fieldType: FieldType.bpartnerSearch,
         isEditableRule: (data) {
           return _isSpecialist(data, 'LAKTASI') &&
               !_isReadOnlyStatus(data) &&

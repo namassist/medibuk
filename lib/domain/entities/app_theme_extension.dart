@@ -72,7 +72,6 @@ class AppThemeExtension extends ThemeExtension<AppThemeExtension> {
     if (other is! AppThemeExtension) {
       return this;
     }
-    // Method ini diperlukan untuk transisi tema
     return AppThemeExtension(
       labelIconColor: Color.lerp(labelIconColor, other.labelIconColor, t),
       labelTextColor: Color.lerp(labelTextColor, other.labelTextColor, t),

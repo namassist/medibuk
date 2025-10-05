@@ -102,7 +102,6 @@ class ApiClient {
 
   Exception _handleDioError(DioException e) {
     if (e.response != null) {
-      // Server responded with an error code (4xx, 5xx)
       final statusCode = e.response!.statusCode;
       final responseData = e.response!.data;
       String errorMessage = "An error occurred";
@@ -115,7 +114,6 @@ class ApiClient {
       }
       return Exception(errorMessage);
     } else {
-      // Error without a response (e.g., connection timeout, network error)
       return Exception('Connection error: ${e.message}');
     }
   }

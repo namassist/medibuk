@@ -4,7 +4,7 @@ import 'package:medibuk/data/repositories/auth_repository.dart';
 import 'package:medibuk/domain/entities/auth_models.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:medibuk/presentation/providers/auth_provider.dart';
-import 'package:medibuk/presentation/widgets/shared/custom_dialogs.dart'; // Import dialog kustom
+import 'package:medibuk/presentation/widgets/shared/custom_dialogs.dart';
 
 class LoginRolesScreen extends ConsumerWidget {
   const LoginRolesScreen({super.key});
@@ -219,7 +219,6 @@ class _RoleSelectionFormState extends ConsumerState<_RoleSelectionForm> {
     }
   }
 
-  // (Sama untuk _onOrgChanged)
   Future<void> _onOrgChanged(RoleSelectionItem? org) async {
     if (org == null) return;
     setState(() {
@@ -348,7 +347,7 @@ class _RoleSelectionFormState extends ConsumerState<_RoleSelectionForm> {
       onChanged: onChanged,
       itemAsString: (item) => item.name,
       validator: (item) => item == null ? "$label is required" : null,
-      enabled: !_isChainLoading, // Nonaktifkan dropdown saat loading
+      enabled: !_isChainLoading,
       dropdownDecoratorProps: DropDownDecoratorProps(
         dropdownSearchDecoration: InputDecoration(
           labelText: label,

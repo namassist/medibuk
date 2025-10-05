@@ -51,7 +51,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
       final wasLoading = previous.status == AuthStatus.loading;
 
-      // Kondisi GAGAL
       if (wasLoading &&
           next.status == AuthStatus.unauthenticated &&
           next.errorMessage != null) {
@@ -98,7 +97,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 }
 
-// ... Widget _LoginImagePanel dan _LoginForm tidak perlu diubah ...
 class _LoginImagePanel extends StatelessWidget {
   const _LoginImagePanel();
 

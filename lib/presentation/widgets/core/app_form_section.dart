@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:medibuk/data/repositories/encounter_repository.dart';
 import 'package:medibuk/domain/entities/field_config.dart';
 import 'package:medibuk/domain/entities/general_info.dart';
 import 'package:medibuk/presentation/providers/ui_providers.dart';
@@ -43,6 +44,8 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
   late bool _isExpanded;
   late Map<String, dynamic> _localData;
   late Map<String, dynamic> _originalData;
+
+  bool _isQaSourceEditable = false;
 
   @override
   void initState() {
@@ -88,31 +91,54 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
     }
   }
 
-  void _onFieldChanged(String fieldName, dynamic newValue) {
-    setState(() {
-      if (newValue is GeneralInfo) {
-        _localData[fieldName] = newValue.toJson();
-      } else {
-        _localData[fieldName] = newValue;
+  void _onFieldChanged(String fieldName, dynamic newValue) async {
+    final stateChanges = <String, dynamic>{};
+
+    if (fieldName == 'C_BPartner_ID') {
+      final bpartnerId = (newValue is GeneralInfo)
+          ? newValue.id
+          : (newValue is Map ? newValue['id'] : null);
+
+      bool shouldEnableQaSource = false;
+      if (bpartnerId != null) {
+        shouldEnableQaSource = await ref
+            .read(encounterRepositoryProvider)
+            .isNewPatientForQaSource(bpartnerId);
       }
 
-      if (fieldName == 'C_SalesRegion_ID') {
-        _localData['M_Specialist_ID'] = null;
-        _localData['Doctor_ID'] = null;
-      } else if (fieldName == 'M_Specialist_ID') {
-        _localData['Doctor_ID'] = null;
+      if (_isQaSourceEditable != shouldEnableQaSource) {
+        _isQaSourceEditable = shouldEnableQaSource;
+        if (!shouldEnableQaSource) {
+          stateChanges['QA_Sources_ID'] = null;
+        }
       }
-    });
+    }
 
-    ref.read(formModificationNotifierProvider.notifier).setModified(true);
-    _updateFormData(fieldName, newValue);
+    if (newValue is GeneralInfo) {
+      stateChanges[fieldName] = newValue.toJson();
+    } else {
+      stateChanges[fieldName] = newValue;
+    }
 
     if (fieldName == 'C_SalesRegion_ID') {
-      _updateFormData('M_Specialist_ID', null);
-      _updateFormData('Doctor_ID', null);
+      stateChanges['M_Specialist_ID'] = null;
+      stateChanges['Doctor_ID'] = null;
     } else if (fieldName == 'M_Specialist_ID') {
-      _updateFormData('Doctor_ID', null);
+      stateChanges['Doctor_ID'] = null;
     }
+
+    if (mounted) {
+      setState(() {
+        _localData.addAll(stateChanges);
+      });
+    }
+
+    ref.read(formModificationNotifierProvider.notifier).setModified(true);
+    for (var entry in stateChanges.entries) {
+      _updateFormData(entry.key, entry.value);
+    }
+
+    _updateFormData(fieldName, newValue);
   }
 
   void _updateFormData(String fieldName, dynamic newValue) {
@@ -230,7 +256,6 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
     );
   }
 
-  // --- PERUBAHAN UTAMA ADA DI FUNGSI INI ---
   List<Widget> _buildFormFieldsFromEntries(
     List<MapEntry<String, dynamic>> entries,
   ) {
@@ -240,27 +265,26 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
       final fieldName = entry.key;
       final value = entry.value;
 
-      // Ambil konfigurasi untuk dievaluasi
       final config = FieldConfig.getConfig(
         fieldName,
         section: widget.sectionType,
       );
 
-      // --- EVALUASI ATURAN DINAMIS DI SINI ---
       bool? isEditable;
-      // Gabungkan aturan widget.isEditable global dengan aturan field spesifik
       if (config.isEditableRule != null) {
         isEditable = widget.isEditable && config.isEditableRule!(_localData);
       } else {
         isEditable = widget.isEditable && config.editable;
       }
 
+      if (fieldName == 'QA_Sources_ID') {
+        isEditable = _isQaSourceEditable;
+      }
+
       bool? isMandatory;
       if (config.isMandatoryRule != null) {
         isMandatory = config.isMandatoryRule!(_localData);
       }
-      // Kita tidak mengevaluasi isHidden di sini karena sudah ditangani
-      // oleh _getFilteredEntries
 
       fields.add(
         AppFields(
@@ -269,7 +293,6 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
           ),
           fieldName: fieldName,
           value: value,
-          // --- KIRIM HASIL EVALUASI KE AppFields ---
           isEditable: isEditable,
           isMandatory: isMandatory,
           sectionType: widget.sectionType,
@@ -282,7 +305,6 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
     return fields;
   }
 
-  // --- DAN SEDIKIT PERUBAHAN DI SINI ---
   List<MapEntry<String, dynamic>> _getFilteredEntries() {
     final allowedKeys = FieldConfig.orderedKeysForSection(widget.sectionType);
     if (allowedKeys.isEmpty) return const <MapEntry<String, dynamic>>[];
@@ -293,13 +315,12 @@ class _AppFormSectionState extends ConsumerState<AppFormSection>
 
       final cfg = FieldConfig.getConfig(key, section: widget.sectionType);
 
-      // --- EVALUASI ATURAN isHidden DI SINI ---
-      bool isHidden = cfg.isHidden ?? false; // Default ke false jika null
+      bool isHidden = cfg.isHidden ?? false;
       if (cfg.isHiddenRule != null) {
         isHidden = cfg.isHiddenRule!(_localData);
       }
 
-      if (isHidden) continue; // Jika true, lewati field ini
+      if (isHidden) continue;
 
       result.add(MapEntry(key, _localData[key]));
     }

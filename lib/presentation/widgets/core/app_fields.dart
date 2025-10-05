@@ -9,6 +9,7 @@ import 'package:medibuk/domain/entities/field_config.dart';
 import 'package:medibuk/domain/entities/fields_dictionary.dart';
 import 'package:medibuk/domain/entities/general_info.dart';
 import 'package:medibuk/domain/entities/format_definition.dart';
+import 'package:medibuk/presentation/widgets/shared/bpartner_search_dialog.dart';
 
 class AppFields extends ConsumerStatefulWidget {
   final String fieldName;
@@ -171,6 +172,8 @@ class _AppFieldsState extends ConsumerState<AppFields>
     switch (fieldType) {
       case FieldType.generalInfo:
         return _buildGeneralInfoDropdown();
+      case FieldType.bpartnerSearch:
+        return _buildBPartnerSearchField();
       case FieldType.date:
         return _buildDatePicker();
       case FieldType.boolean:
@@ -180,78 +183,6 @@ class _AppFieldsState extends ConsumerState<AppFields>
       case FieldType.text:
         return _buildTextField();
     }
-  }
-
-  Widget _buildGeneralInfoDropdown() {
-    final modelName = _resolveModelNameFromFieldName(widget.fieldName);
-
-    GeneralInfo? currentValue;
-    if (widget.value is GeneralInfo) {
-      currentValue = widget.value as GeneralInfo;
-    } else if (widget.value is Map<String, dynamic>) {
-      currentValue = GeneralInfo.fromJson(widget.value);
-    }
-
-    bool isDropdownEnabled = !(widget.isEditable == false);
-
-    if (widget.fieldName == 'M_Specialist_ID') {
-      final salesRegionValue = widget.allSectionData['C_SalesRegion_ID'];
-      if (salesRegionValue == null) {
-        isDropdownEnabled = false;
-      }
-    }
-
-    if (widget.fieldName == 'Doctor_ID' &&
-        widget.allSectionData['M_Specialist_ID'] == null) {
-      isDropdownEnabled = false;
-    }
-
-    return SizedBox(
-      height: 44,
-      child: DropdownSearch<GeneralInfo>(
-        enabled: isDropdownEnabled,
-        selectedItem: currentValue,
-        asyncItems: (String filter) {
-          String filterString = _buildFilterFor(widget.fieldName);
-          return ref
-              .read(sharedDataRepositoryProvider)
-              .searchModelData(
-                modelName: modelName,
-                query: filter,
-                filter: filterString,
-              );
-        },
-        compareFn: (item1, item2) => item1.id == item2.id,
-        itemAsString: (item) => item.identifier,
-        onChanged: widget.onChanged,
-        dropdownDecoratorProps: DropDownDecoratorProps(
-          baseStyle: TextStyle(
-            fontSize: 14,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-          dropdownSearchDecoration: _inputDecoration(
-            false,
-            isDisabled: !isDropdownEnabled,
-          ),
-        ),
-        popupProps: const PopupProps.menu(
-          showSelectedItems: true,
-          showSearchBox: true,
-          searchFieldProps: TextFieldProps(
-            decoration: InputDecoration(
-              hintText: 'Cari...',
-              border: OutlineInputBorder(),
-            ),
-          ),
-        ),
-        validator: (item) {
-          if (_isMandatory && item == null) {
-            return 'Wajib diisi';
-          }
-          return null;
-        },
-      ),
-    );
   }
 
   InputDecoration _inputDecoration(
@@ -392,6 +323,134 @@ class _AppFieldsState extends ConsumerState<AppFields>
       return fieldName.replaceAll('_ID', '').toLowerCase();
     }
     return fieldName.toLowerCase();
+  }
+
+  Widget _buildGeneralInfoDropdown() {
+    final modelName = _resolveModelNameFromFieldName(widget.fieldName);
+
+    GeneralInfo? currentValue;
+    if (widget.value is GeneralInfo) {
+      currentValue = widget.value as GeneralInfo;
+    } else if (widget.value is Map<String, dynamic>) {
+      currentValue = GeneralInfo.fromJson(widget.value);
+    }
+
+    bool isDropdownEnabled = !(widget.isEditable == false);
+
+    if (widget.fieldName == 'M_Specialist_ID') {
+      final salesRegionValue = widget.allSectionData['C_SalesRegion_ID'];
+      if (salesRegionValue == null) {
+        isDropdownEnabled = false;
+      }
+    }
+
+    if (widget.fieldName == 'Doctor_ID' &&
+        widget.allSectionData['M_Specialist_ID'] == null) {
+      isDropdownEnabled = false;
+    }
+
+    return SizedBox(
+      height: 44,
+      child: DropdownSearch<GeneralInfo>(
+        enabled: isDropdownEnabled,
+        selectedItem: currentValue,
+        asyncItems: (String filter) {
+          String filterString = _buildFilterFor(widget.fieldName);
+          return ref
+              .read(sharedDataRepositoryProvider)
+              .searchModelData(
+                modelName: modelName,
+                query: filter,
+                filter: filterString,
+              );
+        },
+        compareFn: (item1, item2) => item1.id == item2.id,
+        itemAsString: (item) => item.identifier,
+        onChanged: widget.onChanged,
+        dropdownDecoratorProps: DropDownDecoratorProps(
+          baseStyle: TextStyle(
+            fontSize: 14,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+          dropdownSearchDecoration: _inputDecoration(
+            false,
+            isDisabled: !isDropdownEnabled,
+          ),
+        ),
+        popupProps: const PopupProps.menu(
+          showSelectedItems: true,
+          showSearchBox: true,
+          searchFieldProps: TextFieldProps(
+            decoration: InputDecoration(
+              hintText: 'Cari...',
+              border: OutlineInputBorder(),
+            ),
+          ),
+        ),
+        validator: (item) {
+          if (_isMandatory && item == null) {
+            return 'Wajib diisi';
+          }
+          return null;
+        },
+      ),
+    );
+  }
+
+  Widget _buildBPartnerSearchField() {
+    bool isFieldEnabled = !(widget.isEditable == false);
+    if (widget.fieldName == 'C_BPartnerRelation_ID') {
+      final config = FieldConfig.getConfig(
+        widget.fieldName,
+        section: widget.sectionType ?? '',
+      );
+      if (config.isEditableRule != null) {
+        isFieldEnabled = config.isEditableRule!(widget.allSectionData);
+      }
+    }
+
+    return SizedBox(
+      height: 44,
+      child: TextFormField(
+        controller: _controller,
+        readOnly: true,
+        style: const TextStyle(fontSize: 14),
+        onTap: !isFieldEnabled
+            ? null
+            : () async {
+                final initialQuery = _controller.text;
+
+                final result = await showDialog<GeneralInfo>(
+                  context: context,
+                  builder: (context) =>
+                      BPartnerSearchDialog(initialQuery: initialQuery),
+                );
+
+                if (result != null) {
+                  widget.onChanged(result);
+                }
+              },
+        decoration: _inputDecoration(
+          false,
+          isDisabled: !isFieldEnabled,
+          suffix: _buildSuffix(
+            disabled: false,
+            includeType: false,
+            extra: Icon(
+              Icons.tab_unselected_outlined,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              size: 16,
+            ),
+          ),
+        ),
+        validator: (value) {
+          if (_isMandatory && (value == null || value.isEmpty)) {
+            return 'Wajib diisi';
+          }
+          return null;
+        },
+      ),
+    );
   }
 
   Widget _buildDatePicker() {

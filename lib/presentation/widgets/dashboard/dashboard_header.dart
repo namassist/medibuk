@@ -11,7 +11,6 @@ class SearchBarField extends ConsumerStatefulWidget {
 }
 
 class _SearchBarFieldState extends ConsumerState<SearchBarField> {
-  // 2. Buat TextEditingController sebagai state
   late final TextEditingController _searchController;
 
   @override
@@ -31,7 +30,6 @@ class _SearchBarFieldState extends ConsumerState<SearchBarField> {
 
   @override
   void dispose() {
-    // 4. Jangan lupa dispose controller
     _searchController.dispose();
     super.dispose();
   }
@@ -62,7 +60,7 @@ class _SearchBarFieldState extends ConsumerState<SearchBarField> {
       ),
       height: 44,
       child: TextField(
-        controller: _searchController, // Gunakan controller dari state
+        controller: _searchController,
         style: TextStyle(color: theme.colorScheme.onSecondaryContainer),
         decoration: InputDecoration(
           hintText: 'Search by Name or Phone Number',
@@ -74,9 +72,15 @@ class _SearchBarFieldState extends ConsumerState<SearchBarField> {
           if (query.isNotEmpty) {
             showDialog(
               context: context,
-              builder: (context) => BPartnerSearchDialog(initialQuery: query),
+              builder: (context) => BPartnerSearchDialog(
+                initialQuery: query,
+                onPartnerSelected: (partner) {
+                  ref
+                      .read(dashboardProvider.notifier)
+                      .filterByBPartner(partner.id, partner.name!);
+                },
+              ),
             );
-            // 5. HAPUS baris searchController.clear() dari sini
           }
         },
       ),

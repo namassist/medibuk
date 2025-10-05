@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medibuk/data/repositories/business_partner_repository.dart';
 import 'package:medibuk/domain/entities/bpartner_info_record.dart';
-import 'package:medibuk/presentation/providers/dashboard_provider.dart';
+import 'package:medibuk/domain/entities/general_info.dart';
 import 'package:medibuk/presentation/widgets/core/app_table.dart';
 import 'package:medibuk/presentation/utils/date_formatted.dart';
 
@@ -37,7 +37,9 @@ class BpSearchNotifier extends StateNotifier<BPartnerSearchState> {
 
   BpSearchNotifier(this._repo, {required String initialQuery})
     : super(BPartnerSearchState(query: initialQuery)) {
-    search();
+    if (initialQuery.isNotEmpty) {
+      search();
+    }
   }
 
   void setSearchQuery(String query) {
@@ -50,6 +52,11 @@ class BpSearchNotifier extends StateNotifier<BPartnerSearchState> {
   }
 
   Future<void> search() async {
+    if (state.query.isEmpty) {
+      state = state.copyWith(results: const AsyncValue.data([]));
+      return;
+    }
+
     state = state.copyWith(results: const AsyncValue.loading());
     try {
       final results = await _repo.searchBusinessPartner(
@@ -71,7 +78,13 @@ final bpSearchProvider = StateNotifierProvider.autoDispose
 
 class BPartnerSearchDialog extends ConsumerWidget {
   final String initialQuery;
-  const BPartnerSearchDialog({super.key, required this.initialQuery});
+  final Function(BusinessPartnerInfoRecord partner)? onPartnerSelected;
+
+  const BPartnerSearchDialog({
+    super.key,
+    required this.initialQuery,
+    this.onPartnerSelected,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -198,11 +211,19 @@ class BPartnerSearchDialog extends ConsumerWidget {
                       },
                       onRowTap: (item) {
                         final partner = item as BusinessPartnerInfoRecord;
-                        ref
-                            .read(dashboardProvider.notifier)
-                            .filterByBPartner(partner.id, partner.name!);
-                        // Tutup dialog
-                        Navigator.of(context).pop();
+
+                        if (onPartnerSelected != null) {
+                          onPartnerSelected!(partner);
+                          Navigator.of(context).pop();
+                        } else {
+                          final result = GeneralInfo(
+                            id: partner.id,
+                            identifier: partner.name!,
+                            propertyLabel: 'Business Partner ',
+                            modelName: 'c_bpartner',
+                          );
+                          Navigator.of(context).pop(result);
+                        }
                       },
                     );
                   },
