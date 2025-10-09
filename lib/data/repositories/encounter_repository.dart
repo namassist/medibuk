@@ -8,6 +8,7 @@ import 'package:medibuk/presentation/utils/formatter.dart';
 
 abstract class EncounterRepository {
   Future<EncounterRecord> getEncounterRecord(String id);
+  Future<EncounterRecord> createEncounterRecord(EncounterRecord record);
   Future<void> updateEncounterRecord(EncounterRecord record);
   Future<void> deleteEncounterRecord(String id);
   Future<Paginated<EncounterRecord>> getTodayEncounters({
@@ -35,6 +36,26 @@ class EncounterRepositoryImpl implements EncounterRepository {
   Future<EncounterRecord> getEncounterRecord(String id) async {
     final response = await _apiClient.get('/windows/encounter/$id');
     return EncounterRecord.fromJson(response.data);
+  }
+
+  @override
+  Future<EncounterRecord> createEncounterRecord(EncounterRecord record) async {
+    try {
+      final payload = record.toJson();
+      payload.remove('id');
+      payload.remove('uid');
+      payload.remove('DocumentNo');
+
+      final cleanedPayload = removeNullValues(payload);
+
+      final response = await _apiClient.post(
+        '/windows/encounter',
+        data: cleanedPayload,
+      );
+      return EncounterRecord.fromJson(response.data);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   @override

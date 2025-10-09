@@ -158,6 +158,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         initialToken: initialToken,
       );
     } else {
+      print("is here");
       logout();
     }
   }

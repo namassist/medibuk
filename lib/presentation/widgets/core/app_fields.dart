@@ -9,25 +9,27 @@ import 'package:medibuk/domain/entities/field_config.dart';
 import 'package:medibuk/domain/entities/fields_dictionary.dart';
 import 'package:medibuk/domain/entities/general_info.dart';
 import 'package:medibuk/domain/entities/format_definition.dart';
+import 'package:medibuk/presentation/providers/form_data_provider.dart';
+import 'package:medibuk/presentation/providers/ui_providers.dart';
+import 'package:medibuk/presentation/utils/formatter.dart';
 import 'package:medibuk/presentation/widgets/shared/bpartner_search_dialog.dart';
 
 class AppFields extends ConsumerStatefulWidget {
   final String fieldName;
-  final dynamic value;
-  final ValueChanged<dynamic> onChanged;
-  final String? sectionType;
-  final Map<String, dynamic> allSectionData;
-
+  final Map<String, dynamic> originalData;
+  final String recordId;
+  final String sectionType;
+  final int sectionIndex;
   final bool? isEditable;
   final bool? isMandatory;
 
   const AppFields({
     super.key,
     required this.fieldName,
-    required this.value,
-    required this.onChanged,
-    this.sectionType,
-    required this.allSectionData,
+    required this.originalData,
+    required this.recordId,
+    required this.sectionType,
+    required this.sectionIndex,
     this.isEditable,
     this.isMandatory,
   });
@@ -47,52 +49,29 @@ class _AppFieldsState extends ConsumerState<AppFields>
   bool _isFocused = false;
   bool _hasBeenTouched = false;
 
-  bool get _isDisabled => !(widget.isEditable ?? _config.editable);
-  bool get _isMandatory => widget.isMandatory ?? _config.isMandatory;
-
-  bool get _showErrorState {
-    if (_isDisabled || !_isMandatory) {
-      return false;
-    }
-    return (_hasBeenTouched || _isFocused) && _isValueEmpty();
-  }
-
-  bool _isValueEmpty() {
-    final value = widget.value;
-    if (value == null) return true;
-    if (value is String && value.isEmpty) return true;
-    if (value is GeneralInfo && (value.identifier.isEmpty)) return true;
-    if (value is Map &&
-        (value['identifier'] == null ||
-            (value['identifier'] as String).isEmpty)) {
-      return true;
-    }
-    return false;
-  }
-
   @override
   void initState() {
     super.initState();
     _controller = TextEditingController();
     _config = FieldConfig.getConfig(
       widget.fieldName,
-      section: widget.sectionType ?? '',
+      section: widget.sectionType,
     );
 
-    if (_isMandatory) {
+    if (widget.isMandatory ?? _config.isMandatory) {
       _hasBeenTouched = true;
     }
 
     _focusNode.addListener(() {
-      setState(() {
-        _isFocused = _focusNode.hasFocus;
-        if (!_isFocused && !_hasBeenTouched) {
-          _hasBeenTouched = true;
-        }
-      });
+      if (mounted) {
+        setState(() {
+          _isFocused = _focusNode.hasFocus;
+          if (!_isFocused && !_hasBeenTouched) {
+            _hasBeenTouched = true;
+          }
+        });
+      }
     });
-
-    _updateController(widget.value);
   }
 
   @override
@@ -102,12 +81,134 @@ class _AppFieldsState extends ConsumerState<AppFields>
     super.dispose();
   }
 
-  @override
-  void didUpdateWidget(covariant AppFields oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (widget.value != oldWidget.value) {
-      _updateController(widget.value);
+  void _onChanged(dynamic newValue) {
+    final notifier = ref.read(formDataProvider.notifier);
+
+    notifier.updateField(
+      recordId: widget.recordId,
+      sectionType: widget.sectionType,
+      sectionIndex: widget.sectionIndex,
+      fieldName: widget.fieldName,
+      originalValue: widget.originalData[widget.fieldName],
+      newValue: newValue,
+    );
+
+    if (widget.fieldName == 'C_SalesRegion_ID') {
+      _resetDependentField('M_Specialist_ID', 'encounter_main', 0);
+      _resetDependentField('Doctor_ID', 'encounter_main', 0);
+    } else if (widget.fieldName == 'M_Specialist_ID') {
+      _resetDependentField('Doctor_ID', 'encounter_main', 0);
     }
+
+    ref.read(formModificationNotifierProvider.notifier).setModified(true);
+  }
+
+  void _resetDependentField(
+    String fieldName,
+    String sectionType,
+    int sectionIndex,
+  ) {
+    ref
+        .read(formDataProvider.notifier)
+        .updateField(
+          recordId: widget.recordId,
+          sectionType: sectionType,
+          sectionIndex: sectionIndex,
+          fieldName: fieldName,
+          originalValue: widget.originalData[fieldName],
+          newValue: null,
+        );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+
+    final dataForRules = _buildDataForRules(
+      ref,
+      widget.originalData,
+      widget.recordId,
+    );
+
+    bool isHidden = false;
+    if (_config.isHiddenRule != null) {
+      isHidden = _config.isHiddenRule!(dataForRules);
+    }
+
+    if (isHidden) {
+      return const SizedBox.shrink();
+    }
+
+    final currentValue = ref.watch(
+      formDataProvider.select((state) {
+        final key =
+            '${widget.recordId}|${widget.sectionType}:${widget.sectionIndex}';
+        if (state.current.containsKey(key) &&
+            state.current[key]!.containsKey(widget.fieldName)) {
+          return state.current[key]![widget.fieldName];
+        }
+        return widget.originalData[widget.fieldName];
+      }),
+    );
+
+    _updateController(currentValue);
+
+    bool finalIsEditable;
+    if (_config.isEditableRule != null) {
+      finalIsEditable =
+          (widget.isEditable ?? true) && _config.isEditableRule!(dataForRules);
+    } else {
+      finalIsEditable = (widget.isEditable ?? true) && _config.editable;
+    }
+
+    final bool isMandatory = widget.isMandatory ?? _config.isMandatory;
+    final bool showErrorState =
+        isMandatory &&
+        (_hasBeenTouched || _isFocused) &&
+        _isValueEmpty(currentValue);
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildFieldLabel(showErrorState),
+          const SizedBox(height: 4),
+          _buildFieldWidget(
+            currentValue,
+            dataForRules,
+            finalIsEditable,
+            showErrorState,
+          ),
+        ],
+      ),
+    );
+  }
+
+  Map<String, dynamic> _buildDataForRules(
+    WidgetRef ref,
+    Map<String, dynamic> originalData,
+    String recordId,
+  ) {
+    final specialistValue = ref.watch(
+      formDataProvider.select((state) {
+        final key = '$recordId|encounter_main:0';
+        return state.current[key]?['M_Specialist_ID'] ??
+            originalData['M_Specialist_ID'];
+      }),
+    );
+    final docTypeValue = ref.watch(
+      formDataProvider.select((state) {
+        final key = '$recordId|encounter_main:0';
+        return state.current[key]?['C_DocType_ID'] ??
+            originalData['C_DocType_ID'];
+      }),
+    );
+
+    final dataForRules = Map<String, dynamic>.from(originalData);
+    dataForRules['M_Specialist_ID'] = specialistValue;
+    dataForRules['C_DocType_ID'] = docTypeValue;
+    return dataForRules;
   }
 
   void _updateController(dynamic value) {
@@ -132,8 +233,19 @@ class _AppFieldsState extends ConsumerState<AppFields>
     return value.toString();
   }
 
+  bool _isValueEmpty(dynamic value) {
+    if (value == null) return true;
+    if (value is String && value.isEmpty) return true;
+    if (value is GeneralInfo && (value.identifier.isEmpty)) return true;
+    if (value is Map &&
+        (value['identifier'] == null ||
+            (value['identifier'] as String).isEmpty)) {
+      return true;
+    }
+    return false;
+  }
+
   bool _isDateString(String value) {
-    if (value.length < 10) return false;
     try {
       DateTime.parse(value);
       return true;
@@ -142,51 +254,58 @@ class _AppFieldsState extends ConsumerState<AppFields>
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    super.build(context);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildFieldLabel(),
-          const SizedBox(height: 4),
-          _buildFieldWidget(),
-        ],
-      ),
+  Widget _buildFieldWidget(
+    dynamic currentValue,
+    Map<String, dynamic> dataForRules,
+    bool isEditable,
+    bool showErrorState,
+  ) {
+    if (!isEditable) {
+      return _buildReadOnlyField();
+    }
+    return _buildFieldByType(
+      _config.fieldType ?? FieldType.text,
+      currentValue,
+      dataForRules,
+      showErrorState,
     );
   }
 
-  Widget _buildFieldWidget() {
-    final bool isFieldDisabled = !(widget.isEditable ?? _config.editable);
-
-    if (isFieldDisabled) {
-      return _buildReadOnlyField();
-    }
-    return _buildFieldByType(_config.fieldType ?? FieldType.text);
-  }
-
-  Widget _buildFieldByType(FieldType fieldType) {
+  Widget _buildFieldByType(
+    FieldType fieldType,
+    dynamic currentValue,
+    Map<String, dynamic> dataForRules,
+    bool showErrorState,
+  ) {
     switch (fieldType) {
       case FieldType.generalInfo:
-        return _buildGeneralInfoDropdown();
+        return _buildGeneralInfoDropdown(
+          currentValue,
+          dataForRules,
+          showErrorState,
+        );
+      case FieldType.multipleGeneralInfo:
+        return _buildMultipleGeneralInfoDropdown(
+          currentValue,
+          dataForRules,
+          showErrorState,
+        );
+
       case FieldType.bpartnerSearch:
-        return _buildBPartnerSearchField();
+        return _buildBPartnerSearchField(dataForRules, showErrorState);
       case FieldType.date:
-        return _buildDatePicker();
+        return _buildDatePicker(currentValue, showErrorState);
       case FieldType.boolean:
-        return _buildCheckbox();
+        return _buildCheckbox(currentValue);
       case FieldType.number:
-        return _buildNumberField();
-      case FieldType.text:
-        return _buildTextField();
+        return _buildNumberField(showErrorState);
+      default:
+        return _buildTextField(showErrorState);
     }
   }
 
   InputDecoration _inputDecoration(
-    bool disabled, {
+    bool showErrorState, {
     Widget? suffix,
     Widget? prefix,
     bool isDisabled = false,
@@ -205,12 +324,12 @@ class _AppFieldsState extends ConsumerState<AppFields>
       contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
       enabledBorder: OutlineInputBorder(
         borderSide: BorderSide(
-          color: _showErrorState ? colorScheme.error : enabledBorderColor,
+          color: showErrorState ? colorScheme.error : enabledBorderColor,
         ),
       ),
       focusedBorder: OutlineInputBorder(
         borderSide: BorderSide(
-          color: _showErrorState ? colorScheme.error : focusedBorderColor,
+          color: showErrorState ? colorScheme.error : focusedBorderColor,
           width: 2,
         ),
       ),
@@ -222,7 +341,7 @@ class _AppFieldsState extends ConsumerState<AppFields>
       prefixIcon: prefix,
       prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
       filled: true,
-      fillColor: (disabled || isDisabled)
+      fillColor: isDisabled
           ? disabledFillColor
           : _isFocused
           ? focusedFillColor
@@ -230,10 +349,9 @@ class _AppFieldsState extends ConsumerState<AppFields>
     );
   }
 
-  String _buildFilterFor(String fieldName) {
+  String _buildFilterFor(String fieldName, Map<String, dynamic> dataForRules) {
     dynamic getDependencyId(String key) {
-      final value = widget.allSectionData[key];
-      if (value == null) return null;
+      final value = dataForRules[key];
       if (value is GeneralInfo) return value.id;
       if (value is Map) return value['id'];
       return null;
@@ -243,21 +361,18 @@ class _AppFieldsState extends ConsumerState<AppFields>
       case 'M_Specialist_ID':
         final salesRegionId = getDependencyId('C_SalesRegion_ID');
         return 'C_SalesRegion_ID=${salesRegionId ?? 0}';
-
       case 'Doctor_ID':
         final specialistId = getDependencyId('M_Specialist_ID');
         return 'M_Specialist_ID=${specialistId ?? 0}';
-
       case 'Assistant_ID':
         final salesRegionId = getDependencyId('C_SalesRegion_ID');
         return 'C_SalesRegion_ID=${salesRegionId ?? 0}';
-
       default:
         return '';
     }
   }
 
-  Widget _buildFieldLabel() {
+  Widget _buildFieldLabel(bool showErrorState) {
     final appColors = Theme.of(context).extension<AppThemeExtension>()!;
     final String labelText =
         fieldLabels[widget.fieldName] ?? _formatFieldName(widget.fieldName);
@@ -281,7 +396,7 @@ class _AppFieldsState extends ConsumerState<AppFields>
             softWrap: false,
           ),
         ),
-        if (_showErrorState)
+        if (showErrorState)
           Text(
             '*',
             style: TextStyle(color: Theme.of(context).colorScheme.error),
@@ -290,62 +405,56 @@ class _AppFieldsState extends ConsumerState<AppFields>
     );
   }
 
-  String _formatFieldName(String fieldName) {
-    return fieldName
-        .replaceAll('_', ' ')
-        .split(' ')
-        .map(
-          (word) => word.isEmpty
-              ? ''
-              : '${word[0].toUpperCase()}${word.substring(1).toLowerCase()}',
-        )
-        .join(' ');
-  }
+  String _formatFieldName(String fieldName) => fieldName
+      .replaceAll('_', ' ')
+      .split(' ')
+      .map(
+        (w) => w.isEmpty
+            ? ''
+            : '${w[0].toUpperCase()}${w.substring(1).toLowerCase()}',
+      )
+      .join(' ');
 
-  Widget _buildReadOnlyField() {
-    return SizedBox(
-      height: _config.multiLine == true ? null : 44,
-      child: TextFormField(
-        controller: _controller,
-        readOnly: true,
-        maxLines: _config.maxLines ?? 1,
-        style: const TextStyle(fontSize: 14),
-        decoration: _inputDecoration(
-          true,
-          suffix: _buildSuffix(disabled: true, includeType: false),
-        ),
+  Widget _buildReadOnlyField() => SizedBox(
+    height: _config.multiLine == true ? null : 44,
+    child: TextFormField(
+      controller: _controller,
+      readOnly: true,
+      maxLines: _config.maxLines ?? 1,
+      style: const TextStyle(fontSize: 14),
+      decoration: _inputDecoration(
+        false,
+        suffix: _buildSuffix(disabled: true, includeType: false),
+        isDisabled: true,
       ),
-    );
-  }
+    ),
+  );
 
-  String _resolveModelNameFromFieldName(String fieldName) {
-    if (fieldName.contains('_ID')) {
-      return fieldName.replaceAll('_ID', '').toLowerCase();
-    }
-    return fieldName.toLowerCase();
-  }
+  String _resolveModelNameFromFieldName(String fieldName) =>
+      fieldName.contains('_ID')
+      ? fieldName.replaceAll('_ID', '').toLowerCase()
+      : fieldName.toLowerCase();
 
-  Widget _buildGeneralInfoDropdown() {
+  Widget _buildGeneralInfoDropdown(
+    dynamic currentValue,
+    Map<String, dynamic> dataForRules,
+    bool showErrorState,
+  ) {
     final modelName = _resolveModelNameFromFieldName(widget.fieldName);
-
-    GeneralInfo? currentValue;
-    if (widget.value is GeneralInfo) {
-      currentValue = widget.value as GeneralInfo;
-    } else if (widget.value is Map<String, dynamic>) {
-      currentValue = GeneralInfo.fromJson(widget.value);
+    GeneralInfo? selectedValue;
+    if (currentValue is GeneralInfo) {
+      selectedValue = currentValue;
+    } else if (currentValue is Map<String, dynamic>) {
+      selectedValue = GeneralInfo.fromJson(currentValue);
     }
 
-    bool isDropdownEnabled = !(widget.isEditable == false);
-
-    if (widget.fieldName == 'M_Specialist_ID') {
-      final salesRegionValue = widget.allSectionData['C_SalesRegion_ID'];
-      if (salesRegionValue == null) {
-        isDropdownEnabled = false;
-      }
+    bool isDropdownEnabled = true;
+    if (widget.fieldName == 'M_Specialist_ID' &&
+        dataForRules['C_SalesRegion_ID'] == null) {
+      isDropdownEnabled = false;
     }
-
     if (widget.fieldName == 'Doctor_ID' &&
-        widget.allSectionData['M_Specialist_ID'] == null) {
+        dataForRules['M_Specialist_ID'] == null) {
       isDropdownEnabled = false;
     }
 
@@ -353,27 +462,56 @@ class _AppFieldsState extends ConsumerState<AppFields>
       height: 44,
       child: DropdownSearch<GeneralInfo>(
         enabled: isDropdownEnabled,
-        selectedItem: currentValue,
+        selectedItem: selectedValue,
         asyncItems: (String filter) {
-          String filterString = _buildFilterFor(widget.fieldName);
-          return ref
-              .read(sharedDataRepositoryProvider)
-              .searchModelData(
-                modelName: modelName,
-                query: filter,
-                filter: filterString,
-              );
+          if (widget.fieldName == 'BirthControlMethod') {
+            return ref
+                .read(sharedDataRepositoryProvider)
+                .getReferenceList('1000007');
+          } else if (widget.fieldName == 'UterusPosition') {
+            return ref
+                .read(sharedDataRepositoryProvider)
+                .getReferenceList('1000008');
+          } else if (widget.fieldName == 'Presentation') {
+            return ref
+                .read(sharedDataRepositoryProvider)
+                .getReferenceList('1000010');
+          } else if (widget.fieldName == 'PlacentaPosition') {
+            return ref
+                .read(sharedDataRepositoryProvider)
+                .getReferenceList('1000009');
+          } else if (widget.fieldName == 'Gender') {
+            return ref
+                .read(sharedDataRepositoryProvider)
+                .getReferenceList('1000005');
+          } else if (widget.fieldName == 'Cairan_Ketuban') {
+            return ref
+                .read(sharedDataRepositoryProvider)
+                .getReferenceList('1000030');
+          } else {
+            final filterString = _buildFilterFor(
+              widget.fieldName,
+              dataForRules,
+            );
+            return ref
+                .read(sharedDataRepositoryProvider)
+                .searchModelData(
+                  modelName: modelName,
+                  query: filter,
+                  filter: filterString,
+                );
+          }
         },
         compareFn: (item1, item2) => item1.id == item2.id,
         itemAsString: (item) => item.identifier,
-        onChanged: widget.onChanged,
+        onChanged: _onChanged,
         dropdownDecoratorProps: DropDownDecoratorProps(
           baseStyle: TextStyle(
             fontSize: 14,
             color: Theme.of(context).colorScheme.onSurface,
           ),
           dropdownSearchDecoration: _inputDecoration(
-            false,
+            showErrorState,
             isDisabled: !isDropdownEnabled,
           ),
         ),
@@ -387,28 +525,81 @@ class _AppFieldsState extends ConsumerState<AppFields>
             ),
           ),
         ),
-        validator: (item) {
-          if (_isMandatory && item == null) {
-            return 'Wajib diisi';
-          }
-          return null;
-        },
       ),
     );
   }
 
-  Widget _buildBPartnerSearchField() {
-    bool isFieldEnabled = !(widget.isEditable == false);
-    if (widget.fieldName == 'C_BPartnerRelation_ID') {
-      final config = FieldConfig.getConfig(
-        widget.fieldName,
-        section: widget.sectionType ?? '',
-      );
-      if (config.isEditableRule != null) {
-        isFieldEnabled = config.isEditableRule!(widget.allSectionData);
-      }
-    }
+  Widget _buildMultipleGeneralInfoDropdown(
+    dynamic currentValue,
+    Map<String, dynamic> dataForRules,
+    bool showErrorState,
+  ) {
+    final List<GeneralInfo> selectedItems = parseMultipleGeneralInfo(
+      currentValue,
+    );
 
+    bool isDropdownEnabled = widget.isEditable ?? _config.editable;
+    return DropdownSearch<GeneralInfo>.multiSelection(
+      enabled: isDropdownEnabled,
+      selectedItems: selectedItems,
+      compareFn: (item1, item2) => item1.id == item2.id,
+      itemAsString: (item) => item.identifier,
+      asyncItems: (String filter) =>
+          ref.read(sharedDataRepositoryProvider).searchIcd10(filter),
+      onChanged: (List<GeneralInfo> selectedList) {
+        if (selectedList.isEmpty) {
+          _onChanged(null);
+          return;
+        }
+        final combinedIds = selectedList.map((e) => e.id).join(',');
+        final combinedIdentifiers = selectedList
+            .map((e) => e.identifier)
+            .join(',');
+        final singleGeneralInfo = GeneralInfo(
+          id: combinedIds,
+          identifier: combinedIdentifiers,
+          propertyLabel: 'ICD_10',
+          modelName: 'icd',
+        );
+        _onChanged(singleGeneralInfo);
+      },
+      dropdownDecoratorProps: DropDownDecoratorProps(
+        baseStyle: TextStyle(
+          fontSize: 14,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+        dropdownSearchDecoration: _inputDecoration(
+          showErrorState,
+          isDisabled: !isDropdownEnabled,
+        ),
+      ),
+      popupProps: PopupPropsMultiSelection.menu(
+        showSelectedItems: true,
+        showSearchBox: true,
+        isFilterOnline: true,
+        loadingBuilder: (context, searchEntry) =>
+            const Center(child: CircularProgressIndicator()),
+        searchFieldProps: TextFieldProps(
+          decoration: InputDecoration(
+            hintText: 'Cari berdasarkan kode atau nama...',
+            border: OutlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFFCECECE)),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBPartnerSearchField(
+    Map<String, dynamic> dataForRules,
+    bool showErrorState,
+  ) {
+    bool isFieldEnabled = true;
+    if (widget.fieldName == 'C_BPartnerRelation_ID' &&
+        _config.isEditableRule != null) {
+      isFieldEnabled = _config.isEditableRule!(dataForRules);
+    }
     return SizedBox(
       height: 44,
       child: TextFormField(
@@ -418,20 +609,15 @@ class _AppFieldsState extends ConsumerState<AppFields>
         onTap: !isFieldEnabled
             ? null
             : () async {
-                final initialQuery = _controller.text;
-
                 final result = await showDialog<GeneralInfo>(
                   context: context,
                   builder: (context) =>
-                      BPartnerSearchDialog(initialQuery: initialQuery),
+                      BPartnerSearchDialog(initialQuery: _controller.text),
                 );
-
-                if (result != null) {
-                  widget.onChanged(result);
-                }
+                if (result != null) _onChanged(result);
               },
         decoration: _inputDecoration(
-          false,
+          showErrorState,
           isDisabled: !isFieldEnabled,
           suffix: _buildSuffix(
             disabled: false,
@@ -443,17 +629,11 @@ class _AppFieldsState extends ConsumerState<AppFields>
             ),
           ),
         ),
-        validator: (value) {
-          if (_isMandatory && (value == null || value.isEmpty)) {
-            return 'Wajib diisi';
-          }
-          return null;
-        },
       ),
     );
   }
 
-  Widget _buildDatePicker() {
+  Widget _buildDatePicker(dynamic currentValue, bool showErrorState) {
     return SizedBox(
       height: 44,
       child: TextFormField(
@@ -462,7 +642,7 @@ class _AppFieldsState extends ConsumerState<AppFields>
         readOnly: true,
         style: const TextStyle(fontSize: 14),
         decoration: _inputDecoration(
-          false,
+          showErrorState,
           suffix: _buildSuffix(
             disabled: false,
             includeType: false,
@@ -473,88 +653,69 @@ class _AppFieldsState extends ConsumerState<AppFields>
           final date = await showDatePicker(
             context: context,
             initialDate:
-                DateTime.tryParse(widget.value?.toString() ?? '') ??
+                DateTime.tryParse(currentValue?.toString() ?? '') ??
                 DateTime.now(),
             firstDate: DateTime(1900),
             lastDate: DateTime(2100),
           );
-          if (date != null) {
-            final formattedDate = DateFormat('yyyy-MM-dd').format(date);
-            _controller.text = DateFormat('dd/MM/yyyy').format(date);
-            widget.onChanged(formattedDate);
-          }
+          if (date != null) _onChanged(DateFormat('yyyy-MM-dd').format(date));
         },
       ),
     );
   }
 
-  Widget _buildCheckbox() {
-    return SizedBox(
-      height: 44,
-      child: Row(
-        children: [
-          Focus(
-            focusNode: _focusNode,
-            child: Checkbox(
-              value: widget.value as bool? ?? false,
-              onChanged: (value) => widget.onChanged(value ?? false),
-            ),
+  Widget _buildCheckbox(dynamic currentValue) => SizedBox(
+    height: 44,
+    child: Row(
+      children: [
+        Focus(
+          focusNode: _focusNode,
+          child: Checkbox(
+            value: currentValue as bool? ?? false,
+            onChanged: (value) => _onChanged(value ?? false),
           ),
-          const Text('Yes'),
-        ],
-      ),
-    );
-  }
+        ),
+        const Text('Yes'),
+      ],
+    ),
+  );
 
-  Widget _buildNumberField() {
-    return SizedBox(
-      height: 44,
-      child: TextFormField(
-        focusNode: _focusNode,
-        controller: _controller,
-        decoration: _inputDecoration(
-          false,
-          suffix: _buildSuffix(disabled: false, includeType: true),
-        ),
-        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-          fontSize: 14,
-        ),
-        onChanged: (value) {
-          if (value.isEmpty) {
-            widget.onChanged(null);
-          } else {
-            final numValue = num.tryParse(value);
-            if (numValue != null) {
-              widget.onChanged(numValue);
-            }
-          }
-        },
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        textInputAction: TextInputAction.done,
-        inputFormatters: [
-          FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d{0,2}')),
-        ],
+  Widget _buildNumberField(bool showErrorState) => SizedBox(
+    height: 44,
+    child: TextFormField(
+      focusNode: _focusNode,
+      controller: _controller,
+      decoration: _inputDecoration(
+        showErrorState,
+        suffix: _buildSuffix(disabled: false, includeType: true),
       ),
-    );
-  }
+      style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+        color: Theme.of(context).colorScheme.onSurfaceVariant,
+        fontSize: 14,
+      ),
+      onChanged: (value) =>
+          value.isEmpty ? _onChanged(null) : _onChanged(num.tryParse(value)),
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      inputFormatters: [
+        FilteringTextInputFormatter.allow(RegExp(r'^-?\d*\.?\d{0,2}')),
+      ],
+    ),
+  );
 
-  Widget _buildTextField() {
-    return SizedBox(
-      height: _config.multiLine == true ? null : 44,
-      child: TextFormField(
-        focusNode: _focusNode,
-        controller: _controller,
-        maxLines: _config.maxLines ?? 1,
-        style: const TextStyle(fontSize: 14),
-        decoration: _inputDecoration(
-          false,
-          suffix: _buildSuffix(disabled: false, includeType: true),
-        ),
-        onChanged: widget.onChanged,
+  Widget _buildTextField(bool showErrorState) => SizedBox(
+    height: _config.multiLine == true ? null : 44,
+    child: TextFormField(
+      focusNode: _focusNode,
+      controller: _controller,
+      maxLines: _config.maxLines ?? 1,
+      style: const TextStyle(fontSize: 14),
+      decoration: _inputDecoration(
+        showErrorState,
+        suffix: _buildSuffix(disabled: false, includeType: true),
       ),
-    );
-  }
+      onChanged: _onChanged,
+    ),
+  );
 
   Widget? _buildInlineTypeText() {
     switch (_config.fieldType) {
@@ -567,50 +728,44 @@ class _AppFieldsState extends ConsumerState<AppFields>
     }
   }
 
-  Widget _typeText(String label) {
-    final appColors = Theme.of(context).extension<AppThemeExtension>()!;
-
-    return Text(
-      label,
-      style: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w500,
-        color: appColors.helperTextColor,
-      ),
-      overflow: TextOverflow.ellipsis,
-      softWrap: false,
-    );
-  }
+  Widget _typeText(String label) => Text(
+    label,
+    style: TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w500,
+      color: Theme.of(context).extension<AppThemeExtension>()!.helperTextColor,
+    ),
+    overflow: TextOverflow.ellipsis,
+    softWrap: false,
+  );
 
   Widget _buildSuffix({
     required bool disabled,
     bool includeType = false,
     Widget? extra,
   }) {
-    final appColors = Theme.of(context).extension<AppThemeExtension>()!;
     final children = <Widget>[];
-
     if (includeType) {
       final typeWidget = _buildInlineTypeText();
-      if (typeWidget != null) {
-        children.add(typeWidget);
-      }
+      if (typeWidget != null) children.add(typeWidget);
     }
-
     if (disabled) {
       if (children.isNotEmpty) children.add(const SizedBox(width: 6));
       children.add(
-        Icon(Icons.lock, size: 16, color: appColors.disabledIconColor),
+        Icon(
+          Icons.lock,
+          size: 16,
+          color: Theme.of(
+            context,
+          ).extension<AppThemeExtension>()!.disabledIconColor,
+        ),
       );
     }
-
     if (extra != null) {
       if (children.isNotEmpty) children.add(const SizedBox(width: 6));
       children.add(extra);
     }
-
     if (children.isEmpty) return const SizedBox.shrink();
-
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0),
       child: Row(

@@ -1,7 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medibuk/data/api/api_client.dart';
 import 'package:medibuk/domain/entities/general_info.dart';
+import 'package:medibuk/domain/entities/icd10_info.dart';
 import 'package:medibuk/domain/entities/product_info.dart';
+import 'package:medibuk/domain/entities/reference_list_item.dart';
 import 'package:medibuk/presentation/providers/api_client_provider.dart';
 import 'package:medibuk/presentation/providers/auth_provider.dart';
 
@@ -11,8 +15,9 @@ abstract class SharedDataRepository {
     required String query,
     required String filter,
   });
-
   Future<List<ProductInfo>> searchProducts(String query);
+  Future<List<GeneralInfo>> getReferenceList(String referenceId);
+  Future<List<GeneralInfo>> searchIcd10(String query);
 }
 
 final sharedDataRepositoryProvider = Provider<SharedDataRepository>((ref) {
@@ -128,6 +133,70 @@ class SharedDataRepositoryImpl implements SharedDataRepository {
       payload: payload,
       identifierKey: identifierKey,
     );
+  }
+
+  @override
+  Future<List<GeneralInfo>> getReferenceList(String referenceId) async {
+    try {
+      final response = await _apiClient.get('/reference/$referenceId');
+
+      if (response.data != null && response.data['reflist'] is List) {
+        final list = response.data['reflist'] as List;
+
+        return list
+            .map((item) => ReferenceList.fromJson(item as Map<String, dynamic>))
+            .map(
+              (refItem) => GeneralInfo(
+                id: refItem.value,
+                identifier: refItem.name,
+                modelName: 'ad_ref_list',
+              ),
+            )
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<List<GeneralInfo>> searchIcd10(String query) async {
+    try {
+      final valuePattern = RegExp(r'^[a-zA-Z]\d');
+      Map<String, dynamic> parameters;
+
+      if (valuePattern.hasMatch(query)) {
+        parameters = {'value': query};
+      } else {
+        parameters = {'name_idn': '%$query%'};
+      }
+
+      final response = await _apiClient.get(
+        '/infos/icd-10-info',
+        queryParams: {'\$parameters': jsonEncode(parameters)},
+      );
+
+      if (response.data != null &&
+          response.data['infowindow-records'] is List) {
+        final list = response.data['infowindow-records'] as List;
+
+        return list
+            .map((item) => Icd10Info.fromJson(item as Map<String, dynamic>))
+            .map(
+              (icdItem) => GeneralInfo(
+                id: icdItem.id.toString(),
+                identifier: '${icdItem.value} - ${icdItem.nameIdn}',
+                propertyLabel: 'ICD_10',
+                modelName: 'icd-10-info',
+              ),
+            )
+            .toList();
+      }
+      return [];
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<List<GeneralInfo>> _fetchFromApi({

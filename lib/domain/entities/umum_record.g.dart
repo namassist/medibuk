@@ -9,134 +9,90 @@ part of 'umum_record.dart';
 UmumRecord _$UmumRecordFromJson(Map<String, dynamic> json) => UmumRecord(
   id: (json['id'] as num).toInt(),
   uid: json['uid'] as String,
-  adClientId: json['AD_Client_ID'] == null
+  adClientID: json['AD_Client_ID'] == null
       ? null
       : GeneralInfo.fromJson(json['AD_Client_ID'] as Map<String, dynamic>),
-  adOrgId: json['AD_Org_ID'] == null
+  adOrgID: json['AD_Org_ID'] == null
       ? null
       : GeneralInfo.fromJson(json['AD_Org_ID'] as Map<String, dynamic>),
-  cMedicalRecordId: json['C_MedicalRecord_ID'] == null
+  cMedicalRecordID: json['C_MedicalRecord_ID'] == null
       ? null
       : GeneralInfo.fromJson(
           json['C_MedicalRecord_ID'] as Map<String, dynamic>,
         ),
-  cSalesRegionId: json['C_SalesRegion_ID'] == null
+  cSalesRegionID: json['C_SalesRegion_ID'] == null
       ? null
       : GeneralInfo.fromJson(json['C_SalesRegion_ID'] as Map<String, dynamic>),
-  doctorId: json['Doctor_ID'] == null
+  doctorID: json['Doctor_ID'] == null
       ? null
       : GeneralInfo.fromJson(json['Doctor_ID'] as Map<String, dynamic>),
-  assistantId: json['Assistant_ID'] == null
+  assistantID: json['Assistant_ID'] == null
       ? null
       : GeneralInfo.fromJson(json['Assistant_ID'] as Map<String, dynamic>),
-  lineNo: (json['LineNo'] as num?)?.toInt(),
-  birthday: json['Birthday'] as String?,
-  age: json['Age'] as String?,
-  gpa: json['GPA'] as String?,
-  visitDate: json['VisitDate'] as String?,
-  nextVisitDate: json['NextVisitDate'] as String?,
-  chiefComplaint: json['ChiefComplaint'] as String?,
-  bodyTemperature: json['BodyTemperature'] as num?,
-  miscarriage: (json['Miscarriage'] as num?)?.toInt(),
-  pregnancyNo: (json['PregnancyNo'] as num?)?.toInt(),
-  firstDayOfMenstrualPeriod: json['FirstDayOfMenstrualPeriod'] as String?,
-  riwayatAlergi: json['Riwayat_alergi'] as String?,
-  hpl: json['HPL'] as String?,
-  estimatedDateOfConception: json['EstimatedDateOfConception'] as String?,
-  laborSC: json['LaborSC'] as num?,
-  laborSpontanNormal: json['LaborSpontanNormal'] as num?,
-  laborSpontanVacuum: json['LaborSpontanVacuum'] as num?,
-  bodyHeight: json['BodyHeight'] as num?,
-  bmi: json['BMI'] as num?,
-  bodyWeight: json['BodyWeight'] as num?,
-  systolicPressure: json['SystolicPressure'] as num?,
-  diastolicPressure: json['DiastolicPressure'] as num?,
-  lila: json['LILA'] as num?,
+  visitDate: json['VisitDate'] == null
+      ? null
+      : DateTime.parse(json['VisitDate'] as String),
   icd10: json['ICD_10'] == null
       ? null
       : GeneralInfo.fromJson(json['ICD_10'] as Map<String, dynamic>),
-  note: json['Note'] as String?,
-  internalNote: json['InternalNote'] as String?,
-  isShowMore: json['IsShowMore'] as bool?,
-  nutritionNotes: json['NutritionNotes'] as String?,
-  presentation: json['Presentation'] == null
+  nextVisitDate: json['NextVisitDate'] == null
       ? null
-      : GeneralInfo.fromJson(json['Presentation'] as Map<String, dynamic>),
-  placentaGrade: json['PlacentaGrade'] as num?,
-  placentaPosition: json['PlacentaPosition'] == null
+      : DateTime.parse(json['NextVisitDate'] as String),
+  birthday: json['Birthday'] == null
       ? null
-      : GeneralInfo.fromJson(json['PlacentaPosition'] as Map<String, dynamic>),
-  weight: json['Weight'] as num?,
-  gs: json['GS'] as num?,
-  ys: json['YS'] as num?,
-  djj: json['DJJ'] as num?,
-  fl: json['FL'] as num?,
-  crl: json['CRL'] as num?,
-  bpd: json['BPD'] as num?,
-  hc: json['HC'] as num?,
-  ac: json['AC'] as num?,
+      : DateTime.parse(json['Birthday'] as String),
   gender: json['Gender'] == null
       ? null
       : GeneralInfo.fromJson(json['Gender'] as Map<String, dynamic>),
-  sdp: json['SDP'] as num?,
-  afi: json['AFI'] as num?,
-  cairanKetuban: json['Cairan_Ketuban'] == null
+  bodyWeight: json['BodyWeight'] as num?,
+  bodyHeight: json['BodyHeight'] as num?,
+  bodyTemperature: json['BodyTemperature'] as num?,
+  systolicPressure: json['SystolicPressure'] as num?,
+  diastolicPressure: json['DiastolicPressure'] as num?,
+  pulse: json['pulse'] as String?,
+  tekananDarah: json['Tekanan_Darah'] as num?,
+  pernafasan: json['Pernafasan'] as num?,
+  keluhanUtama: json['Keluhan_Utama'] as String?,
+  riwayatAlergi: json['Riwayat_alergi'] as String?,
+  description: json['Description'] as String?,
+  diagnosis: json['Diagnosis'] as String?,
+  therapy: json['Therapy'] as String?,
+  processed: json['Processed'] as bool?,
+  isActive: json['IsActive'] as bool?,
+  docStatus: json['DocStatus'] == null
       ? null
-      : GeneralInfo.fromJson(json['Cairan_Ketuban'] as Map<String, dynamic>),
+      : GeneralInfo.fromJson(json['DocStatus'] as Map<String, dynamic>),
 );
 
 Map<String, dynamic> _$UmumRecordToJson(UmumRecord instance) =>
     <String, dynamic>{
       'id': instance.id,
       'uid': instance.uid,
-      'AD_Client_ID': instance.adClientId,
-      'AD_Org_ID': instance.adOrgId,
-      'C_MedicalRecord_ID': instance.cMedicalRecordId,
-      'C_SalesRegion_ID': instance.cSalesRegionId,
-      'Doctor_ID': instance.doctorId,
-      'Assistant_ID': instance.assistantId,
-      'LineNo': instance.lineNo,
-      'Birthday': instance.birthday,
-      'Age': instance.age,
-      'GPA': instance.gpa,
-      'VisitDate': instance.visitDate,
-      'NextVisitDate': instance.nextVisitDate,
-      'ChiefComplaint': instance.chiefComplaint,
-      'BodyTemperature': instance.bodyTemperature,
-      'Miscarriage': instance.miscarriage,
-      'PregnancyNo': instance.pregnancyNo,
-      'FirstDayOfMenstrualPeriod': instance.firstDayOfMenstrualPeriod,
-      'Riwayat_alergi': instance.riwayatAlergi,
-      'HPL': instance.hpl,
-      'EstimatedDateOfConception': instance.estimatedDateOfConception,
-      'LaborSC': instance.laborSC,
-      'LaborSpontanNormal': instance.laborSpontanNormal,
-      'LaborSpontanVacuum': instance.laborSpontanVacuum,
-      'BodyHeight': instance.bodyHeight,
-      'BMI': instance.bmi,
+      'AD_Client_ID': instance.adClientID,
+      'AD_Org_ID': instance.adOrgID,
+      'C_MedicalRecord_ID': instance.cMedicalRecordID,
+      'C_SalesRegion_ID': instance.cSalesRegionID,
+      'Doctor_ID': instance.doctorID,
+      'Assistant_ID': instance.assistantID,
+      'VisitDate': instance.visitDate?.toIso8601String(),
+      'ICD_10': instance.icd10,
+      'NextVisitDate': instance.nextVisitDate?.toIso8601String(),
+      'Birthday': instance.birthday?.toIso8601String(),
+      'Gender': instance.gender,
       'BodyWeight': instance.bodyWeight,
+      'BodyHeight': instance.bodyHeight,
+      'BodyTemperature': instance.bodyTemperature,
       'SystolicPressure': instance.systolicPressure,
       'DiastolicPressure': instance.diastolicPressure,
-      'LILA': instance.lila,
-      'ICD_10': instance.icd10,
-      'Note': instance.note,
-      'InternalNote': instance.internalNote,
-      'IsShowMore': instance.isShowMore,
-      'NutritionNotes': instance.nutritionNotes,
-      'Presentation': instance.presentation,
-      'PlacentaGrade': instance.placentaGrade,
-      'PlacentaPosition': instance.placentaPosition,
-      'Weight': instance.weight,
-      'GS': instance.gs,
-      'YS': instance.ys,
-      'DJJ': instance.djj,
-      'FL': instance.fl,
-      'CRL': instance.crl,
-      'BPD': instance.bpd,
-      'HC': instance.hc,
-      'AC': instance.ac,
-      'Gender': instance.gender,
-      'SDP': instance.sdp,
-      'AFI': instance.afi,
-      'Cairan_Ketuban': instance.cairanKetuban,
+      'pulse': instance.pulse,
+      'Tekanan_Darah': instance.tekananDarah,
+      'Pernafasan': instance.pernafasan,
+      'Keluhan_Utama': instance.keluhanUtama,
+      'Riwayat_alergi': instance.riwayatAlergi,
+      'Description': instance.description,
+      'Diagnosis': instance.diagnosis,
+      'Therapy': instance.therapy,
+      'Processed': instance.processed,
+      'IsActive': instance.isActive,
+      'DocStatus': instance.docStatus,
     };

@@ -6,7 +6,7 @@ import 'package:medibuk/presentation/utils/formatter.dart';
 
 part 'encounter_record.g.dart';
 
-@JsonSerializable()
+@JsonSerializable(includeIfNull: true)
 class EncounterRecord extends Record {
   @JsonKey(name: 'AD_Client_ID')
   final GeneralInfo? adClientId;
@@ -15,9 +15,9 @@ class EncounterRecord extends Record {
   @JsonKey(name: 'C_DocType_ID')
   final GeneralInfo? cDocTypeId;
   @JsonKey(name: 'DocumentNo')
-  final String documentNo;
+  final String? documentNo;
   @JsonKey(name: 'DateTrx')
-  final String dateTrx;
+  final String? dateTrx;
   @JsonKey(name: 'Antrian')
   final String? antrian;
   @JsonKey(name: 'C_BPartner_ID')
@@ -75,16 +75,16 @@ class EncounterRecord extends Record {
   @JsonKey(name: 'LILA')
   final num? lila;
   @JsonKey(name: 'IsActive')
-  final bool isActive;
+  final bool? isActive;
   @JsonKey(name: 'Processed')
-  final bool processed;
+  final bool? processed;
   @JsonKey(name: 'IsPaid')
-  final bool isPaid;
+  final bool? isPaid;
   @JsonKey(name: 'DiscountAmt')
   final num? discountAmt;
   @JsonKey(name: 'AmtBeforeDisc')
   final num? amtBeforeDisc;
-  @JsonKey(name: 'doc_action')
+  @JsonKey(name: 'doc-action')
   final String? docAction;
   @JsonKey(name: 'C_Order_ID')
   final GeneralInfo? cOrderID;
@@ -97,8 +97,8 @@ class EncounterRecord extends Record {
     this.adClientId,
     this.adOrgId,
     this.cDocTypeId,
-    required this.documentNo,
-    required this.dateTrx,
+    this.documentNo,
+    this.dateTrx,
     this.antrian,
     this.cBPartnerId,
     this.cBPartnerRelationID,
@@ -126,9 +126,9 @@ class EncounterRecord extends Record {
     this.docStatus,
     this.amount,
     this.lila,
-    required this.isActive,
-    required this.processed,
-    required this.isPaid,
+    this.isActive,
+    this.processed,
+    this.isPaid,
     this.discountAmt,
     this.amtBeforeDisc,
     this.docAction,
@@ -150,26 +150,26 @@ class EncounterRecord extends Record {
       documentNo: 'NEW',
       dateTrx: DateFormat('yyyy-MM-dd').format(now),
       docStatus: null,
-      isActive: true,
-      processed: false,
-      isPaid: false,
-      systolicPressure: 0,
-      diastolicPressure: 0,
-      bodyWeight: 0,
-      bodyHeight: 0,
-      bodyTemperature: 0,
-      birthWeight: 0,
-      headCircumference: 0,
-      pregnancyNo: 0,
-      miscarriage: 0,
-      laborSpontanNormal: 0,
-      laborSC: 0,
-      laborSpontanForcep: 0,
-      laborSpontanVacuum: 0,
-      amount: 0,
-      lila: 0,
-      discountAmt: 0,
-      amtBeforeDisc: 0,
+      isActive: null,
+      processed: null,
+      isPaid: null,
+      systolicPressure: null,
+      diastolicPressure: null,
+      bodyWeight: null,
+      bodyHeight: null,
+      bodyTemperature: null,
+      birthWeight: null,
+      headCircumference: null,
+      pregnancyNo: null,
+      miscarriage: null,
+      laborSpontanNormal: null,
+      laborSC: null,
+      laborSpontanForcep: null,
+      laborSpontanVacuum: null,
+      amount: null,
+      lila: null,
+      discountAmt: null,
+      amtBeforeDisc: null,
     );
   }
 

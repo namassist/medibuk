@@ -3,6 +3,7 @@ import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:medibuk/domain/entities/encounter_record.dart';
 import 'package:medibuk/domain/entities/general_info.dart';
+import 'package:medibuk/presentation/pages/encounter_page.dart';
 import 'package:medibuk/presentation/providers/dashboard_bidan_provider.dart';
 
 class DashboardBidan extends ConsumerWidget {
@@ -327,7 +328,14 @@ class _MainPatientCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final bool isCompleted = encounter.docStatus?.identifier == 'Completed';
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) =>
+                EncounterScreen(encounterId: encounter.id.toString()),
+          ),
+        );
+      },
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
@@ -360,7 +368,7 @@ class _MainPatientCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  encounter.documentNo,
+                  encounter.documentNo ?? '-',
                   style: TextStyle(
                     fontSize: 18,
                     color: isCompleted
@@ -396,7 +404,14 @@ class _QueueItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isCompleted = encounter.docStatus?.identifier == 'Completed';
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder: (context) =>
+                EncounterScreen(encounterId: encounter.id.toString()),
+          ),
+        );
+      },
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 16),
@@ -429,7 +444,7 @@ class _QueueItem extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  encounter.documentNo,
+                  encounter.documentNo ?? '-',
                   style: TextStyle(
                     fontSize: 14,
                     color: isCompleted

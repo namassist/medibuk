@@ -7,8 +7,12 @@ Map<String, dynamic> buildPatchedJsonFromModel<T extends Record>(
   FormDataState formState,
   String recordId, {
   List<String> listSections = const [
-    'obstetric',
-    'gynecology',
+    'medrec_obstetric',
+    'medrec_gynecology',
+    'medrec_anak',
+    'medrec_laktasi',
+    'medrec_umum',
+    'medrec_andrologi',
     'prescriptions',
     'services',
   ],
@@ -32,7 +36,11 @@ Map<String, dynamic> buildPatchedJsonFromModel<T extends Record>(
   }
 
   void applyListItem(String section, int index, Map<String, dynamic> fields) {
-    final anyList = base[section];
+    final jsonKey = section.startsWith('medrec_')
+        ? section.substring(7)
+        : section;
+
+    final anyList = base[jsonKey];
     if (anyList is! List || index < 0 || index >= anyList.length) return;
     final list = anyList;
     var entry = list[index];

@@ -20,8 +20,8 @@ EncounterRecord _$EncounterRecordFromJson(
   cDocTypeId: json['C_DocType_ID'] == null
       ? null
       : GeneralInfo.fromJson(json['C_DocType_ID'] as Map<String, dynamic>),
-  documentNo: json['DocumentNo'] as String,
-  dateTrx: json['DateTrx'] as String,
+  documentNo: json['DocumentNo'] as String?,
+  dateTrx: json['DateTrx'] as String?,
   antrian: json['Antrian'] as String?,
   cBPartnerId: json['C_BPartner_ID'] == null
       ? null
@@ -69,12 +69,12 @@ EncounterRecord _$EncounterRecordFromJson(
       : GeneralInfo.fromJson(json['DocStatus'] as Map<String, dynamic>),
   amount: json['Amount'] as num?,
   lila: json['LILA'] as num?,
-  isActive: json['IsActive'] as bool,
-  processed: json['Processed'] as bool,
-  isPaid: json['IsPaid'] as bool,
+  isActive: json['IsActive'] as bool?,
+  processed: json['Processed'] as bool?,
+  isPaid: json['IsPaid'] as bool?,
   discountAmt: json['DiscountAmt'] as num?,
   amtBeforeDisc: json['AmtBeforeDisc'] as num?,
-  docAction: json['doc_action'] as String?,
+  docAction: json['doc-action'] as String?,
   cOrderID: json['C_Order_ID'] == null
       ? null
       : GeneralInfo.fromJson(json['C_Order_ID'] as Map<String, dynamic>),
@@ -130,7 +130,7 @@ Map<String, dynamic> _$EncounterRecordToJson(EncounterRecord instance) =>
       'IsPaid': instance.isPaid,
       'DiscountAmt': instance.discountAmt,
       'AmtBeforeDisc': instance.amtBeforeDisc,
-      'doc_action': instance.docAction,
+      'doc-action': instance.docAction,
       'C_Order_ID': instance.cOrderID,
       'QA_Sources_ID': instance.qaSourcesID,
     };

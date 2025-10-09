@@ -81,6 +81,14 @@ class ResponsiveGrid extends StatelessWidget {
       );
     }
 
-    return Wrap(runSpacing: spacing, spacing: spacing, children: widgets);
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Wrap(
+        runSpacing: spacing,
+        spacing: spacing,
+        alignment: WrapAlignment.start,
+        children: widgets,
+      ),
+    );
   }
 }

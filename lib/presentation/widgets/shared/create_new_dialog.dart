@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:medibuk/presentation/pages/encounter_page.dart';
-import 'package:medibuk/presentation/pages/medical_record_page.dart';
 
 class CreateNewDialog extends StatefulWidget {
   const CreateNewDialog({super.key});
@@ -22,7 +21,7 @@ class _CreateNewDialogState extends State<CreateNewDialog> {
     'Product': const EncounterScreen(encounterId: 'NEW'),
     'Invoice Vendor': const EncounterScreen(encounterId: 'NEW'),
     'Payment Receipt': const EncounterScreen(encounterId: 'NEW'),
-    'Medical Record': const MedicalRecordScreen(medicalRecordId: 'NEW'),
+    // 'Medical Record': const MedicalRecordScreen(medicalRecordId: 'NEW'),
   };
 
   late Map<String, Widget> _filteredList;

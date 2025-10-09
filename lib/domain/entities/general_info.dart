@@ -4,16 +4,16 @@ part 'general_info.g.dart';
 
 @JsonSerializable()
 class GeneralInfo {
-  final String propertyLabel;
+  final String? propertyLabel;
   final dynamic id;
   final String identifier;
   @JsonKey(name: 'model-name')
   final String? modelName;
 
   const GeneralInfo({
-    required this.propertyLabel,
     required this.id,
     required this.identifier,
+    this.propertyLabel,
     this.modelName,
   });
 

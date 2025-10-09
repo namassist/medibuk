@@ -58,8 +58,8 @@ final businessPartnerRepositoryProvider = Provider((ref) {
   return BusinessPartnerRepository(ref.watch(apiClientProvider));
 });
 
-final businessPartnerProvider = FutureProvider.autoDispose
-    .family<BusinessPartnerRecord, int>((ref, id) async {
+final businessPartnerProvider =
+    FutureProvider.family<BusinessPartnerRecord, int>((ref, id) async {
       final repo = ref.watch(businessPartnerRepositoryProvider);
       return repo.getBusinessPartner(id);
     });

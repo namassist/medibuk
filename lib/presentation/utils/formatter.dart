@@ -1,3 +1,5 @@
+import 'package:medibuk/domain/entities/general_info.dart';
+
 /// Menghapus semua pasangan key-value dari sebuah Map di mana valuenya adalah null.
 /// Fungsi ini bekerja secara rekursif, sehingga juga akan membersihkan Map dan List di dalam Map.
 Map<String, dynamic> removeNullValues(Map<String, dynamic> json) {
@@ -36,6 +38,52 @@ List _cleanList(List list) {
     }
   }
   return cleanedList;
+}
+
+List<GeneralInfo> parseMultipleGeneralInfo(dynamic rawData) {
+  if (rawData == null) return [];
+
+  String? combinedIds;
+  String? rawIdentifiers;
+
+  // Ekstrak string id dan identifier dari Map atau GeneralInfo
+  if (rawData is Map) {
+    combinedIds = rawData['id']?.toString();
+    rawIdentifiers = rawData['identifier']?.toString();
+  } else if (rawData is GeneralInfo) {
+    combinedIds = rawData.id?.toString();
+    rawIdentifiers = rawData.identifier;
+  }
+
+  if (combinedIds == null || rawIdentifiers == null) return [];
+
+  final ids = combinedIds.split(',').map((e) => e.trim()).toList();
+  final regex = RegExp(
+    r'([A-Z]\d{2}(?:\.\d)?)-([^,]*(?:,[^A-Z]*?)*?)(?=,\s*[A-Z]\d{2}(?:\.\d)?-|$)',
+  );
+  final matches = regex.allMatches(rawIdentifiers);
+  final List<GeneralInfo> result = [];
+  int index = 0;
+
+  for (final match in matches) {
+    if (index >= ids.length) break;
+
+    final code = match.group(1)?.trim();
+    final description = match.group(2)?.trim();
+    final id = ids[index];
+
+    result.add(
+      GeneralInfo(
+        id: id,
+        identifier: '$code-$description', // Gabungkan kembali untuk tampilan
+        propertyLabel: code, // Label bisa diisi dengan kode saja
+        modelName: 'icd-10-info',
+      ),
+    );
+    index++;
+  }
+
+  return result;
 }
 
 enum DocumentTypeEnum { bookingOnline, poli, pharmacy }

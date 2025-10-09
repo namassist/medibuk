@@ -6,7 +6,7 @@ part of 'encounter_record_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$encounterNotifierHash() => r'221212597b7d7593e5b53bd064e11313340a8c1c';
+String _$encounterNotifierHash() => r'b8922f9b1bea49aec97e2ccc61ccf782d4c81b3d';
 
 /// Copied from Dart SDK
 class _SystemHash {

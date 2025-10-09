@@ -7,9 +7,9 @@ part of 'general_info.dart';
 // **************************************************************************
 
 GeneralInfo _$GeneralInfoFromJson(Map<String, dynamic> json) => GeneralInfo(
-  propertyLabel: json['propertyLabel'] as String,
   id: json['id'],
   identifier: json['identifier'] as String,
+  propertyLabel: json['propertyLabel'] as String?,
   modelName: json['model-name'] as String?,
 );
 

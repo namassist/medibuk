@@ -93,27 +93,12 @@ class AppTable extends ConsumerWidget {
         children: [
           if (title != null)
             Container(
-              color: Theme.of(context).colorScheme.secondaryContainer,
               padding: const EdgeInsets.symmetric(
                 horizontal: 16.0,
                 vertical: 8.0,
               ),
               child: Row(
                 children: [
-                  Expanded(
-                    child: Text(
-                      textAlign: TextAlign.center,
-                      hasSelection
-                          ? '${tableState!.selectedUids.length} item(s) selected'
-                          : title!,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: hasSelection
-                            ? Theme.of(context).primaryColor
-                            : Colors.black87,
-                      ),
-                    ),
-                  ),
                   if (hasSelection)
                     IconButton(
                       icon: const Icon(Icons.delete_outline, color: Colors.red),
@@ -155,6 +140,18 @@ class AppTable extends ConsumerWidget {
                       tooltip: 'Add New',
                       onPressed: onAdd,
                     ),
+                  Expanded(
+                    child: Text(
+                      textAlign: TextAlign.center,
+                      hasSelection
+                          ? '${tableState!.selectedUids.length} item(s) selected'
+                          : title!,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.bold,
+                        color: Theme.of(context).primaryColor,
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

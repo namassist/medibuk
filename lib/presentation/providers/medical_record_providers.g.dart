@@ -6,7 +6,8 @@ part of 'medical_record_providers.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$processedMainDataHash() => r'79cf61403c6bed8f2352fe8e9aeb3619d179e56e';
+String _$medicalRecordNotifierHash() =>
+    r'05a14977496f538e4155d81427773f4b008a84d5';
 
 /// Copied from Dart SDK
 class _SystemHash {
@@ -28,128 +29,6 @@ class _SystemHash {
     return 0x1fffffff & (hash + ((0x00003fff & hash) << 15));
   }
 }
-
-/// See also [processedMainData].
-@ProviderFor(processedMainData)
-const processedMainDataProvider = ProcessedMainDataFamily();
-
-/// See also [processedMainData].
-class ProcessedMainDataFamily extends Family<Map<String, dynamic>> {
-  /// See also [processedMainData].
-  const ProcessedMainDataFamily();
-
-  /// See also [processedMainData].
-  ProcessedMainDataProvider call(MedicalRecord record) {
-    return ProcessedMainDataProvider(record);
-  }
-
-  @override
-  ProcessedMainDataProvider getProviderOverride(
-    covariant ProcessedMainDataProvider provider,
-  ) {
-    return call(provider.record);
-  }
-
-  static const Iterable<ProviderOrFamily>? _dependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get dependencies => _dependencies;
-
-  static const Iterable<ProviderOrFamily>? _allTransitiveDependencies = null;
-
-  @override
-  Iterable<ProviderOrFamily>? get allTransitiveDependencies =>
-      _allTransitiveDependencies;
-
-  @override
-  String? get name => r'processedMainDataProvider';
-}
-
-/// See also [processedMainData].
-class ProcessedMainDataProvider
-    extends AutoDisposeProvider<Map<String, dynamic>> {
-  /// See also [processedMainData].
-  ProcessedMainDataProvider(MedicalRecord record)
-    : this._internal(
-        (ref) => processedMainData(ref as ProcessedMainDataRef, record),
-        from: processedMainDataProvider,
-        name: r'processedMainDataProvider',
-        debugGetCreateSourceHash: const bool.fromEnvironment('dart.vm.product')
-            ? null
-            : _$processedMainDataHash,
-        dependencies: ProcessedMainDataFamily._dependencies,
-        allTransitiveDependencies:
-            ProcessedMainDataFamily._allTransitiveDependencies,
-        record: record,
-      );
-
-  ProcessedMainDataProvider._internal(
-    super._createNotifier, {
-    required super.name,
-    required super.dependencies,
-    required super.allTransitiveDependencies,
-    required super.debugGetCreateSourceHash,
-    required super.from,
-    required this.record,
-  }) : super.internal();
-
-  final MedicalRecord record;
-
-  @override
-  Override overrideWith(
-    Map<String, dynamic> Function(ProcessedMainDataRef provider) create,
-  ) {
-    return ProviderOverride(
-      origin: this,
-      override: ProcessedMainDataProvider._internal(
-        (ref) => create(ref as ProcessedMainDataRef),
-        from: from,
-        name: null,
-        dependencies: null,
-        allTransitiveDependencies: null,
-        debugGetCreateSourceHash: null,
-        record: record,
-      ),
-    );
-  }
-
-  @override
-  AutoDisposeProviderElement<Map<String, dynamic>> createElement() {
-    return _ProcessedMainDataProviderElement(this);
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return other is ProcessedMainDataProvider && other.record == record;
-  }
-
-  @override
-  int get hashCode {
-    var hash = _SystemHash.combine(0, runtimeType.hashCode);
-    hash = _SystemHash.combine(hash, record.hashCode);
-
-    return _SystemHash.finish(hash);
-  }
-}
-
-@Deprecated('Will be removed in 3.0. Use Ref instead')
-// ignore: unused_element
-mixin ProcessedMainDataRef on AutoDisposeProviderRef<Map<String, dynamic>> {
-  /// The parameter `record` of this provider.
-  MedicalRecord get record;
-}
-
-class _ProcessedMainDataProviderElement
-    extends AutoDisposeProviderElement<Map<String, dynamic>>
-    with ProcessedMainDataRef {
-  _ProcessedMainDataProviderElement(super.provider);
-
-  @override
-  MedicalRecord get record => (origin as ProcessedMainDataProvider).record;
-}
-
-String _$medicalRecordNotifierHash() =>
-    r'940be8ea1afa743de186c643fd4f37558c3a1839';
 
 abstract class _$MedicalRecordNotifier
     extends BuildlessAutoDisposeAsyncNotifier<MedicalRecord?> {

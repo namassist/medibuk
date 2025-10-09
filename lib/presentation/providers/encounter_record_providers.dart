@@ -9,11 +9,9 @@ part 'encounter_record_providers.g.dart';
 class EncounterNotifier extends _$EncounterNotifier {
   @override
   Future<EncounterRecord?> build(String encounterId) async {
-    if (encounterId == 'NEW') {
+    if (encounterId == 'NEW' || encounterId == '-1') {
       final defaultSalesRegion = await ref.watch(salesRegionProvider.future);
-
       final emptyRecord = EncounterRecord.empty();
-
       return emptyRecord.copyWith(cSalesRegionId: defaultSalesRegion);
     }
 
@@ -35,6 +33,17 @@ class EncounterNotifier extends _$EncounterNotifier {
       await repository.updateEncounterRecord(record);
     } catch (e) {
       state = previousState;
+      rethrow;
+    }
+  }
+
+  Future<EncounterRecord> createRecord(EncounterRecord record) async {
+    final repository = ref.read(encounterRepositoryProvider);
+    try {
+      final newRecord = await repository.createEncounterRecord(record);
+      state = AsyncValue.data(newRecord);
+      return newRecord;
+    } catch (e) {
       rethrow;
     }
   }

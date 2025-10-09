@@ -137,7 +137,7 @@ class DashboardNotifier extends StateNotifier<DashboardState> {
   GroupedEncounters _groupEncounters(List<EncounterRecord> records) {
     final groupedByDate = groupBy(
       records,
-      (EncounterRecord record) => DateTime.parse(record.dateTrx),
+      (EncounterRecord record) => DateTime.parse(record.dateTrx ?? ''),
     );
 
     return groupedByDate.map((date, encounters) {

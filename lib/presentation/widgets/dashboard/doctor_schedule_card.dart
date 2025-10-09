@@ -42,6 +42,46 @@ class _DashboardDoctorCardState extends State<DashboardDoctorCard> {
         ? scheduleKeys[_selectedScheduleIndex]
         : null;
 
+    List<EncounterRecord> sortedEncounters = [];
+    if (selectedScheduleKey != null) {
+      // 1. Ambil list asli dari widget.schedules
+      final originalEncounters = widget.schedules[selectedScheduleKey]!;
+
+      // 2. Buat salinan yang bisa diubah (mutable) untuk diurutkan
+      sortedEncounters = List<EncounterRecord>.from(originalEncounters);
+
+      // 3. Terapkan logika sorting kustom
+      sortedEncounters.sort((a, b) {
+        final antrianA = a.antrian;
+        final antrianB = b.antrian;
+
+        // Jika A null dan B tidak, B didahulukan (-1) -> A ditaruh di belakang (1)
+        if (antrianA == null && antrianB != null) {
+          return 1;
+        }
+        // Jika A tidak null dan B null, A didahulukan (-1)
+        if (antrianA != null && antrianB == null) {
+          return -1;
+        }
+        // Jika keduanya null, pertahankan urutan asli
+        if (antrianA == null && antrianB == null) {
+          return 0;
+        }
+
+        // Jika keduanya tidak null, bandingkan sebagai angka
+        final numA = int.tryParse(antrianA!);
+        final numB = int.tryParse(antrianB!);
+
+        // Jika keduanya berhasil di-parse sebagai angka, bandingkan secara numerik
+        if (numA != null && numB != null) {
+          return numA.compareTo(numB);
+        }
+
+        // Jika gagal di-parse, bandingkan sebagai string (fallback)
+        return antrianA.compareTo(antrianB);
+      });
+    }
+
     if (_isExpanded) {
       // Tampilan Diperluas
       return Container(
@@ -216,7 +256,7 @@ class EncounterSchedulesItem extends StatelessWidget {
         return timePart;
       }
     }
-    return identifier; // Kembalikan string asli jika tidak cocok
+    return identifier;
   }
 
   @override
@@ -335,7 +375,7 @@ class EncounterEntry extends ConsumerWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(encounter.documentNo),
+                      Text(encounter.documentNo ?? '-'),
                       Row(
                         children: [
                           Text(
@@ -398,7 +438,7 @@ class EncounterEntry extends ConsumerWidget {
 
                             return Row(
                               children: [
-                                Text(partner.phone ?? '-'),
+                                Text(partner.phone ?? 'PATIENT_PHONE'),
                                 const Icon(
                                   Icons.arrow_forward_ios_outlined,
                                   size: 10,

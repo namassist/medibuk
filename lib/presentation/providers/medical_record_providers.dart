@@ -1,4 +1,3 @@
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:medibuk/data/repositories/medical_record_repository.dart';
 import 'package:medibuk/domain/entities/medical_record.dart';
@@ -7,6 +6,10 @@ part 'medical_record_providers.g.dart';
 
 @riverpod
 class MedicalRecordNotifier extends _$MedicalRecordNotifier {
+  void updateStateLocally(MedicalRecord record) {
+    state = AsyncValue.data(record);
+  }
+
   @override
   Future<MedicalRecord?> build(String medicalRecordId) async {
     if (medicalRecordId == 'NEW') {
@@ -33,20 +36,4 @@ class MedicalRecordNotifier extends _$MedicalRecordNotifier {
       rethrow;
     }
   }
-}
-
-@riverpod
-Map<String, dynamic> processedMainData(Ref ref, MedicalRecord record) {
-  return {
-    'DocumentNo': record.documentNo,
-    'DateTrx': record.dateTrx,
-    'GestationalAgeWeek': record.gestationalAgeWeek,
-    'GestationalAgeDay': record.gestationalAgeDay,
-    'AD_Client_ID': record.adClientId,
-    'AD_Org_ID': record.adOrgId,
-    'C_SalesRegion_ID': record.cSalesRegionId,
-    'OrderType_ID': record.orderTypeId,
-    'M_Specialist_ID': record.mSpecialistId,
-    'C_BPartner_ID': record.cBPartnerId,
-  };
 }
